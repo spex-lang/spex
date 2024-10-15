@@ -17,3 +17,6 @@ cyan = withSGR [SetColor Foreground Vivid Cyan]
 boldRed :: String -> String
 boldRed = withSGR
   [SetColor Foreground Vivid Red, SetConsoleIntensity BoldIntensity]
+
+faint :: String -> String
+faint = withSGR [SetConsoleIntensity FaintIntensity]

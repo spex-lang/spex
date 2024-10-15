@@ -7,6 +7,7 @@ import qualified Data.Map.Strict as Map
 import Spex.Monad
 import Spex.Syntax
 import Spex.Syntax.Operation
+import Spex.Syntax.Value
 import Spex.TypeChecker
 import Spex.Verifier.Codec.Json
 import Spex.Verifier.Generator
@@ -50,6 +51,7 @@ verify spec deployment = do
     go 0 _ops _seed _prng _client n4xx = return (Result [] n4xx Map.empty)
     go n  ops  seed  prng  client n4xx = do
       let (op, prng') = generate spec prng
+      debug (displayOp displayValue op)
       resp <- httpRequest client op
       case resp of
         Ok2xx body -> do

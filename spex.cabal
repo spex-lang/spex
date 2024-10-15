@@ -63,6 +63,7 @@ library
     , random
     , template-haskell
     , utf8-string
+    , vector
 
   -- GHC boot library dependencies:
   -- (https://gitlab.haskell.org/ghc/ghc/-/blob/master/packages)

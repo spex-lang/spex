@@ -83,11 +83,10 @@ opDeclP = do
   $(symbol' ":")
   m <- methodP'
   p <- pathSegmentsP'
-  q <- return Nothing -- XXX
   ws
   b <- bodyDeclP
   respTy <- responseTypeP
-  return (Op x m p q b respTy)
+  return (Op x m p b respTy)
 
 typeP :: Parser Type
 typeP = baseTypeP <|> recordDeclP <|> userTypeP
@@ -98,7 +97,7 @@ typeP = baseTypeP <|> recordDeclP <|> userTypeP
       "Int"    -> pure IntT
       "String" -> pure StringT
       |])
-    userTypeP = UserT <$> bident
+    userTypeP = UserT <$> (TypeId <$> bident)
 
 typeP' :: Parser Type
 typeP' = typeP `cut` [Lit "type"]

@@ -2,6 +2,8 @@ module Spex.Syntax.Operation where
 
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Char8 as BS8
+import Data.List
+import Data.Maybe (fromMaybe)
 import Data.String (IsString)
 
 import Spex.Syntax.Type
@@ -13,7 +15,6 @@ data OpF a = Op
   { id           :: OpId
   , method       :: Method
   , path         :: [PathSegment a]
-  , query        :: Maybe String
   , body         :: Maybe a
   , responseType :: Type
   }
@@ -30,7 +31,18 @@ type Op = OpF Value
 type OpDecl = OpF Type
 
 data PathSegment a = Path ByteString | Hole ByteString a
-  deriving Show
+  deriving (Show, Functor, Foldable, Traversable)
 
-displayOp :: OpF a -> String
-displayOp op = displayOpId op.id <> " : " <> displayMethod op.method -- <> displayPath op.path <> displayQuery op.query <> displayBody op.body <> " -> " <> displayType
+displayOp :: (a -> String) -> OpF a -> String
+displayOp d op = concat
+  [ displayOpId op.id, " : ", displayMethod op.method, " "
+  , displayPath d op.path, " ", fromMaybe "" (fmap d op.body)
+  , " -> ", displayType op.responseType
+  ]
+
+displayPath :: (a -> String) -> [PathSegment a] -> String
+displayPath d = concat . intersperse "/" . map (displayPathSegment . fmap d)
+
+displayPathSegment :: PathSegment String -> String
+displayPathSegment (Path p)    = BS8.unpack p
+displayPathSegment (Hole _x s) = s

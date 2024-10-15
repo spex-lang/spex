@@ -4,6 +4,7 @@
 module Spex.Verifier.Generator where
 
 import Control.Monad
+import Data.List
 import Data.Text (Text)
 import System.Random
 
@@ -57,41 +58,43 @@ genText :: Gen Text
 genText = elements ["foo", "bar", "qux"]
 
 generate :: Spec -> Prng -> (Op, Prng)
-generate spec prng = (runGen (genOp spec.component.opDecls) prng', prng'')
+generate spec prng =
+  (runGen (genOp spec.component.opDecls
+                 spec.component.typeDecls) prng', prng'')
   where
     (prng', prng'') = splitPrng prng
 
-genOp :: [OpDecl] -> Gen Op
-genOp decls = do
-  decl <- elements decls
-  p <- genPath decl.path
-  b <- genBody decl.body
+genOp :: [OpDecl] -> [TypeDecl] -> Gen Op
+genOp opdecls ctx = do
+  opdecl <- elements opdecls
+  p <- genPath ctx opdecl.path
+  b <- genBody ctx opdecl.body
   return $ Op
-    { id           = decl.id
-    , method       = decl.method
+    { id           = opdecl.id
+    , method       = opdecl.method
     , path         = p
-    , query        = Nothing
     , body         = b
-    , responseType = decl.responseType
+    , responseType = opdecl.responseType
     }
 
-genValue :: Type -> Gen Value
-genValue UnitT        = return UnitV
-genValue BoolT        = BoolV <$> genBounded
-genValue IntT         = IntV <$> genInt
-genValue StringT      = StringV <$> genText
-genValue (RecordT fs) = undefined
-genValue (UserT x)    = undefined
+genValue :: [TypeDecl] -> Type -> Gen Value
+genValue ctx UnitT          = return UnitV
+genValue ctx BoolT          = BoolV <$> genBounded
+genValue ctx IntT           = IntV <$> genInt
+genValue ctx StringT        = StringV <$> genText
+genValue ctx (RecordT ftys) = genRecord ctx ftys
+genValue ctx (UserT x)      = genUserDefined ctx x
 
-genBody :: Maybe Type -> Gen (Maybe Value)
-genBody = traverse genValue
+genBody :: [TypeDecl] -> Maybe Type -> Gen (Maybe Value)
+genBody ctx = traverse (genValue ctx)
 
-genPath :: [PathSegment Type] -> Gen [PathSegment Value]
-genPath [] = return []
-genPath (Path p : ps) = do
-  xs <- genPath ps
-  return (Path p : xs)
-genPath (Hole x ty : ps) = do
-  v <- genValue ty
-  xs <- genPath ps
-  return (Hole x v : xs)
+genPath :: [TypeDecl] -> [PathSegment Type] -> Gen [PathSegment Value]
+genPath ctx = traverse (traverse (genValue ctx))
+
+genRecord :: [TypeDecl] -> Record Type -> Gen Value
+genRecord ctx = fmap RecordV . traverse (genValue ctx)
+
+genUserDefined :: [TypeDecl] -> TypeId -> Gen Value
+genUserDefined ctx tid = case find (\tydecl -> tydecl.id == tid) ctx of
+  Nothing -> error "genUserDefined: impossible, scope checker should have caught this"
+  Just tydecl -> genValue ctx tydecl.rhs

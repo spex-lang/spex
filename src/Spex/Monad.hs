@@ -22,6 +22,7 @@ import Spex.CommandLine.Ansi
 import Spex.CommandLine.ArgParser
 import Spex.Syntax
 import Spex.Syntax.Operation
+import Spex.Syntax.Value
 
 ------------------------------------------------------------------------
 
@@ -48,8 +49,12 @@ newAppEnv :: CmdLineArgs -> IO AppEnv
 newAppEnv args = do
   hasAnsi <- hasAnsiSupport
 
-  let logger_ | not hasAnsi || args.nonInteractive = noAnsiLogger
+  let logger' | not hasAnsi || args.nonInteractive = noAnsiLogger
               | otherwise = ansiLogger
+      logger'' = case args.logging of
+                   Left True  -> verboseLogger logger'
+                   Right True -> quietLogger logger'
+                   _otherwise -> logger'
 
   return AppEnv
     { specFile   = args.specFilePath
@@ -57,31 +62,34 @@ newAppEnv args = do
                      (HealthCheckPath args.health) (ResetPath args.reset)
     , numTests   = fromMaybe 100 args.numTests
     , mSeed      = args.seed
-    , logger     = logger_
+    , logger     = logger''
     }
 
 data Logger = Logger
   { loggerInfo  :: String -> IO ()
   , loggerError :: String -> IO ()
+  , loggerDebug :: String -> IO ()
   }
 
 noAnsiLogger :: Logger
 noAnsiLogger = Logger
   { loggerInfo  = putStrLn . ("i " ++)
   , loggerError = putStrLn . ("Error: " ++ )
+  , loggerDebug = \_s -> return ()
   }
 
 ansiLogger :: Logger
 ansiLogger = Logger
   { loggerInfo  = putStrLn . (cyan "i " ++)
   , loggerError = putStrLn . (boldRed "Error: " ++ )
+  , loggerDebug = \_s -> return ()
   }
 
 quietLogger :: Logger -> Logger
 quietLogger l = l { loggerInfo = const (return ()) }
 
 verboseLogger :: Logger -> Logger
-verboseLogger = undefined
+verboseLogger l =  l { loggerDebug = putStrLn . (faint "d " ++) }
 
 info :: String -> App ()
 info s = do
@@ -92,6 +100,11 @@ logError :: String -> App ()
 logError s = do
   l <- asks logger
   liftIO (l.loggerError s)
+
+debug :: String -> App ()
+debug s = do
+  l <- asks logger
+  liftIO (l.loggerDebug s)
 
 ------------------------------------------------------------------------
 
@@ -124,7 +137,7 @@ displayAppError spec = \case
   ParserError e              -> "Parse error: " <> e
   InvalidDeploymentUrl url   -> "Invalid deployment URL: " <> url
   HttpClientException op e   -> displayHttpException op e
-  HttpClientDecodeError op body e -> "Couldn't decode the response of:\n\n    " <> displayOp op <> "\n\nfrom the body of the request: '" <> BS8.unpack body <> "'\n\nThe error being: " <> e
+  HttpClientDecodeError op body e -> "Couldn't decode the response of:\n\n    " <> displayOp displayValue op <> "\n\nfrom the body of the request: '" <> BS8.unpack body <> "'\n\nThe error being: " <> e
   HttpClientUnexpectedStatusCode _ _ -> "HTTP client returned 1xx or 3xx"
   TestFailure e seed         -> "Test failure: " <> e <>
                                 "\nUse --seed " <> show seed <> " to reproduce"
@@ -132,7 +145,7 @@ displayAppError spec = \case
 displayHttpException :: Op -> HttpException -> String
 displayHttpException op (HttpExceptionRequest _req content) = case content of
   ConnectionFailure _someException -> "Couldn't connect to host."
-  StatusCodeException resp _ -> displayOp op <> "\n" <> show (Http.responseStatus resp)
+  StatusCodeException resp _ -> displayOp displayValue op <> "\n" <> show (Http.responseStatus resp)
   err -> show err
 displayHttpException _op InvalidUrlException {} =
   error "impossible: already handled by InvalidDeploymentUrl"
