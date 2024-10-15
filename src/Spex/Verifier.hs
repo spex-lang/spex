@@ -38,8 +38,10 @@ displayResult res = unlines
 
 ------------------------------------------------------------------------
 
-verify :: Config -> Spec -> Deployment -> App Result
-verify (Config numTests mSeed) spec deployment = do
+verify :: Spec -> Deployment -> App Result
+verify spec deployment = do
+  numTests <- asks numTests
+  mSeed <- asks mSeed
   (prng, seed) <- liftIO (newPrng mSeed)
   client <- newHttpClient deployment
   go numTests [] seed prng client 0

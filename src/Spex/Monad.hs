@@ -39,15 +39,10 @@ asks f = App (Reader.asks f)
 data AppEnv = AppEnv
   { specFile   :: FilePath
   , deployment :: Deployment
-  , config     :: Config
+  , numTests   :: Word
+  , mSeed      :: Maybe Int
   , logger     :: Logger
   }
-
-data Config = Config
-  { numTests :: Word
-  , seed     :: Maybe Int
-  }
-
 
 newAppEnv :: CmdLineArgs -> IO AppEnv
 newAppEnv args = do
@@ -60,7 +55,8 @@ newAppEnv args = do
     { specFile   = args.specFilePath
     , deployment = Deployment (HostPort args.host args.port)
                      (HealthCheckPath args.health) (ResetPath args.reset)
-    , config     = Config (fromMaybe 100 args.numTests) args.seed
+    , numTests   = fromMaybe 100 args.numTests
+    , mSeed      = args.seed
     , logger     = logger_
     }
 

@@ -25,8 +25,8 @@ libMain = do
 
 app :: App ()
 app = do
-  deploy <- asks deployment
-  specFile   <- asks specFile
+  deploy   <- asks deployment
+  specFile <- asks specFile
   info $ "Verifying the deployment:    " <> displayDeployment deploy <> "\n" <>
          "  against the specification:   " <> specFile <> "\n"--  <> BS.unpack spec.component.id
   bs <- liftIO (try (BS.readFile specFile)) <?> ReadSpecFileError
@@ -35,6 +35,5 @@ app = do
   info $ "Waiting for health check to pass.\n"
   -- XXX:
   info $ "Starting to run tests.\n"
-  config <- asks config
-  result <- verify config spec deploy
+  result <- verify spec deploy
   info $ "All tests passed, here are the results: \n\n" <> displayResult result
