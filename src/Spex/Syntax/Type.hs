@@ -2,7 +2,7 @@ module Spex.Syntax.Type where
 
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Char8 as BS8
-import Data.List
+import Data.List (intersperse)
 import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.String (IsString)

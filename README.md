@@ -73,6 +73,8 @@ fg # Bring demo application to the foreground.
   + cabal freeze
   + static binary?
 - docs: contributing.md
+- remove use of String
+- pretty print
 
 - nice cli
   + https://hackage.haskell.org/package/diagnose-2.5.1/docs/Error-Diagnose.html

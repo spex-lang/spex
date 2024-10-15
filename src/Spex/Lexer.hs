@@ -45,7 +45,7 @@ merge :: Error -> Error -> Error
 merge e e' = case (errorPos e, errorPos e') of
   (p, p') | p < p' -> e'
   (p, p') | p > p' -> e
-  (p, p')          -> case (e, e') of
+  (p, _p')         -> case (e, e') of
     (Precise{}      , _               ) -> e
     (_              , Precise{}       ) -> e'
     (Imprecise _ es , Imprecise _ es' ) -> Imprecise p (es ++ es')
@@ -56,13 +56,15 @@ type Parser = FP.Parser Error
 -- | Pretty print an error. The `B.ByteString` input is the source file. The offending line from the
 --   source is displayed in the output.
 prettyError :: B.ByteString -> Error -> String
-prettyError b e =
+prettyError b e0 =
 
   let pos :: Pos
-      pos      = case e of Imprecise pos e -> pos
-                           Precise pos e   -> pos
+      pos      = case e0 of Imprecise p _e -> p
+                            Precise p _e   -> p
       ls       = FP.linesUtf8 b
-      (l, c)   = head $ FP.posLineCols b [pos]
+      (l, c)   = case FP.posLineCols b [pos] of
+                   [] -> error "prettyError: impossible"
+                   (l0, c0) : _rest -> (l0, c0)
       line     = if l < length ls then ls !! l else ""
       linum    = show l
       lpad     = map (const ' ') linum
@@ -72,16 +74,16 @@ prettyError b e =
       expected (Lit s) = show s
       expected (Msg s) = s
 
-      err (Precise _ e)    = expected e
-      err (Imprecise _ es) = imprec $ S.toList $ S.fromList es
+      err_ (Precise _ e)    = expected e
+      err_ (Imprecise _ es) = imprec $ S.toList $ S.fromList es
 
       imprec :: [Expected] -> String
-      imprec []     = error "impossible"
-      imprec [e]    = expected e
-      imprec (e:es) = expected e ++ go es where
-        go []     = ""
-        go [e]    = " or " ++ expected e
-        go (e:es) = ", " ++ expected e ++ go es
+      imprec []       = error "impossible"
+      imprec [e]      = expected e
+      imprec (e : es) = expected e ++ go es where
+        go []         = ""
+        go [e1]       = " or " ++ expected e1
+        go (e1 : es1) = ", " ++ expected e1 ++ go es1
 
   in show l ++ ":" ++ show c ++ ":\n" ++
      lpad   ++ "|\n" ++
@@ -89,7 +91,7 @@ prettyError b e =
      linum  ++ "| " ++ line ++ "\n" ++
      lpad   ++ "| " ++ replicate c ' ' ++ "^\n" ++
      "parse error: expected " ++
-     err e
+     err_ e0
 
 -- | Imprecise cut: we slap a list of items on inner errors.
 cut :: Parser a -> [Expected] -> Parser a
@@ -165,7 +167,7 @@ identChar = satisfyAscii (\c -> isLatinLetter c || isDigit c)
 
 -- | Check whether a `Span` contains exactly a keyword. Does not change parsing state.
 isKeyword :: Span -> Parser ()
-isKeyword span = inSpan span $ do
+isKeyword span0 = inSpan span0 $ do
   $(FP.switch [| case _ of
       "component" -> pure ()
       "where"     -> pure ()

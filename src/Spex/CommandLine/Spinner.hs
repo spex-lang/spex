@@ -82,14 +82,14 @@ testSpinner = do
     Just (row, _col) <- getCursorPosition
     hSetCursorPosition stdout (row + 1) 0
     hPutStrLn stdout "\n\nprogress 1"
-    modifyIORef s.nls (+3)
+    modifyIORef s.nls (+ 3)
   threadDelay 2000000
   withMVar s.lock $ \_ -> do
     hRestoreCursor stdout
     Just (row, _col) <- getCursorPosition
     hSetCursorPosition stdout (row + 3) 0
     hPutStrLn stdout "\nprogress 2"
-    modifyIORef s.nls (+2)
+    modifyIORef s.nls (+ 2)
   threadDelay 2000000
   stopSpinner s
   hRestoreCursor stdout

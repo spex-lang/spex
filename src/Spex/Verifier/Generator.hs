@@ -4,8 +4,9 @@
 module Spex.Verifier.Generator where
 
 import Control.Monad
-import Data.List
+import Data.List (find)
 import Data.Text (Text)
+import Data.Vector (Vector)
 import System.Random
 
 import Spex.Syntax
@@ -78,18 +79,22 @@ genOp opdecls ctx = do
     }
 
 genValue :: [TypeDecl] -> Type -> Gen Value
-genValue ctx UnitT          = return UnitV
-genValue ctx BoolT          = BoolV <$> genBounded
-genValue ctx IntT           = IntV <$> genInt
-genValue ctx StringT        = StringV <$> genText
-genValue ctx (RecordT ftys) = genRecord ctx ftys
-genValue ctx (UserT x)      = genUserDefined ctx x
+genValue _ctx UnitT          = return UnitV
+genValue _ctx BoolT          = BoolV <$> genBounded
+genValue _ctx IntT           = IntV <$> genInt
+genValue _ctx StringT        = StringV <$> genText
+genValue  ctx (ArrayT tys)   = genArray ctx tys
+genValue  ctx (RecordT ftys) = genRecord ctx ftys
+genValue  ctx (UserT x)      = genUserDefined ctx x
 
 genBody :: [TypeDecl] -> Maybe Type -> Gen (Maybe Value)
 genBody ctx = traverse (genValue ctx)
 
 genPath :: [TypeDecl] -> [PathSegment Type] -> Gen [PathSegment Value]
 genPath ctx = traverse (traverse (genValue ctx))
+
+genArray :: [TypeDecl] -> Vector Type -> Gen Value
+genArray ctx = fmap ArrayV . traverse (genValue ctx)
 
 genRecord :: [TypeDecl] -> Record Type -> Gen Value
 genRecord ctx = fmap RecordV . traverse (genValue ctx)

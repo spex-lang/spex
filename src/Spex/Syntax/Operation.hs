@@ -2,7 +2,7 @@ module Spex.Syntax.Operation where
 
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Char8 as BS8
-import Data.List
+import Data.List (intersperse)
 import Data.Maybe (fromMaybe)
 import Data.String (IsString)
 
