@@ -39,5 +39,5 @@ app args = do
   info $ "Waiting for health check to pass.\n"
   -- XXX:
   info $ "Starting to run tests.\n"
-  verify config spec deploy
-  info $ "All tests passed!"
+  result <- verify config spec deploy
+  info $ "All tests passed, here are the results: \n\n" <> displayResult result

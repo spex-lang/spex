@@ -75,6 +75,7 @@ fg # Bring demo application to the foreground.
 - docs: contributing.md
 
 - nice cli
+  + https://hackage.haskell.org/package/diagnose-2.5.1/docs/Error-Diagnose.html
   + https://medium.com/designing-atlassian/10-design-principles-for-delightful-clis-522f363bac87
   + https://github.com/charmbracelet/bubbletea
   + https://gleam.run/
