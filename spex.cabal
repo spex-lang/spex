@@ -1,0 +1,95 @@
+cabal-version:   3.0
+name:            spex
+version:         0.0.0
+synopsis:        The Spex specification language
+description:     See README at <https://github.com/stevana/spex#readme>
+homepage:        https://github.com/stevana/spex#readme
+license:         BSD-2-Clause
+license-file:    LICENSE
+author:          Stevan A
+maintainer:      stevana@users.noreply.github.com
+copyright:       Copyright (C) 2024, Stevan A
+category:        Compilers/Interpreters, Testing
+build-type:      Simple
+extra-doc-files:
+  CHANGELOG.md
+  CONTRIBUTING.md
+  example/*.spex
+  README.md
+
+tested-with:     GHC ==9.10.1
+
+common warnings
+  ghc-options: -Wall
+
+library
+  import:             warnings
+  exposed-modules:
+    Spex.CommandLine.ArgParser
+    Spex.CommandLine.Spinner
+    Spex.Lexer
+    Spex.LibMain
+    Spex.Monad
+    Spex.Parser
+    Spex.Syntax
+    Spex.Syntax.Operation
+    Spex.Syntax.Type
+    Spex.Syntax.Value
+    Spex.TypeChecker
+    Spex.Verifier
+    Spex.Verifier.Codec.Json
+    Spex.Verifier.Generator
+    Spex.Verifier.HttpClient
+
+  default-extensions:
+    DuplicateRecordFields
+    LambdaCase
+    OverloadedRecordDot
+    StrictData
+    ViewPatterns
+
+  build-depends:
+    , aeson
+    , ansi-terminal
+    , flatparse
+    , http-client
+    , http-types
+    , optparse-applicative
+    , random
+    , template-haskell
+    , utf8-string
+
+  -- GHC boot library dependencies:
+  -- (https://gitlab.haskell.org/ghc/ghc/-/blob/master/packages)
+  build-depends:
+    , base          ^>=4.20.0.0
+    , bytestring
+    , containers
+    , text
+    , transformers
+    , unix
+
+  pkgconfig-depends:  zlib
+  extra-libraries:    z
+  hs-source-dirs:     src
+  default-language:   GHC2021
+
+executable spex
+  import:           warnings
+  main-is:          Main.hs
+  build-depends:
+    , base
+    , spex
+
+  hs-source-dirs:   app
+  default-language: GHC2021
+
+test-suite test
+  import:           warnings
+  default-language: GHC2021
+  type:             exitcode-stdio-1.0
+  hs-source-dirs:   test
+  main-is:          Main.hs
+  build-depends:
+    , base
+    , spex

@@ -1,0 +1,9 @@
+component PetStore where
+
+addPet : POST /pet Pet 
+getPet : GET /pet/{petId : Int} -> Pet
+
+type Pet =
+  { petId   : Int
+  , petName : String 
+  }
