@@ -42,6 +42,8 @@ library
     Spex.Verifier.Generator
     Spex.Verifier.HttpClient
 
+  autogen-modules:    Paths_spex
+  other-modules:      Paths_spex
   default-extensions:
     DuplicateRecordFields
     LambdaCase
@@ -54,6 +56,7 @@ library
     , aeson
     , ansi-terminal
     , flatparse
+    , gitrev
     , http-client
     , http-types
     , optparse-applicative

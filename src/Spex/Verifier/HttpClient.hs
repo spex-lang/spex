@@ -9,7 +9,6 @@ import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text.Encoding as Text
 import qualified Network.HTTP.Client as Http
 import qualified Network.HTTP.Types as Http
-import qualified Network.HTTP.Types.Method as Http
 
 import Spex.Monad
 import Spex.Syntax

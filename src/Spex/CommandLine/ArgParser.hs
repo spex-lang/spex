@@ -1,27 +1,36 @@
+{-# LANGUAGE TemplateHaskell #-}
+
 module Spex.CommandLine.ArgParser where
 
+import Data.Version (showVersion)
+import Development.GitRev (gitHash)
 import Options.Applicative
+
+import Paths_spex (version)
 
 ------------------------------------------------------------------------
 
 data CmdLineArgs = CmdLineArgs
-  { specFilePath :: FilePath
-  , host         :: String
-  , port         :: Int
-  , health       :: String
-  , reset        :: String
-  , numTests     :: Maybe Word
-  , seed         :: Maybe Int
+  { specFilePath   :: FilePath
+  , host           :: String
+  , port           :: Int
+  , health         :: String
+  , reset          :: String
+  , numTests       :: Maybe Word
+  , seed           :: Maybe Int
+  , logging        :: Either Bool Bool
+  , nonInteractive :: Bool
   }
 
 parseCmdLineArgs :: IO CmdLineArgs
 parseCmdLineArgs = execParser opts
   where
-    opts = info (cmdLineArgs <**> helper)
+    opts = info (cmdLineArgs <**> simpleVersioner versionHash <**> helper)
       ( fullDesc
       <> progDesc "The Spex specification language."
       <> header "spex - specification language"
       )
+    versionHash = "v" ++ showVersion version ++ " " ++ $(gitHash)
 
 cmdLineArgs :: Parser CmdLineArgs
 cmdLineArgs = CmdLineArgs
@@ -66,4 +75,16 @@ cmdLineArgs = CmdLineArgs
         <> help "Seed for pseudo-random number generator"
         <> metavar "INT"
         ))
+  <*> (fmap Left (switch
+        (  long "verbose"
+        <> help "Enable more verbose logging"
+        )) <|>
+       fmap Right (switch
+        (  long "quiet"
+        <> help "Enable more quiet logging"
+        )))
+  <*> switch
+        (  long "non-interactive"
+        <> help "Disable fancy logging"
+        )
 

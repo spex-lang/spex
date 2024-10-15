@@ -14,11 +14,6 @@ import Spex.Verifier.HttpClient
 
 ------------------------------------------------------------------------
 
-data Config = Config
-  { _numTests :: Word
-  , _seed     :: Maybe Int
-  }
-
 data Result = Result
   { failingTests :: [FailingTest] -- XXX: Set?
   , clientErrors :: Word

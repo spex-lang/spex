@@ -42,7 +42,10 @@ data Deployment = Deployment
   }
   deriving Show
 
-data HostPort = HostPort String Int
+displayDeployment :: Deployment -> String
+displayDeployment d = d.hostPort.host <> ":" <> show d.hostPort.port
+
+data HostPort = HostPort { host :: String, port :: Int }
   deriving Show
 
 data HealthCheck = HealthCheckPath String | HealthCheckScript FilePath
