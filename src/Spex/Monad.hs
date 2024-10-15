@@ -7,12 +7,16 @@ module Spex.Monad
   , liftIO
   ) where
 
+
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Except
 import Control.Monad.Trans.Reader
+import Data.ByteString (ByteString)
+import qualified Data.ByteString.Char8 as BS8
 import Network.HTTP.Client (HttpException(..), HttpExceptionContent(..))
 import qualified Network.HTTP.Client as Http
 
+import Spex.CommandLine.Ansi
 import Spex.Syntax.Operation
 
 ------------------------------------------------------------------------
@@ -26,11 +30,44 @@ runApp env = runExceptT . flip runReaderT env . unApp
 ------------------------------------------------------------------------
 
 data AppEnv = AppEnv
-  { logger :: String -> IO () }
+  { logger :: Logger }
 
 defaultAppEnv :: AppEnv
-defaultAppEnv = AppEnv
-  { logger = putStrLn }
+defaultAppEnv = AppEnv noAnsiLogger
+
+data Logger = Logger
+  { loggerInfo  :: String -> IO ()
+  , loggerError :: String -> IO ()
+  }
+
+noAnsiLogger :: Logger
+noAnsiLogger = Logger
+  { loggerInfo  = putStrLn . ("i " ++)
+  , loggerError = putStrLn . ("Error: " ++ )
+  }
+
+ansiLogger :: Logger
+ansiLogger = Logger
+  { loggerInfo  = putStrLn . (cyan "i " ++)
+  , loggerError = putStrLn . (boldRed "Error: " ++ )
+  }
+
+newAppEnv :: IO AppEnv
+newAppEnv = do
+  hasAnsi <- hasAnsiSupport
+  if hasAnsi
+  then return defaultAppEnv { logger = ansiLogger }
+  else return defaultAppEnv
+
+info :: String -> App ()
+info s = do
+  l <- App (asks logger)
+  liftIO (l.loggerInfo s)
+
+logError :: String -> App ()
+logError s = do
+  l <- App (asks logger)
+  liftIO (l.loggerError s)
 
 ------------------------------------------------------------------------
 
@@ -39,7 +76,8 @@ data AppError
   | ParserError String
   | InvalidDeploymentUrl String
   | HttpClientException Op HttpException
-  | HttpClientDecodeError Op String
+  | HttpClientDecodeError Op ByteString String
+  | HttpClientUnexpectedStatusCode Int ByteString
   | TestFailure String Int
 
 throwA :: AppError -> App e
@@ -62,7 +100,7 @@ displayAppError = \case
   ParserError e              -> "Parse error: " <> e
   InvalidDeploymentUrl url   -> "Invalid deployment URL: " <> url
   HttpClientException op e   -> displayHttpException op e
-  HttpClientDecodeError op e -> "HTTP decode error: " <> e
+  HttpClientDecodeError op body e -> "Couldn't decode the response of:\n\n    " <> displayOp op <> "\n\nfrom the body of the request: '" <> BS8.unpack body <> "'\n\nThe error being: " <> e
   TestFailure e seed         -> "Test failure: " <> e <>
                                 "\nUse --seed " <> show seed <> " to reproduce"
 
@@ -73,10 +111,3 @@ displayHttpException op (HttpExceptionRequest _req content) = case content of
   err -> show err
 displayHttpException _op InvalidUrlException {} =
   error "impossible: already handled by InvalidDeploymentUrl"
-
-------------------------------------------------------------------------
-
-info :: String -> App ()
-info s = do
-  l <- App (asks logger)
-  liftIO (l s)

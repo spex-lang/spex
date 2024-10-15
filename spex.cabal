@@ -25,6 +25,7 @@ common warnings
 library
   import:             warnings
   exposed-modules:
+    Spex.CommandLine.Ansi
     Spex.CommandLine.ArgParser
     Spex.CommandLine.Spinner
     Spex.Lexer
@@ -44,6 +45,7 @@ library
   default-extensions:
     DuplicateRecordFields
     LambdaCase
+    MultiWayIf
     OverloadedRecordDot
     StrictData
     ViewPatterns
