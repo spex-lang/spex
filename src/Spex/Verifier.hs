@@ -60,6 +60,7 @@ verify spec deployment = do
           if ok
           then go (n - 1) (op : ops) seed prng' client n4xx
           else do
+            info $ "Typechecking failed, val: " ++ show val ++ " not of type " ++ show op.responseType
             let shrink xs _reset = xs
             let ops' = shrink (reverse (op : ops)) deployment.reset
             throwA (TestFailure (show ops') seed)

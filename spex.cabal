@@ -68,6 +68,7 @@ library
     , http-client
     , http-types
     , optparse-applicative
+    , prettyprinter
     , random
     , template-haskell
     , utf8-string

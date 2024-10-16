@@ -64,10 +64,11 @@ fg # Bring demo application to the foreground.
 
 ### To do
 
-- Health check
-- SUT
 - Coverage-guided fuzzing
+  + reuse generated fields
   + use responses in generation
+  + abstract types, that don't get generated?
+- Health check
 - Shrinking
 - Packaging
   + cabal freeze
@@ -75,6 +76,8 @@ fg # Bring demo application to the foreground.
 - docs: contributing.md
 - remove use of String
 - pretty print
+- use duration rather than numTests?
+- structured logs, returns json object with one error or one test result?
 
 - nice cli
   + https://hackage.haskell.org/package/diagnose-2.5.1/docs/Error-Diagnose.html
@@ -96,3 +99,4 @@ fg # Bring demo application to the foreground.
   + generate prototype from model
 - [ ] Views?
 - [ ] Dog fooding, test itself?
+  + show me all the minimal test cases that lead to each error?
