@@ -15,7 +15,7 @@ data Value
   | StringV Text
   | ArrayV (Vector Value)
   | RecordV (Record Value)
-  deriving Show
+  deriving (Eq, Ord, Show)
 
 displayValue :: Value -> String
 displayValue UnitV         = "()"
@@ -23,4 +23,4 @@ displayValue (BoolV b)     = show b
 displayValue (IntV i)      = show i
 displayValue (StringV t)   = Text.unpack t
 displayValue (ArrayV vs)   = displayArray displayValue vs
-displayValue (RecordV fvs) = displayRecord displayValue fvs
+displayValue (RecordV fvs) = displayRecord displayValue " = " fvs

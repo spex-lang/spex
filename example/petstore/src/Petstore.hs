@@ -35,15 +35,12 @@ server store = getPet :<|> addPet :<|> health :<|> reset
     getPet :: Int -> Handler Pet
     getPet pid = do
       pets <- liftIO (readIORef store)
-      liftIO (putStrLn ("getPet " ++ show pid))
       case find (\pet -> petId pet == pid) pets of
         Nothing  -> throwError err404
         Just pet -> return pet
 
     addPet :: Pet -> Handler ()
-    addPet pet = liftIO $ do
-      putStrLn ("addPet: " ++ show pet)
-      modifyIORef store (pet :)
+    addPet pet = liftIO (modifyIORef store (pet :))
 
     health :: Handler ()
     health = return ()

@@ -3,7 +3,6 @@ module Spex.Syntax.Operation where
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Char8 as BS8
 import Data.List (intersperse)
-import Data.Maybe (fromMaybe)
 import Data.String (IsString)
 
 import Spex.Syntax.Type
@@ -18,7 +17,7 @@ data OpF a = Op
   , body         :: Maybe a
   , responseType :: Type
   }
-  deriving Show
+  deriving (Show, Functor, Foldable, Traversable)
 
 newtype OpId = OpId ByteString
   deriving (Show, IsString)
@@ -34,11 +33,11 @@ data PathSegment a = Path ByteString | Hole ByteString a
   deriving (Show, Functor, Foldable, Traversable)
 
 displayOp :: (a -> String) -> OpF a -> String
-displayOp d op = concat
+displayOp d op = concat $
   [ displayOpId op.id, " : ", displayMethod op.method, " "
-  , displayPath d op.path, " ", fromMaybe "" (fmap d op.body)
-  , " -> ", displayType op.responseType
-  ]
+  , displayPath d op.path, maybe "" (" " <>) (fmap d op.body)
+  ] ++ if op.responseType == UnitT then [] else
+  [  " -> ", displayType op.responseType ]
 
 displayPath :: (a -> String) -> [PathSegment a] -> String
 displayPath d = concat . intersperse "/" . map (displayPathSegment . fmap d)

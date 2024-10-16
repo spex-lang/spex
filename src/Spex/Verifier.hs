@@ -50,21 +50,24 @@ verify spec deployment = do
     go :: Word -> [Op] -> Int -> Prng -> HttpClient -> Word -> App Result
     go 0 _ops _seed _prng _client n4xx = return (Result [] n4xx Map.empty)
     go n  ops  seed  prng  client n4xx = do
-      let (op, prng') = generate spec prng
+      (op, prng', env') <- generate spec prng
       debug (displayOp displayValue op)
       resp <- httpRequest client op
       case resp of
         Ok2xx body -> do
           val <- pure (decode body) <?> HttpClientDecodeError op body
-          let ok = typeCheck val op.responseType
+          let ok = typeCheck spec.component.typeDecls val op.responseType
           if ok
-          then go (n - 1) (op : ops) seed prng' client n4xx
+          then local (\e -> e { genEnv = env' }) $
+                 go (n - 1) (op : ops) seed prng' client n4xx
           else do
             info $ "Typechecking failed, val: " ++ show val ++ " not of type " ++ show op.responseType
             let shrink xs _reset = xs
             let ops' = shrink (reverse (op : ops)) deployment.reset
             throwA (TestFailure (show ops') seed)
-        ClientError4xx -> go (n - 1) ops seed prng' client (n4xx + 1)
+        ClientError4xx ->
+          local (\e -> e { genEnv = env' }) $
+            go (n - 1) ops seed prng' client (n4xx + 1)
         ServerError5xx -> do
           let shrink xs _reset = xs
           let ops' = shrink (reverse (op : ops)) deployment.reset

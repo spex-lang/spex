@@ -19,7 +19,9 @@ data Type
   | ArrayT (Vector Type)
   | RecordT (Record Type)
   | UserT TypeId
-  deriving Show
+  | AbstractT Type
+  | UniqueT Type
+  deriving (Eq, Ord, Show)
 
 newtype TypeId = TypeId ByteString
   deriving (Eq, Ord, Show, IsString)
@@ -37,13 +39,15 @@ displayMethod Get  = "GET"
 displayMethod Post = "POST"
 
 displayType :: Type -> String
-displayType UnitT       = "Unit"
-displayType BoolT       = "Bool"
-displayType StringT     = "String"
-displayType IntT        = "Int"
-displayType (ArrayT a)  = displayArray displayType a
-displayType (RecordT r) = displayRecord displayType r
-displayType (UserT tid) = displayTypeId tid
+displayType UnitT          = "Unit"
+displayType BoolT          = "Bool"
+displayType StringT        = "String"
+displayType IntT           = "Int"
+displayType (ArrayT a)     = displayArray displayType a
+displayType (RecordT ftys) = displayRecord displayType " : " ftys
+displayType (UserT tid)    = displayTypeId tid
+displayType (AbstractT ty) = "@" <> displayType ty
+displayType (UniqueT ty)   = "!" <> displayType ty
 
 displayTypeId :: TypeId -> String
 displayTypeId (TypeId bs) = BS8.unpack bs
@@ -52,11 +56,11 @@ displayArray :: (a -> String) -> Vector a -> String
 displayArray d xs =
   "[" <> concat (intersperse ", " (Vector.toList (fmap d xs))) <> "]"
 
-displayRecord :: (a -> String) -> Record a -> String
-displayRecord d r =
+displayRecord :: (a -> String) -> String -> Record a -> String
+displayRecord d sep r =
   "{" <> concat (intersperse ", " (map go (Map.toList r))) <> "}"
   where
-    go (f, x) = displayField f <> " : " <> d x
+    go (f, x) = displayField f <> sep <> d x
 
 displayField :: Field -> String
 displayField (Field bs) = BS8.unpack bs

@@ -88,6 +88,15 @@ opDeclP = do
   respTy <- responseTypeP
   return (Op x m p b respTy)
 
+modalTypeP :: Parser Type
+modalTypeP = abstractTypeP <|> uniqueTypeP <|> typeP
+  where
+    abstractTypeP = AbstractT <$ $(symbol "@") <*> typeP'
+    uniqueTypeP   = UniqueT   <$ $(symbol "!") <*> typeP'
+
+modalTypeP' :: Parser Type
+modalTypeP' = modalTypeP `cut` ["type"]
+
 typeP :: Parser Type
 typeP = baseTypeP <|> recordDeclP <|> userTypeP
   where
@@ -100,7 +109,7 @@ typeP = baseTypeP <|> recordDeclP <|> userTypeP
     userTypeP = UserT <$> (TypeId <$> bident)
 
 typeP' :: Parser Type
-typeP' = typeP `cut` [Lit "type"]
+typeP' = typeP `cut` ["type"]
 
 recordDeclP :: Parser Type
 recordDeclP = do
@@ -117,7 +126,7 @@ bodyDeclP :: Parser (Maybe Type)
 bodyDeclP = withOption bodyP (return . Just) (return Nothing)
   where
     bodyP :: Parser Type
-    bodyP = typeP
+    bodyP = modalTypeP
 
 pathSegmentsP :: Parser [PathSegment Type]
 pathSegmentsP = do
@@ -135,7 +144,7 @@ pathSegmentP = pathP <|> holeP
     holeP = insideBraces $ do
       x <- ident'
       $(symbol' ":")
-      ty <- typeP
+      ty <- modalTypeP'
       return (Hole x ty)
 
 responseTypeP :: Parser Type
@@ -250,8 +259,8 @@ p1 :: String
 p1 = unlines [
   "component Foo where",
   "",
-  "addPet : POST /pet Pet",
-  "getPet : GET /pet/{petId : Int} -> Pet",
+  "addPet : POST /pet !Pet",
+  "getPet : GET /pet/{petId : @Int} -> Pet",
   "",
   "type Pet = { petId : Int, petName : String }"
   ]

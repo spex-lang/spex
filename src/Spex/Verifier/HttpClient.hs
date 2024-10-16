@@ -36,7 +36,6 @@ newHttpClient (Deployment (HostPort host port) _health _reset) = do
     , ("Content-type", "application/json")
     ]}
 
-
 data Response
   = Ok2xx ByteString
   | ClientError4xx
@@ -49,13 +48,13 @@ httpRequest client op = do
               , Http.path        = toHttpPath op.path
               , Http.requestBody = toHttpBody op.body
               }
-  debug $ "httpRequest, req: " <> show req
+  trace $ "httpRequest, req: " <> show req
   case op.body of
     Nothing    -> return ()
-    Just body -> debug $ "httpRequest, body: " <> LBS8.unpack (encode body)
+    Just body -> trace $ "httpRequest, body: " <> LBS8.unpack (encode body)
   resp <- liftIO (try (Http.httpLbs req client.manager))
             <?> HttpClientException op
-  debug $ "httpRequest, resp: " <> show resp
+  trace $ "httpRequest, resp: " <> show resp
   let status = Http.responseStatus resp
   if | Http.statusIsSuccessful status -> do
          let body = LBS.toStrict (Http.responseBody resp)

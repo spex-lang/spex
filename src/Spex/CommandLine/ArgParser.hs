@@ -18,9 +18,11 @@ data CmdLineArgs = CmdLineArgs
   , reset          :: String
   , numTests       :: Maybe Word
   , seed           :: Maybe Int
-  , logging        :: Either Bool Bool
+  , logging        :: Logging
   , nonInteractive :: Bool
   }
+
+data Logging = Quiet Bool | Verbose Bool | VeryVerbose Bool
 
 parseCmdLineArgs :: IO CmdLineArgs
 parseCmdLineArgs = execParser opts
@@ -75,11 +77,15 @@ cmdLineArgs = CmdLineArgs
         <> help "Seed for pseudo-random number generator"
         <> metavar "INT"
         ))
-  <*> (fmap Left (switch
+  <*> (fmap Verbose (switch
         (  long "verbose"
         <> help "Enable more verbose logging"
         )) <|>
-       fmap Right (switch
+       fmap VeryVerbose (switch
+        (  long "very-verbose"
+        <> help "Enable even more verbose logging"
+        )) <|>
+       fmap Quiet (switch
         (  long "quiet"
         <> help "Enable more quiet logging"
         )))

@@ -68,6 +68,7 @@ fg # Bring demo application to the foreground.
   + reuse generated fields
   + use responses in generation
   + abstract types, that don't get generated?
+  + unique types, always get generated?
 - Health check
 - Shrinking
 - Packaging

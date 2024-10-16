@@ -14,7 +14,11 @@ import Control.Monad.Trans.Reader hiding (asks)
 import qualified Control.Monad.Trans.Reader as Reader
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Char8 as BS8
+import Data.Map (Map)
+import qualified Data.Map as Map
 import Data.Maybe
+import Data.Set (Set)
+import qualified Data.Set as Set
 import Network.HTTP.Client (HttpException(..), HttpExceptionContent(..))
 import qualified Network.HTTP.Client as Http
 
@@ -22,6 +26,7 @@ import Spex.CommandLine.Ansi
 import Spex.CommandLine.ArgParser
 import Spex.Syntax
 import Spex.Syntax.Operation
+import Spex.Syntax.Type
 import Spex.Syntax.Value
 
 ------------------------------------------------------------------------
@@ -35,6 +40,9 @@ runApp appEnv = runExceptT . flip runReaderT appEnv . unApp
 asks :: (AppEnv -> a) -> App a
 asks f = App (Reader.asks f)
 
+local :: (AppEnv -> AppEnv) -> App a -> App a
+local f (App m) = App (Reader.local f m)
+
 ------------------------------------------------------------------------
 
 data AppEnv = AppEnv
@@ -43,7 +51,13 @@ data AppEnv = AppEnv
   , numTests   :: Word
   , mSeed      :: Maybe Int
   , logger     :: Logger
+  , genEnv     :: GenEnv
   }
+
+type GenEnv = Map (Either Field Type) (Set Value)
+
+emptyGenEnv :: GenEnv
+emptyGenEnv = Map.empty
 
 newAppEnv :: CmdLineArgs -> IO AppEnv
 newAppEnv args = do
@@ -52,9 +66,10 @@ newAppEnv args = do
   let logger' | not hasAnsi || args.nonInteractive = noAnsiLogger
               | otherwise = ansiLogger
       logger'' = case args.logging of
-                   Left True  -> verboseLogger logger'
-                   Right True -> quietLogger logger'
-                   _otherwise -> logger'
+                   Verbose     True -> verboseLogger logger'
+                   VeryVerbose True -> veryVerboseLogger logger'
+                   Quiet       True -> quietLogger logger'
+                   _otherwise       -> logger'
 
   return AppEnv
     { specFile   = args.specFilePath
@@ -63,12 +78,14 @@ newAppEnv args = do
     , numTests   = fromMaybe 100 args.numTests
     , mSeed      = args.seed
     , logger     = logger''
+    , genEnv     = emptyGenEnv
     }
 
 data Logger = Logger
   { loggerInfo  :: String -> IO ()
   , loggerError :: String -> IO ()
   , loggerDebug :: String -> IO ()
+  , loggerTrace :: String -> IO ()
   }
 
 noAnsiLogger :: Logger
@@ -76,6 +93,7 @@ noAnsiLogger = Logger
   { loggerInfo  = putStrLn . ("i " ++)
   , loggerError = putStrLn . ("Error: " ++ )
   , loggerDebug = \_s -> return ()
+  , loggerTrace = \_s -> return ()
   }
 
 ansiLogger :: Logger
@@ -83,6 +101,7 @@ ansiLogger = Logger
   { loggerInfo  = putStrLn . (cyan "i " ++)
   , loggerError = putStrLn . (boldRed "Error: " ++ )
   , loggerDebug = \_s -> return ()
+  , loggerTrace = \_s -> return ()
   }
 
 quietLogger :: Logger -> Logger
@@ -90,6 +109,10 @@ quietLogger l = l { loggerInfo = const (return ()) }
 
 verboseLogger :: Logger -> Logger
 verboseLogger l =  l { loggerDebug = putStrLn . (faint "d " ++) }
+
+veryVerboseLogger :: Logger -> Logger
+veryVerboseLogger l = (verboseLogger l)
+  { loggerTrace = putStrLn . (faint "t " ++) }
 
 info :: String -> App ()
 info s = do
@@ -105,6 +128,11 @@ debug :: String -> App ()
 debug s = do
   l <- asks logger
   liftIO (l.loggerDebug s)
+
+trace :: String -> App ()
+trace s = do
+  l <- asks logger
+  liftIO (l.loggerTrace s)
 
 ------------------------------------------------------------------------
 
