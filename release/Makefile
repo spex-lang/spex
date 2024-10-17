@@ -20,6 +20,7 @@ bin/spex.upx: bin/spex
 	upx --best -q bin/spex -o bin/spex.upx
 
 clean:
-	rm bin/spex
+	rm -f bin/spex
+	rm -f bin/spex.upx
 
-.PHONY: all build-image clean compress-binary
+.PHONY: all build-image clean
