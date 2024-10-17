@@ -14,7 +14,7 @@ fg # Bring demo application to the foreground.
 ^C # Stop the demo application with ctrl-c.
 ```
 
-## Feature wish list
+## Feature list
 
 * Concise specification language for HTTP services, e.g.:
 
@@ -31,9 +31,22 @@ fg # Bring demo application to the foreground.
   ```
 
 * Ability to test specification against a deployment, without
-  providing a model. Keep track of responses and try to use them
-  during generation and use coverage-guidance (endpoint coverage,
+  providing a model. 
+
+* Keep track of previously generated values and sometimes try to use them
+  during generation of new tests. For example, without this ability the
+  `getPet` requests would all most certainly return 404.
+
+* Ability to annotate inputs with @ and !...
+
+## Feature wish list
+
+* Keep track of previous responses and try to use them during generation 
+
+* Coverage statistics and use coverage-guidance (endpoint coverage,
   but also check coverage of the range of values from responses.)
+
+* User provided coverage and minimal test cases
 
 * Time-traveling debugger for fail test cases
 
@@ -62,23 +75,22 @@ fg # Bring demo application to the foreground.
 
 ## Contributing
 
-### To do
+### Short term
 
-- Coverage-guided fuzzing
-  + reuse generated fields
-  + use responses in generation
-  + abstract types, that don't get generated?
-  + unique types, always get generated?
 - Health check
 - Shrinking
 - Packaging
-  + cabal freeze
-  + static binary?
+- use duration rather than numTests?
 - docs: contributing.md
+
+### Refactor
+
 - remove use of String
 - pretty print
-- use duration rather than numTests?
 - structured logs, returns json object with one error or one test result?
+- move Prng to AppEnv?
+
+### Longer term
 
 - nice cli
   + https://hackage.haskell.org/package/diagnose-2.5.1/docs/Error-Diagnose.html
@@ -91,11 +103,11 @@ fg # Bring demo application to the foreground.
   + version
   + visualise
   + docs
+  + fmt
 - [ ] Import/export: OpenAPI, protobuf, modules/headers, ...?
 - [ ] Visualise
   + Actants and c4 model?
 - [ ] REPL, generate data with tab complete
-- [ ] Pretty print aka fmt
 - [ ] Models?
   + generate prototype from model
 - [ ] Views?

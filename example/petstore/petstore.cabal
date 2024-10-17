@@ -21,7 +21,7 @@ library
   exposed-modules:  Petstore
   build-depends:
     , aeson
-    , base            ^>=4.20.0.0
+    , base            
     , servant
     , servant-server
     , warp

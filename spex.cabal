@@ -17,7 +17,7 @@ extra-doc-files:
   example/*.spex
   README.md
 
-tested-with:     GHC ==9.10.1
+tested-with:     GHC ==9.6.6
 
 common warnings
   ghc-options:
@@ -28,7 +28,7 @@ common warnings
     -Wno-prepositive-qualified-module -Wno-implicit-prelude
     -Wno-missing-export-lists -Wno-missing-safe-haskell-mode
     -Wno-missing-deriving-strategies -Wno-missing-kind-signatures
-    -Wno-missing-role-annotations -Wno-implicit-lift
+    -Wno-implicit-lift
 
 library
   import:             warnings
@@ -77,7 +77,7 @@ library
   -- GHC boot library dependencies:
   -- (https://gitlab.haskell.org/ghc/ghc/-/blob/master/packages)
   build-depends:
-    , base          ^>=4.20.0.0
+    , base          ^>=4.18.2.0
     , bytestring
     , containers
     , text

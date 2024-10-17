@@ -6,7 +6,7 @@ import Control.Monad
 import Control.Monad.Trans.Class
 import Control.Monad.Trans.Reader
 import Data.Foldable (toList)
-import Data.List (find)
+import Data.List (find, foldl')
 import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Set (Set)
