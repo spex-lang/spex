@@ -129,6 +129,11 @@ debug s = do
   l <- asks logger
   liftIO (l.loggerDebug s)
 
+debug_ :: String -> App ()
+debug_ s = do
+  l <- asks logger
+  liftIO (l.loggerDebug ("\b\b  " ++ s))
+
 trace :: String -> App ()
 trace s = do
   l <- asks logger

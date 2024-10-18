@@ -11,8 +11,7 @@ import Paths_spex (version)
 ------------------------------------------------------------------------
 
 data CmdLineArgs = CmdLineArgs
-  { specFilePath   :: FilePath
-  , host           :: String
+  { host           :: String
   , port           :: Int
   , health         :: String
   , reset          :: String
@@ -20,6 +19,7 @@ data CmdLineArgs = CmdLineArgs
   , seed           :: Maybe Int
   , logging        :: Logging
   , nonInteractive :: Bool
+  , specFilePath   :: FilePath
   }
 
 data Logging = Quiet Bool | Verbose Bool | VeryVerbose Bool
@@ -37,12 +37,6 @@ parseCmdLineArgs = execParser opts
 cmdLineArgs :: Parser CmdLineArgs
 cmdLineArgs = CmdLineArgs
   <$> strOption
-        (  long "file"
-        <> short 'f'
-        <> metavar "FILE"
-        <> help "Input file"
-        )
-  <*> strOption
         (  long "host"
         <> metavar "URL"
         <> help "Host"
@@ -93,4 +87,9 @@ cmdLineArgs = CmdLineArgs
         (  long "non-interactive"
         <> help "Disable fancy logging"
         )
+  <*> strArgument
+        (  metavar "FILE"
+        <> help "Input file"
+        )
+
 

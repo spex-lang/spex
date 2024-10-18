@@ -20,7 +20,7 @@ data OpF a = Op
   deriving (Show, Functor, Foldable, Traversable)
 
 newtype OpId = OpId ByteString
-  deriving (Show, IsString)
+  deriving (Eq, Ord, Show, IsString)
 
 displayOpId :: OpId -> String
 displayOpId (OpId bs) = BS8.unpack bs

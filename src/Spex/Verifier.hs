@@ -18,9 +18,11 @@ import Spex.Verifier.HttpClient
 data Result = Result
   { failingTests :: [FailingTest] -- XXX: Set?
   , clientErrors :: Word
-  , coverage     :: Map OpId Word
+  , coverage     :: Coverage
   }
   deriving Show
+
+type Coverage = Map OpId Word
 
 data FailingTest = FailingTest
   { test :: [Op]
@@ -45,12 +47,15 @@ verify spec deployment = do
   mSeed <- asks mSeed
   (prng, seed) <- liftIO (newPrng mSeed)
   client <- newHttpClient deployment
-  go numTests [] seed prng client 0
+  go numTests [] seed prng client 0 Map.empty
   where
-    go :: Word -> [Op] -> Int -> Prng -> HttpClient -> Word -> App Result
-    go 0 _ops _seed _prng _client n4xx = return (Result [] n4xx Map.empty)
-    go n  ops  seed  prng  client n4xx = do
+    go :: Word -> [Op] -> Int -> Prng -> HttpClient -> Word -> Coverage -> App Result
+    go 0 _ops _seed _prng _client n4xx cov = do
+      debug_ ""
+      return (Result [] n4xx cov)
+    go n  ops  seed  prng  client n4xx cov = do
       (op, prng', env') <- generate spec prng
+      let cov' = Map.insertWith (+) op.id 1 cov
       debug (displayOp displayValue op)
       resp <- httpRequest client op
       case resp of
@@ -59,7 +64,7 @@ verify spec deployment = do
           let ok = typeCheck spec.component.typeDecls val op.responseType
           if ok
           then local (\e -> e { genEnv = env' }) $
-                 go (n - 1) (op : ops) seed prng' client n4xx
+                 go (n - 1) (op : ops) seed prng' client n4xx cov'
           else do
             info $ "Typechecking failed, val: " ++ show val ++ " not of type " ++ show op.responseType
             let shrink xs _reset = xs
@@ -67,7 +72,7 @@ verify spec deployment = do
             throwA (TestFailure (show ops') seed)
         ClientError4xx ->
           local (\e -> e { genEnv = env' }) $
-            go (n - 1) ops seed prng' client (n4xx + 1)
+            go (n - 1) ops seed prng' client (n4xx + 1) cov'
         ServerError5xx -> do
           let shrink xs _reset = xs
           let ops' = shrink (reverse (op : ops)) deployment.reset
