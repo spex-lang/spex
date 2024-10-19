@@ -7,14 +7,32 @@ Spex is a programming language for working with specifications.
 
 ## Installation
 
+### From source
+
+#### With Nix
+
+Install the [Nix](https://nixos.org/download/) package manager and then do:
+
 ```bash
 git clone https://github.com/spex-lang/spex.git
 cd spex
 nix-shell
-cabal run petstore & # Start demo application in the background.
-cabal run spex -- --file example/petstore.spex
-fg # Bring demo application to the foreground.
-^C # Stop the demo application with ctrl-c.
+cabal build all
+cabal install spex spex-demo-petstore
+```
+
+#### Without Nix
+
+Install [`ghcup`](https://www.haskell.org/ghcup/install/), the
+[Haskell](https://www.haskell.org/) installer, and then do:
+
+```bash
+git clone https://github.com/spex-lang/spex.git
+cd spex
+ghcup install cabal 3.12.1.0 --set
+ghcup install ghc 9.6.6 --set
+cabal build all
+cabal install spex spex-demo-petstore
 ```
 
 ## Features
@@ -45,6 +63,8 @@ fg # Bring demo application to the foreground.
   <summary>Example</summary>
 
   ```bash
+  $ spex-demo-petstore &
+  $ PID_PETSTORE=$!
   $ spex example/petstore-basic.spex
 
   i Verifying the deployment:    http://localhost:8080
@@ -61,6 +81,8 @@ fg # Bring demo application to the foreground.
     failing tests: []
     client errors: 53
     coverage:      fromList [(OpId "addPet",44),(OpId "getPet",56)]
+  $ kill ${PID_PETSTORE}
+  [1]+  Terminated              spex-demo-petstore
   ```
 
   </details>
@@ -106,6 +128,29 @@ fg # Bring demo application to the foreground.
   + E.g. show me all the minimal test cases that lead to each error?
 
 - [ ] Formatting of specs
+  <details>
+
+  <summary>Example</summary>
+
+  ```bash
+  $ cat example/petstore-badly-formatted.spex
+  component PetStore
+    where
+  
+  addPet     : POST   
+    /pet Pet
+
+  getPet :GET /pet/{ petId  : 
+    Int} ->
+    Pet
+  $ spex fmt example/petstore-badly-formatted.spex
+  component PetStore where
+  
+  addPet : POST /pet Pet
+  getPet : GET /pet/{petId : Int} -> Pet
+  ```
+
+  </details>
 
 - [ ] Don't stop if error is found
 
@@ -173,11 +218,14 @@ Here's what I'm currently working on:
 - use duration rather than numTests?
 - print progress while testing
 - docs: contributing.md
+- docs: document syntax?
 - Packaging
   + ci release job
   + install script?
+    * https://raw.githubusercontent.com/haskell/ghcup-hs/refs/heads/master/scripts/bootstrap/bootstrap-haskell
   + changelog generator (semantic commit messages)
   + commit hook for conventional commits?
+- https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-and-highlighting-code-blocks#syntax-highlighting
 
 ### Bugs
 

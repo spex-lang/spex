@@ -1,6 +1,6 @@
 all: bin/spex
 
-bin/spex: build-image
+bin/spex bin/spex-demo-petstore: build-image
 	mkdir -p "cache/cabal-cache-musl" \
 		 "cache/cabal-store-musl" \
 		 "cache/dist-newstyle-musl"
@@ -12,6 +12,7 @@ bin/spex: build-image
 		muslghc
 	mkdir -p bin
 	cp "$(shell cabal list-bin spex)" bin
+	cp "$(shell cabal list-bin petstore)" bin
 
 build-image: Dockerfile
 	docker build --tag muslghc .
@@ -22,5 +23,6 @@ bin/spex.upx: bin/spex
 clean:
 	rm -f bin/spex
 	rm -f bin/spex.upx
+	rm -f bin/spex-demo-petstore
 
 .PHONY: all build-image clean

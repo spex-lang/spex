@@ -37,7 +37,7 @@ RUN curl --fail --output /bin/ghcup \
 
 ENV PATH="/usr/local/.ghcup/bin:$PATH"
 
-RUN ghcup install cabal 3.12.1.0
+RUN ghcup install cabal 3.12.1.0 --set
 RUN ghcup install ghc 9.6.6 --set
 
 ENTRYPOINT [ "/mnt/release/entrypoint.sh" ]
