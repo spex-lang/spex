@@ -61,6 +61,7 @@ verify spec deployment = do
       case resp of
         Ok2xx body -> do
           val <- pure (decode body) <?> HttpClientDecodeError op body
+          debug_ $ "  ↳ 2xx " <> displayValue val
           let ok = typeCheck spec.component.typeDecls val op.responseType
           if ok
           then local (\e -> e { genEnv = env' }) $
@@ -70,7 +71,8 @@ verify spec deployment = do
             let shrink xs _reset = xs
             let ops' = shrink (reverse (op : ops)) deployment.reset
             throwA (TestFailure (show ops') seed)
-        ClientError4xx ->
+        ClientError4xx -> do
+          debug_ $ "  ↳ 4xx"
           local (\e -> e { genEnv = env' }) $
             go (n - 1) ops seed prng' client (n4xx + 1) cov'
         ServerError5xx -> do

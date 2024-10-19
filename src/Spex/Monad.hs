@@ -119,6 +119,11 @@ info s = do
   l <- asks logger
   liftIO (l.loggerInfo s)
 
+info_ :: String -> App ()
+info_ s = do
+  l <- asks logger
+  liftIO (l.loggerInfo ("\b\b  " ++ s))
+
 logError :: String -> App ()
 logError s = do
   l <- asks logger

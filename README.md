@@ -19,9 +19,11 @@ fg # Bring demo application to the foreground.
 
 ## Feature list
 
-* Concise specification language for HTTP services, e.g.:
-
+* Concise specification language for HTTP services
+  <details>
+  <summary>Example</summary>
   ```
+  $ cat example/petstore-basic.spex
   component PetStore where
 
   addPet : POST /pet Pet
@@ -32,9 +34,30 @@ fg # Bring demo application to the foreground.
     , petName : String
     }
   ```
+  </details>
 
-* Ability to test specification against a deployment, without
-  providing a model. 
+* Ability to test specification against a deployment
+  <details>
+  <summary>Example</summary>
+  ```bash
+  $ spex example/petstore-basic.spex
+
+  i Verifying the deployment:    http://localhost:8080
+    against the specification:   example/petstore-basic.spex
+  
+  i Parsing the specification.
+  
+  i Waiting for health check to pass.
+  
+  i Starting to run tests.
+  
+  i All tests passed, here are the results:
+  
+    failing tests: []
+    client errors: 53
+    coverage:      fromList [(OpId "addPet",44),(OpId "getPet",56)]
+  ```
+  </details>
 
 * Keep track of previously generated values and sometimes try to use them
   during generation of new tests. For example, without this ability the
@@ -42,16 +65,24 @@ fg # Bring demo application to the foreground.
 
 * Ability to annotate input types with abstract and unique modalities (@ and
   !), e.g.:
+  <details>
+  <summary>Example</summary>
+  ```diff
+  $ diff -u example/petstore-basic.spex example/petstore-modal.spex
+  - addPet : POST /pet Pet
+  - getPet : GET /pet/{petId : Int} -> Pet
+  + addPet : POST /pet !Pet
+  + getPet : GET /pet/{petId : @Int} -> Pet
+  ```
+  </details>
 
-  ```
-  addPet : POST /pet !Pet
-  getPet : GET /pet/{petId : @Int} -> Pet
-  ```
   Where an abstract type isn't generated, i.e. gets reused, and a unique type
   is always generated and never reused. Without any annotation a coin is
   flipped and the value either gets reused or generated.
 
-## Feature wish list
+## Feature wish list for first release
+
+* Keep track of previous responses and try to use them during generation 
 
 * Nice CLI and errors
   + https://elm-lang.org/news/compiler-errors-for-humans
@@ -59,8 +90,6 @@ fg # Bring demo application to the foreground.
   + https://medium.com/designing-atlassian/10-design-principles-for-delightful-clis-522f363bac87
   + https://github.com/charmbracelet/bubbletea
   + https://gleam.run/
-
-* Keep track of previous responses and try to use them during generation 
 
 * Coverage statistics and use coverage-guidance (endpoint coverage,
   but also check coverage of the range of values from responses.)
@@ -71,6 +100,16 @@ fg # Bring demo application to the foreground.
   + E.g. show me all the minimal test cases that lead to each error?
 
 * Formatting of specs
+
+* Don't stop if error is found
+
+* Only presents new errors?
+
+## Feature wish list for later releases
+
+* Ability to import/export OpenAPI (and later protobuf)
+
+* Editor support
 
 * Optional models?
 
@@ -83,8 +122,6 @@ fg # Bring demo application to the foreground.
 * Lint the spec, e.g. can all commands be reached? Or does some
   command have a parameter which no other command returns and we
   cannot generate using the built-in types?
-
-* Ability to import/export OpenAPI (and later protobuf)
 
 * Refinement types, e.g. `/pet/{petId : Int | petId > 0}` and ability to generate
   validation logic from them
@@ -124,18 +161,13 @@ Here's what I'm currently working on:
 
 ### Features
 
-- add basic coverage
-- reuse responses
-- don't stop if error is found
 - Health check
-- Shrinking
 - use duration rather than numTests?
 - docs: contributing.md
 - Packaging
   + ci release job
   + install script?
   + changelog generator (semantic commit messages)
-- editor support?
 
 ### Bugs
 

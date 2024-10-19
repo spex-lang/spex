@@ -27,6 +27,7 @@ app :: App ()
 app = do
   deploy   <- asks deployment
   specFile <- asks specFile
+  info_ ""
   info $ "Verifying the deployment:    " <> displayDeployment deploy <> "\n" <>
          "  against the specification:   " <> specFile <> "\n"--  <> BS.unpack spec.component.id
   bs <- liftIO (try (BS.readFile specFile)) <?> ReadSpecFileError
