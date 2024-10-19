@@ -41,7 +41,9 @@ fg # Bring demo application to the foreground.
 
 * Ability to test specification against a deployment
   <details>
+
   <summary>Example</summary>
+
   ```bash
   $ spex example/petstore-basic.spex
 
@@ -60,6 +62,7 @@ fg # Bring demo application to the foreground.
     client errors: 53
     coverage:      fromList [(OpId "addPet",44),(OpId "getPet",56)]
   ```
+
   </details>
 
 * Keep track of previously generated values and sometimes try to use them
@@ -69,14 +72,16 @@ fg # Bring demo application to the foreground.
 * Ability to annotate input types with abstract and unique modalities (@ and
   !), e.g.:
   <details>
+
   <summary>Example</summary>
-```diff
+
+  ```diff
   $ diff -u example/petstore-basic.spex example/petstore-modal.spex
   - addPet : POST /pet Pet
   - getPet : GET /pet/{petId : Int} -> Pet
   + addPet : POST /pet !Pet
   + getPet : GET /pet/{petId : @Int} -> Pet
-```
+  ```
   </details>
 
   Where an abstract type isn't generated, i.e. gets reused, and a unique type
