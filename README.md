@@ -21,7 +21,9 @@ fg # Bring demo application to the foreground.
 
 * Concise specification language for HTTP services
 <details>
+
 <summary>Example</summary>
+
 ```
 $ cat example/petstore-basic.spex
 component PetStore where
@@ -34,6 +36,7 @@ type Pet =
   , petName : String
   }
 ```
+
 </details>
 
 * Ability to test specification against a deployment
