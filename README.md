@@ -67,13 +67,13 @@ fg # Bring demo application to the foreground.
   !), e.g.:
   <details>
   <summary>Example</summary>
-  ```diff
+```diff
   $ diff -u example/petstore-basic.spex example/petstore-modal.spex
   - addPet : POST /pet Pet
   - getPet : GET /pet/{petId : Int} -> Pet
   + addPet : POST /pet !Pet
   + getPet : GET /pet/{petId : @Int} -> Pet
-  ```
+```
   </details>
 
   Where an abstract type isn't generated, i.e. gets reused, and a unique type
@@ -168,6 +168,7 @@ Here's what I'm currently working on:
   + ci release job
   + install script?
   + changelog generator (semantic commit messages)
+  + commit hook for conventional commits?
 
 ### Bugs
 
