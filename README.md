@@ -5,7 +5,7 @@ Spex is a programming language for working with specifications.
 > [!CAUTION]
 > Spex is pre-alpha and not suitable for general use yet.
 
-## Quick start
+## Installation
 
 ```bash
 git clone https://github.com/spex-lang/spex.git
@@ -17,9 +17,9 @@ fg # Bring demo application to the foreground.
 ^C # Stop the demo application with ctrl-c.
 ```
 
-## Feature list
+## Features
 
-* Concise specification language for HTTP services
+- [x] Concise specification language for HTTP services
   <details>
   
   <summary>Example</summary>
@@ -39,7 +39,7 @@ fg # Bring demo application to the foreground.
   
   </details>
 
-* Ability to test specification against a deployment
+- [x] Ability to test specification against a deployment
   <details>
 
   <summary>Example</summary>
@@ -65,11 +65,11 @@ fg # Bring demo application to the foreground.
 
   </details>
 
-* Keep track of previously generated values and sometimes try to use them
+- [x] Keep track of previously generated values and sometimes try to use them
   during generation of new tests. For example, without this ability the
   `getPet` requests would all most certainly return 404.
 
-* Ability to annotate input types with abstract and unique modalities (@ and
+- [x] Ability to annotate input types with abstract and unique modalities (@ and
   !), e.g.:
   <details>
 
@@ -88,32 +88,32 @@ fg # Bring demo application to the foreground.
   is always generated and never reused. Without any annotation a coin is
   flipped and the value either gets reused or generated.
 
-## Feature wish list for first release
+- [ ] Keep track of previous responses and try to use them during generation 
 
-* Keep track of previous responses and try to use them during generation 
-
-* Nice CLI and errors
+- [ ] Nice CLI and errors
   + https://elm-lang.org/news/compiler-errors-for-humans
   + https://hackage.haskell.org/package/diagnose-2.5.1/docs/Error-Diagnose.html
   + https://medium.com/designing-atlassian/10-design-principles-for-delightful-clis-522f363bac87
   + https://github.com/charmbracelet/bubbletea
   + https://gleam.run/
 
-* Coverage statistics and use coverage-guidance (endpoint coverage,
+- [ ] Coverage statistics and use coverage-guidance (endpoint coverage,
   but also check coverage of the range of values from responses.)
 
-* Shrinking
+- [ ] Shrinking
 
-* User provided coverage and minimal test cases
+- [ ] User provided coverage and minimal test cases
   + E.g. show me all the minimal test cases that lead to each error?
 
-* Formatting of specs
+- [ ] Formatting of specs
 
-* Don't stop if error is found
+- [ ] Don't stop if error is found
 
-* Only presents new errors?
+- [ ] Only presents new errors?
 
-## Feature wish list for later releases
+## Roadmap for future releases
+
+* Support for other content types than `application/json`
 
 * Ability to import/export OpenAPI (and later protobuf)
 
@@ -171,6 +171,7 @@ Here's what I'm currently working on:
 
 - Health check
 - use duration rather than numTests?
+- print progress while testing
 - docs: contributing.md
 - Packaging
   + ci release job
