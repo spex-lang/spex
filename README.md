@@ -20,21 +20,21 @@ fg # Bring demo application to the foreground.
 ## Feature list
 
 * Concise specification language for HTTP services
-  <details>
-  <summary>Example</summary>
-  ```
-  $ cat example/petstore-basic.spex
-  component PetStore where
+<details>
+<summary>Example</summary>
+```
+$ cat example/petstore-basic.spex
+component PetStore where
 
-  addPet : POST /pet Pet
-  getPet : GET /pet/{petId : Int} -> Pet
+addPet : POST /pet Pet
+getPet : GET /pet/{petId : Int} -> Pet
 
-  type Pet =
-    { petId   : Int
-    , petName : String
-    }
-  ```
-  </details>
+type Pet =
+  { petId   : Int
+  , petName : String
+  }
+```
+</details>
 
 * Ability to test specification against a deployment
   <details>
