@@ -21,15 +21,15 @@ static-build: build-image
 		-v "${PWD}/cache/cabal-cache-musl":/root/.cache/cabal \
 		-v "${PWD}/cache/cabal-store-musl":/root/.local/state/cabal/store \
 		-v "${PWD}/cache/dist-newstyle-musl":/mnt/dist-newstyle \
-		ghcr.io/spex-lang/static-build:latest
+		ghcr.io/spex-lang/static-build:9.6.6
 
 build-image: Dockerfile
-	docker build --tag ghcr.io/spex-lang/static-build .
+	docker build --tag ghcr.io/spex-lang/static-build:9.6.6 .
 
 push-image: build-image
 	@echo ${GITHUB_TOKEN} | \
 		docker login ghrc.io --username spex-lang --password-stdin
-	docker push ghcr.io/spex-lang/static-build:latest
+	docker push ghcr.io/spex-lang/static-build:9.6.6
 
 bin/spex.upx: bin/spex
 	upx --best -q bin/spex -o bin/spex.upx

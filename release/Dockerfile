@@ -47,36 +47,54 @@ RUN curl --proto '=https' --tlsv1.2 --silent --show-error --fail \
   && ghcup install cabal $CABAL_VERSION --set \
   && ghcup install ghc $GHC_VERSION --set
 
+# Remove a bunch of stuff that we won't need.
+# See https://stackoverflow.com/questions/4858585/why-is-ghc-so-large-big
+RUN  rm -r /root/.ghcup/cache \
+  && rm -r /root/.ghcup/db \
+  && rm -r /root/.ghcup/hls \
+  && rm -r /root/.ghcup/logs \
+  && rm -r /root/.ghcup/share \
+  && rm -r /root/.ghcup/tmp \
+  && rm -r /root/.ghcup/trash \
+  && rm -r /root/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/bin/ghc-iserv-dyn-ghc-$GHC_VERSION \
+  && rm -r /root/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/bin/ghc-iserv-ghc-$GHC_VERSION \
+  && rm -r /root/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/bin/ghc-iserv-prof-ghc-$GHC_VERSION \
+  && rm -r /root/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/bin/haddock-ghc-$GHC_VERSION \
+  && rm -r /root/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/bin/hp2ps-ghc-$GHC_VERSION \
+  && rm -r /root/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/bin/hpc-ghc-$GHC_VERSION \
+  && rm -r /root/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/bin/hsc2hs-ghc-$GHC_VERSION \
+  && rm -r /root/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/bin/unlit-ghc-$GHC_VERSION \
+  && rm -r /root/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/lib/bin \
+  && rm -r /root/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/lib/html \
+  && rm -r /root/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/lib/latex \
+  && rm -r /root/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/lib/llvm-* \
+  && rm -r /root/.ghcup/ghc/$GHC_VERSION/share \
+  && rm -r /root/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/lib/x86_64-linux-ghc-$GHC_VERSION/ghc-$GHC_VERSION \
+  && rm -r /root/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/lib/x86_64-linux-ghc-$GHC_VERSION/Cabal-* \
+  && find /root/.ghcup/ -name '*.dyn_hi' -delete \
+  && find /root/.ghcup/ -name '*.p_hi' -delete \
+  && find /root/.ghcup/ -name '*_p.a' -delete \
+  && find /root/.ghcup/ -name '*_debug.a' -delete \
+  && find /root/.ghcup/ -name '*._debug_p.a' -delete
+
 FROM docker.io/library/alpine:3.20.3
 
 ARG GHC_VERSION
 ARG CABAL_VERSION
 
-# Copy in the bare minimum possible (I think) from .ghcup (which is massive).
-COPY --from=build \
-  /root/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/lib/x86_64-linux-ghc-$GHC_VERSION/*.so \
-  /root/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/lib/x86_64-linux-ghc-$GHC_VERSION/
-COPY --from=build \
-  /root/.ghcup/bin/cabal /root/.ghcup/bin/cabal
-COPY --from=build \
-  /root/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/bin/ \
-  /root/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/bin/
-COPY --from=build \
-  /root/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/lib/settings \
-  /root/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/lib/settings
-COPY --from=build \
-  /root/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/lib/package.conf.d \
-  /root/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/lib/package.conf.d
+COPY --from=build /root/.ghcup /root/.ghcup
 
-# Install system dependencies for cabal (curl), ghc (gmp and ncurses) and spex
-# (zlib).
+# Install system dependencies for cabal (curl), ghc (gmp and ncurses) and spex.
 RUN apk upgrade --no-cache \
   && apk add --no-cache \
     curl \
+    gcc \
     gmp-dev \
     libffi-dev \
+    musl-dev \
     ncurses-dev \
-    zlib-dev 
+    zlib-dev \
+    zlib-static
 
 ENV PATH="/root/.ghcup/bin:$PATH"
 
