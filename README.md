@@ -1,5 +1,7 @@
 # Spex
 
+![Build status](https://github.com/spex-lang/spex/actions/workflows/main.yaml/badge.svg)
+
 Spex is a programming language for working with specifications.
 
 > [!CAUTION]
@@ -103,12 +105,32 @@ cabal install spex spex-demo-petstore
   - getPet : GET /pet/{petId : Int} -> Pet
   + addPet : POST /pet !Pet
   + getPet : GET /pet/{petId : @Int} -> Pet
+  $ spex example/petstore-modal.spex
+  cabal run spex -- example/petstore-modal.spex
+
+  i Verifying the deployment:    http://localhost:8080
+    against the specification:   example/petstore-modal.spex
+  
+  i Parsing the specification.
+  
+  i Waiting for health check to pass.
+  
+  i Starting to run tests.
+  
+  i All tests passed, here are the results:
+  
+    failing tests: []
+    client errors: 3
+    coverage:      fromList [(OpId "addPet",51),(OpId "getPet",49)]
   ```
-  </details>
+
+  Notice how many fewer 404 errors we get for `getPet` now, because of the
+  abstract (`@`) annotation on `petId`.
 
   Where an abstract type isn't generated, i.e. gets reused, and a unique type
   is always generated and never reused. Without any annotation a coin is
   flipped and the value either gets reused or generated.
+  </details>
 
 - [ ] Keep track of previous responses and try to use them during generation 
 
@@ -178,6 +200,7 @@ cabal install spex spex-demo-petstore
 
 * Refinement types, e.g. `/pet/{petId : Int | petId > 0}` and ability to generate
   validation logic from them
+  - [Refinement Types: A Tutorial](https://arxiv.org/abs/2010.07763v1) (2021)
 
 * Use templating and (Lua?) extensions for doc/code generation from
   spec, a bit similar to how pandoc does it.

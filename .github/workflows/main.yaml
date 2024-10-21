@@ -73,17 +73,27 @@ jobs:
       - name: Build documentation
         run: cabal haddock all
 
-      - name: Create new git tag, if merge to master and .cabal version is bumped
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
-        uses: sol/haskell-autotag@v1
-        id: autotag
+      - name: Build static binary
+        run: |
+          cd release && \
+          docker run \
+            -v "${PWD}/..":/mnt/:ro \
+            -v "~/.cabal/packages":/root/.cache/cabal/packages \
+            -v "~/cabal/store":/root/.local/state/cabal/store \
+            -v "${PWD}/dist-newstyle":/mnt/dist-newstyle \
+            ghcr.io/spex-lang/spex-static-build
 
-      - name: Create tarball
-        run: cabal sdist
+      # - name: Create new git tag, if merge to master and .cabal version is bumped
+      #   if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+      #   uses: sol/haskell-autotag@v1
+      #   id: autotag
 
-      - uses: haskell-actions/hackage-publish@v1.1
-        with:
-          # http://hackage.haskell.org/users/account-management
-          hackageToken: ${{ secrets.HACKAGE_AUTH_TOKEN }}
-          publish: true
-        if: steps.autotag.outputs.created
+      # - name: Create tarball
+      #   run: cabal sdist
+
+      # - uses: haskell-actions/hackage-publish@v1.1
+      #   with:
+      #     # http://hackage.haskell.org/users/account-management
+      #     hackageToken: ${{ secrets.HACKAGE_AUTH_TOKEN }}
+      #     publish: true
+      #   if: steps.autotag.outputs.created
