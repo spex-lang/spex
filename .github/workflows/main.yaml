@@ -81,7 +81,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: spex-lang
+          username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build static binary
@@ -94,8 +94,8 @@ jobs:
             -v "${PWD}/dist-newstyle":/mnt/dist-newstyle \
             ghcr.io/spex-lang/static-build:latest
 
-      # - name: Create new git tag, if merge to master and .cabal version is bumped
-      #   if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+      # - name: Create new git tag, if merge to main and .cabal version is bumped
+      #   if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
       #   uses: sol/haskell-autotag@v1
       #   id: autotag
 
