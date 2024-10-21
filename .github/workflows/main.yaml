@@ -81,7 +81,7 @@ jobs:
           cd release && \
           echo ${{ secrets.CR_PAT }} | \
             docker login ghrc.io --username spex-lang --password-stdin && \
-          docker pull ghcr.io/spex-lang/static-build && \
+          docker pull ghcr.io/spex-lang/static-build@sha256:adc614ba1dc682134485a901661f82e9ce23e0044accb71052e862dfd0b14809 && \
           docker run \
             -v "${PWD}/..":/mnt/:ro \
             -v "~/.cabal/packages":/root/.cache/cabal/packages \
