@@ -106,15 +106,15 @@ jobs:
           password: ${{ secrets.CR_PAT }}
 
       - name: Docker pull
-        run: docker --log-level=debug pull ghcr.io/spex-lang/static-build:latest 
+        run: docker pull ghcr.io/spex-lang/static-build:latest 
 
       - name: Build static binary
         run: |
           cd release && \
           docker run \
             -v "${PWD}/..":/mnt/:ro \
-            -v "~/.cabal/packages":/root/.cache/cabal/packages \
-            -v "~/.cabal/store":/root/.local/state/cabal/store \
+            -v "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
+            -v "${HOME}/.cabal/store":/root/.local/state/cabal/store \
             -v "${PWD}/dist-newstyle":/mnt/dist-newstyle \
             ghcr.io/spex-lang/static-build:latest
 
