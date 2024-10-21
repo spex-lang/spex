@@ -81,13 +81,15 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
+          username: spex-lang
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker pull
+        run: docker pull ghcr.io/spex-lang/static-build:latest 
 
       - name: Build static binary
         run: |
           cd release && \
-          docker pull ghcr.io/spex-lang/static-build:latest && \
           docker run \
             -v "${PWD}/..":/mnt/:ro \
             -v "~/.cabal/packages":/root/.cache/cabal/packages \
