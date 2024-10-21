@@ -26,18 +26,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # - name: Restore cached GHC and cabal
-      #   uses: actions/cache/restore@v4
-      #   id: ghc-cabal-cache
-      #   env:
-      #     key: ${{ runner.os }}-ghc-${{ matrix.ghc-version }}-cabal-${{ matrix.cabal-version }}
-      #   with:
-      #     path: |
-      #       ${HOME}/.cabal/bin/cabal
-      #       ${HOME}/.ghcup/bin/ghc-${{ matrix.ghc-version }}
-      #     key: ${{ env.key }}
-      #     restore-keys: ${{ env.key }}-
-
+      #- name: Restore cached GHC and cabal
+      #  uses: actions/cache/restore@v4
+      #  id: ghc-cabal-cache
+      #  env:
+      #  with:
+      #    path: |
+      #      ${HOME}/.cabal/bin/cabal
+      #      ${HOME}/.ghcup/bin/ghc-${{ matrix.ghc-version }}
+      #    key: ${{ runner.os }}-ghc-${{ matrix.ghc-version }}-cabal-${{ matrix.cabal-version }}
+  
       - name: Set up GHC ${{ matrix.ghc-version }}
         if: steps.ghc-cabal-cache.outputs.cache-hit != 'true'
         uses: haskell-actions/setup@v2
@@ -47,20 +45,20 @@ jobs:
           cabal-version: ${{ matrix.cabal-version }}
           cabal-update: true
 
-      # - name: Save cached GHC and cabal
-      #   uses: actions/cache/save@v4
-      #   if: steps.cache.outputs.ghc-cabal-cache-hit != 'true'
-      #   with:
-      #     path: |
-          #       $HOME/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/lib/x86_64-linux-ghc-$GHC_VERSION/*.so 
-  # /root/.ghcup/bin/cabal 
-  #$HOME/.ghcup/ghc/${{ matrix.ghc-version }}/lib/ghc-${{ matrix.ghc-version }}/bin/ 
-  #$HOME/.ghcup/ghc/${{ matrix.ghc-version }}/lib/ghc-${{ matrix.ghc-version }}/lib/settings
-  #$HOME/.ghcup/ghc/${{ matrix.ghc-version }}/lib/ghc-${{ matrix.ghc-version }}/lib/package.conf.d
+      #- name: Save cached GHC and cabal
+      #  uses: actions/cache/save@v4
+      #  if: steps.cache.outputs.ghc-cabal-cache-hit != 'true'
+      #  with:
+      #    path: |
+      #      $HOME/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/lib/x86_64-linux-ghc-$GHC_VERSION/*.so 
+      #      $HOME/.ghcup/ghc/${{ matrix.ghc-version }}/lib/ghc-${{ matrix.ghc-version }}/bin/ 
+      #      $HOME/.ghcup/ghc/${{ matrix.ghc-version }}/lib/ghc-${{ matrix.ghc-version }}/lib/settings
+      #      $HOME/.ghcup/ghc/${{ matrix.ghc-version }}/lib/ghc-${{ matrix.ghc-version }}/lib/package.conf.d
+      #      ${HOME}/.cabal/bin/cabal
 
-      #       ${HOME}/.cabal/bin/cabal
-      #       ${HOME}/.ghcup/bin/ghc-${{ matrix.ghc-version }}
-      #     key: ${{ steps.ghc-cabal-cache.outputs.cache-primary-key }}
+      #      # /root/.ghcup/bin/cabal 
+      #      # ${HOME}/.ghcup/bin/ghc-${{ matrix.ghc-version }}
+      #  key: ${{ steps.ghc-cabal-cache.outputs.cache-primary-key }}
 
       - name: Configure the build
         run: |

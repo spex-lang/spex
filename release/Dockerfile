@@ -71,7 +71,6 @@ RUN  rm -r /root/.ghcup/cache \
   && rm -r /root/.ghcup/ghc/$GHC_VERSION/share \
   && rm -r /root/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/lib/x86_64-linux-ghc-$GHC_VERSION/ghc-$GHC_VERSION \
   && rm -r /root/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/lib/x86_64-linux-ghc-$GHC_VERSION/Cabal-* \
-  && find /root/.ghcup/ -name '*.dyn_hi' -delete \
   && find /root/.ghcup/ -name '*.p_hi' -delete \
   && find /root/.ghcup/ -name '*_p.a' -delete \
   && find /root/.ghcup/ -name '*_debug.a' -delete \
