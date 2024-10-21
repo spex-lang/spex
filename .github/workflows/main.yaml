@@ -78,6 +78,7 @@ jobs:
       - name: Build static binary
         run: |
           cd release && \
+          docker login ghrc.io --username spex-lang --password ${{ secrets.CR_PATH }} && \
           docker pull ghcr.io/spex-lang/spex-static-build && \
           docker run \
             -v "${PWD}/..":/mnt/:ro \
