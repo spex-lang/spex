@@ -79,8 +79,9 @@ jobs:
       - name: Build static binary
         run: |
           cd release && \
-          docker login ghrc.io --username spex-lang --password ${{ secrets.CR_PAT }} && \
-          docker pull ghcr.io/spex-lang/spex-static-build && \
+          echo ${{ secrets.CR_PAT }} | \
+            docker login ghrc.io --username spex-lang --password-stdin && \
+          docker pull ghcr.io/spex-lang/static-build && \
           docker run \
             -v "${PWD}/..":/mnt/:ro \
             -v "~/.cabal/packages":/root/.cache/cabal/packages \
