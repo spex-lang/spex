@@ -87,13 +87,12 @@ jobs:
       - name: Build static binary
         run: |
           cd release && \
-          docker pull ghcr.io/spex-lang/static-build:latest && \
           docker run \
             -v "${PWD}/..":/mnt/:ro \
             -v "~/.cabal/packages":/root/.cache/cabal/packages \
             -v "~/.cabal/store":/root/.local/state/cabal/store \
             -v "${PWD}/dist-newstyle":/mnt/dist-newstyle \
-            ghcr.io/spex-lang/spex-static-build
+            ghcr.io/spex-lang/static-build:latest 
 
       # - name: Create new git tag, if merge to master and .cabal version is bumped
       #   if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
