@@ -52,6 +52,12 @@ jobs:
       #   if: steps.cache.outputs.ghc-cabal-cache-hit != 'true'
       #   with:
       #     path: |
+          #       $HOME/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/lib/x86_64-linux-ghc-$GHC_VERSION/*.so 
+  # /root/.ghcup/bin/cabal 
+  #$HOME/.ghcup/ghc/${{ matrix.ghc-version }}/lib/ghc-${{ matrix.ghc-version }}/bin/ 
+  #$HOME/.ghcup/ghc/${{ matrix.ghc-version }}/lib/ghc-${{ matrix.ghc-version }}/lib/settings
+  #$HOME/.ghcup/ghc/${{ matrix.ghc-version }}/lib/ghc-${{ matrix.ghc-version }}/lib/package.conf.d
+
       #       ${HOME}/.cabal/bin/cabal
       #       ${HOME}/.ghcup/bin/ghc-${{ matrix.ghc-version }}
       #     key: ${{ steps.ghc-cabal-cache.outputs.cache-primary-key }}
@@ -106,7 +112,7 @@ jobs:
           password: ${{ secrets.CR_PAT }}
 
       - name: Docker pull
-        run: docker pull ghcr.io/spex-lang/static-build:latest 
+        run: docker pull ghcr.io/spex-lang/static-build:9.6.6 
 
       - name: Build static binary
         run: |
@@ -116,7 +122,7 @@ jobs:
             -v "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
             -v "${HOME}/.cabal/store":/root/.local/state/cabal/store \
             -v "${PWD}/dist-newstyle":/mnt/dist-newstyle \
-            ghcr.io/spex-lang/static-build:latest
+            ghcr.io/spex-lang/static-build:9.6.6
 
       # - name: Create new git tag, if merge to main and .cabal version is bumped
       #   if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
