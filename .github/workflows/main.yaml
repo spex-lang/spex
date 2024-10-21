@@ -50,9 +50,11 @@ jobs:
       - name: Install dependencies
         run: cabal build all --only-dependencies
 
-      - name: Cache ~/.cabal/packages, ~/.cabal/store and dist-newstyle
+      - name: Save cache ~/.cabal/packages, ~/.cabal/store and dist-newstyle
         uses: actions/cache@v4
         # https://github.com/actions/cache/blob/main/examples.md#haskell---cabal
+        if: ${{ !steps.cache.outputs.cache-hit
+          || steps.cache.outputs.cache-primary-key != steps.cache.outputs.cache-matched-key
         with:
           path: |
             ~/.cabal/packages
@@ -76,6 +78,7 @@ jobs:
       - name: Build static binary
         run: |
           cd release && \
+          docker pull ghcr.io/spex-lang/spex-static-build && \
           docker run \
             -v "${PWD}/..":/mnt/:ro \
             -v "~/.cabal/packages":/root/.cache/cabal/packages \
