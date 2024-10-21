@@ -30,7 +30,7 @@ jobs:
         uses: actions/cache/restore@v4
         id: ghc-cabal-cache
         env:
-          key: ${{ runner.os }}-ghc-${{ steps.setup.outputs.ghc-version }}-cabal-${{ steps.setup.outputs.cabal-version }}
+          key: ${{ runner.os }}-ghc-${{ matrix.ghc-version }}-cabal-${{ matrix.cabal-version }}
         with:
           path: |
             ~/.cabal/bin/cabal
@@ -103,7 +103,7 @@ jobs:
         with:
           registry: ghcr.io
           username: spex-lang
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.CR_PAT }}
 
       - name: Docker pull
         run: docker --log-level=debug pull ghcr.io/spex-lang/static-build:latest 
