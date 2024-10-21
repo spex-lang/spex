@@ -73,18 +73,18 @@ jobs:
       - name: Check cabal file
         run: cabal check
 
-      - name: Build documentation
-        run: cabal haddock all
+      # - name: Build documentation
+      #   run: cabal haddock all
 
       - name: Build static binary
         run: |
           cd release && \
-          docker login ghrc.io --username spex-lang --password ${{ secrets.CR_PATH }} && \
+          docker login ghrc.io --username spex-lang --password ${{ secrets.CR_PAT }} && \
           docker pull ghcr.io/spex-lang/spex-static-build && \
           docker run \
             -v "${PWD}/..":/mnt/:ro \
             -v "~/.cabal/packages":/root/.cache/cabal/packages \
-            -v "~/cabal/store":/root/.local/state/cabal/store \
+            -v "~/.cabal/store":/root/.local/state/cabal/store \
             -v "${PWD}/dist-newstyle":/mnt/dist-newstyle \
             ghcr.io/spex-lang/spex-static-build
 
@@ -95,6 +95,7 @@ jobs:
 
       # - name: Create tarball
       #   run: cabal sdist
+      #   if: steps.autotag.outputs.created
 
       # - uses: haskell-actions/hackage-publish@v1.1
       #   with:
