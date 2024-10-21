@@ -1,0 +1,89 @@
+name: main
+
+env:
+  LANG: C.UTF-8
+
+on:
+  push:
+    branches: main
+  pull_request:
+    branches: main
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    name: GHC ${{ matrix.ghc-version }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04]
+        ghc-version: ['9.6.6']
+        cabal-version: ['3.12.1.0']
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up GHC ${{ matrix.ghc-version }}
+        uses: haskell-actions/setup@v2
+        # https://github.com/marketplace/actions/setup-haskell
+        id: setup
+        with:
+          ghc-version: ${{ matrix.ghc-version }}
+          cabal-version: ${{ matrix.cabal-version }}
+          cabal-update: true
+
+      - name: Restore cached dependencies
+        uses: actions/cache/restore@v4
+        # https://github.com/actions/cache/blob/main/restore/README.md
+        id: cache
+        with:
+          path: |
+            ~/.cabal/packages
+            ~/.cabal/store
+            dist-newstyle
+          key: ${{ runner.os }}-${{ matrix.ghc-version }}-${{ hashFiles('**/*.cabal', '**/cabal.project', '**/cabal.project.freeze') }}
+          restore-keys: |
+            ${{ runner.os }}-ghc-${{ matrix.ghc-version }}-
+
+      - name: Install dependencies
+        run: cabal build all --only-dependencies
+
+      - name: Cache ~/.cabal/packages, ~/.cabal/store and dist-newstyle
+        uses: actions/cache@v4
+        # https://github.com/actions/cache/blob/main/examples.md#haskell---cabal
+        with:
+          path: |
+            ~/.cabal/packages
+            ~/.cabal/store
+            dist-newstyle
+          key: ${{ runner.os }}-${{ matrix.ghc-version }}-${{ hashFiles('**/*.cabal', '**/cabal.project', '**/cabal.project.freeze') }}
+          restore-keys: ${{ runner.os }}-${{ matrix.ghc-version }}-
+
+      - name: Build
+        run: cabal build all
+
+      - name: Run tests
+        run: cabal test all
+
+      - name: Check cabal file
+        run: cabal check
+
+      - name: Build documentation
+        run: cabal haddock all
+
+      - name: Create new git tag, if merge to master and .cabal version is bumped
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+        uses: sol/haskell-autotag@v1
+        id: autotag
+
+      - name: Create tarball
+        run: cabal sdist
+
+      - uses: haskell-actions/hackage-publish@v1.1
+        with:
+          # http://hackage.haskell.org/users/account-management
+          hackageToken: ${{ secrets.HACKAGE_AUTH_TOKEN }}
+          publish: true
+        if: steps.autotag.outputs.created
