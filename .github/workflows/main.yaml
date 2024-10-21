@@ -54,7 +54,7 @@ jobs:
         uses: actions/cache@v4
         # https://github.com/actions/cache/blob/main/examples.md#haskell---cabal
         if: ${{ !steps.cache.outputs.cache-hit
-          || steps.cache.outputs.cache-primary-key != steps.cache.outputs.cache-matched-key
+          || steps.cache.outputs.cache-primary-key != steps.cache.outputs.cache-matched-key }}
         with:
           path: |
             ~/.cabal/packages
