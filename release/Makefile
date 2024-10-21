@@ -1,21 +1,35 @@
-all: bin/spex
+all: bin/spex bin/spex-demo-petstore
 
-bin/spex bin/spex-demo-petstore: build-image
-	mkdir -p "cache/cabal-cache-musl" \
-		 "cache/cabal-store-musl" \
-		 "cache/dist-newstyle-musl"
+# We can't use cabal list-bin here, because it thinks the binary is in
+# ../dist-newstyle rather than cache/dist-newstyle-musl.
+bin/spex: static-build
+	@mkdir -p bin
+	cp "$(shell find cache/dist-newstyle-musl \
+		-name spex -type f -executable)" bin
+	
+bin/spex-demo-petstore: static-build
+	@mkdir -p bin
+	cp "$(shell find cache/dist-newstyle-musl \
+		-name spex-demo-petstore -type f -executable)" bin
+
+static-build: build-image
+	mkdir -p cache/cabal-cache-musl \
+		 cache/cabal-store-musl \
+		 cache/dist-newstyle-musl 
 	docker run \
 		-v "${PWD}/..":/mnt/:ro \
 		-v "${PWD}/cache/cabal-cache-musl":/root/.cache/cabal \
 		-v "${PWD}/cache/cabal-store-musl":/root/.local/state/cabal/store \
 		-v "${PWD}/cache/dist-newstyle-musl":/mnt/dist-newstyle \
-		muslghc
-	mkdir -p bin
-	cp "$(shell cabal list-bin spex)" bin
-	cp "$(shell cabal list-bin petstore)" bin
+		ghcr.io/spex-lang/static-build:latest
 
 build-image: Dockerfile
-	docker build --tag muslghc .
+	docker build --tag ghcr.io/spex-lang/static-build .
+
+push-image: build-image
+	@echo ${GITHUB_TOKEN} | \
+		docker login ghrc.io --username spex-lang --password-stdin
+	docker push ghcr.io/spex-lang/static-build:latest
 
 bin/spex.upx: bin/spex
 	upx --best -q bin/spex -o bin/spex.upx
@@ -25,4 +39,7 @@ clean:
 	rm -f bin/spex.upx
 	rm -f bin/spex-demo-petstore
 
-.PHONY: all build-image clean
+distclean: clean
+	rm -rf cache
+
+.PHONY: all static-build build-image push-image clean distclean
