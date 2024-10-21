@@ -87,7 +87,8 @@ jobs:
       - name: Build static binary
         run: |
           cd release && \
-          docker run --pull=missing \
+          docker pull ghcr.io/spex-lang/static-build:latest && \
+          docker run \
             -v "${PWD}/..":/mnt/:ro \
             -v "~/.cabal/packages":/root/.cache/cabal/packages \
             -v "~/.cabal/store":/root/.local/state/cabal/store \
