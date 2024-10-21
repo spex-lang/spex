@@ -62,7 +62,6 @@ RUN  rm -r /root/.ghcup/cache \
   && rm -r /root/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/bin/haddock-ghc-$GHC_VERSION \
   && rm -r /root/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/bin/hp2ps-ghc-$GHC_VERSION \
   && rm -r /root/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/bin/hpc-ghc-$GHC_VERSION \
-  && rm -r /root/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/bin/hsc2hs-ghc-$GHC_VERSION \
   && rm -r /root/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/bin/unlit-ghc-$GHC_VERSION \
   && rm -r /root/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/lib/bin \
   && rm -r /root/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/lib/html \
