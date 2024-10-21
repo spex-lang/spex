@@ -26,17 +26,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Restore cached GHC and cabal
-        uses: actions/cache/restore@v4
-        id: ghc-cabal-cache
-        env:
-          key: ${{ runner.os }}-ghc-${{ matrix.ghc-version }}-cabal-${{ matrix.cabal-version }}
-        with:
-          path: |
-            ~/.cabal/bin/cabal
-            ~/.ghcup/bin/ghc-${{ matrix.ghc-version }}
-          key: ${{ env.key }}
-          restore-keys: ${{ env.key }}-
+      # - name: Restore cached GHC and cabal
+      #   uses: actions/cache/restore@v4
+      #   id: ghc-cabal-cache
+      #   env:
+      #     key: ${{ runner.os }}-ghc-${{ matrix.ghc-version }}-cabal-${{ matrix.cabal-version }}
+      #   with:
+      #     path: |
+      #       ${HOME}/.cabal/bin/cabal
+      #       ${HOME}/.ghcup/bin/ghc-${{ matrix.ghc-version }}
+      #     key: ${{ env.key }}
+      #     restore-keys: ${{ env.key }}-
 
       - name: Set up GHC ${{ matrix.ghc-version }}
         if: steps.ghc-cabal-cache.outputs.cache-hit != 'true'
@@ -47,14 +47,14 @@ jobs:
           cabal-version: ${{ matrix.cabal-version }}
           cabal-update: true
 
-      - name: Save cached GHC and cabal
-        uses: actions/cache/save@v4
-        if: steps.cache.outputs.ghc-cabal-cache-hit != 'true'
-        with:
-          path: |
-            ~/.cabal/bin/cabal
-            ~/.ghcup/bin/ghc-${{ matrix.ghc-version }}
-          key: ${{ steps.ghc-cabal-cache.outputs.cache-primary-key }}
+      # - name: Save cached GHC and cabal
+      #   uses: actions/cache/save@v4
+      #   if: steps.cache.outputs.ghc-cabal-cache-hit != 'true'
+      #   with:
+      #     path: |
+      #       ${HOME}/.cabal/bin/cabal
+      #       ${HOME}/.ghcup/bin/ghc-${{ matrix.ghc-version }}
+      #     key: ${{ steps.ghc-cabal-cache.outputs.cache-primary-key }}
 
       - name: Configure the build
         run: |
