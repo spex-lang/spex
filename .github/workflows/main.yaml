@@ -26,13 +26,35 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Restore cached GHC and cabal
+        uses: actions/cache/restore@v4
+        id: ghc-cabal-cache
+        env:
+          key: ${{ runner.os }}-ghc-${{ steps.setup.outputs.ghc-version }}-cabal-${{ steps.setup.outputs.cabal-version }}
+        with:
+          path: |
+            ~/.cabal/bin/cabal
+            ~/.ghcup/bin/ghc-${{ matrix.ghc-version }}
+          key: ${{ env.key }}
+          restore-keys: ${{ env.key }}-
+
       - name: Set up GHC ${{ matrix.ghc-version }}
+        if: steps.ghc-cabal-cache.outputs.cache-hit != 'true'
         uses: haskell-actions/setup@v2
         id: setup
         with:
           ghc-version: ${{ matrix.ghc-version }}
           cabal-version: ${{ matrix.cabal-version }}
           cabal-update: true
+
+      - name: Save cached GHC and cabal
+        uses: actions/cache/save@v4
+        if: steps.cache.outputs.ghc-cabal-cache-hit != 'true'
+        with:
+          path: |
+            ~/.cabal/bin/cabal
+            ~/.ghcup/bin/ghc-${{ matrix.ghc-version }}
+          key: ${{ steps.ghc-cabal-cache.outputs.cache-primary-key }}
 
       - name: Configure the build
         run: |
@@ -58,7 +80,6 @@ jobs:
       # Cache dependencies already here, so that we do not have to rebuild them should the subsequent steps fail.
       - name: Save cached dependencies
         uses: actions/cache/save@v4
-        # If we had an exact cache hit, trying to save the cache would error because of key clash.
         if: steps.cache.outputs.cache-hit != 'true'
         with:
           path: ${{ steps.setup.outputs.cabal-store }}
@@ -85,7 +106,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Docker pull
-        run: docker pull ghcr.io/spex-lang/static-build:latest 
+        run: docker --log-level=debug pull ghcr.io/spex-lang/static-build:latest 
 
       - name: Build static binary
         run: |
