@@ -2,6 +2,16 @@ name: main
 
 env:
   LANG: C.UTF-8
+  cabal: |
+    docker run \
+      --volume "${{ github.workspace }}":/mnt/ \
+      --volume "${HOME}/.cache/cabal":/root/.cache/cabal \
+      --volume "${HOME}/.cabal/store":/root/.local/state/cabal/store \
+      --volume "${{ github.workspace }}/dist-newstyle":/mnt/dist-newstyle \
+      ghcr.io/spex-lang/static-build:9.6.6 \
+
+#     --volume "${{ github.workspace }}":/mnt/:ro \
+# --volume "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
 
 on:
   push:
@@ -72,22 +82,16 @@ jobs:
 
       - name: Configure the build
         run: |
-          docker run \
-            -v "${{ github.workspace }}":/mnt/ \
-            -v "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
-            -v "${HOME}/.cabal/store":/root/.local/state/cabal/store \
-            -v "${{ github.workspace }}/dist-newstyle":/mnt/dist-newstyle \
-            ghcr.io/spex-lang/static-build:9.6.6 \
-            configure \
-              --enable-static \
-              --disable-shared \
-              --enable-executable-static \
-              --disable-executable-dynamic \
-              --disable-profiling \
-              --disable-library-for-ghci \
-              --enable-library-stripping \
-              --enable-executable-stripping \
-              --enable-tests --enable-benchmarks --disable-documentation --project-dir=/mnt
+          ${{ env.cabal }} configure \
+            --enable-static \
+            --disable-shared \
+            --enable-executable-static \
+            --disable-executable-dynamic \
+            --disable-profiling \
+            --disable-library-for-ghci \
+            --enable-library-stripping \
+            --enable-executable-stripping \
+            --enable-tests --enable-benchmarks --disable-documentation --project-dir=/mnt
 
       # XXX: this shouldn't be necessary, already done in image...
       # Using historical state as of 2024-10-21T00:00:00Z as explicitly requested (via
@@ -98,24 +102,12 @@ jobs:
       # Hmmm? Try unix time instead?
       - name: Run cabal update
         run: |
-          docker run \
-            -v "${{ github.workspace }}":/mnt/:ro \
-            -v "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
-            -v "${HOME}/.cabal/store":/root/.local/state/cabal/store \
-            -v "${{ github.workspace }}/dist-newstyle":/mnt/dist-newstyle \
-            ghcr.io/spex-lang/static-build:9.6.6 \
-            update --project-dir=/mnt -v
+          ${{ env.cabal }} update --project-dir=/mnt 
           #update hackage.haskell.org,@1729577343 --project-dir=/mnt -v
 
       - name: Build the cache key
         run: |
-          docker run \
-            -v "${{ github.workspace }}":/mnt/:ro \
-            -v "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
-            -v "${HOME}/.cabal/store":/root/.local/state/cabal/store \
-            -v "${{ github.workspace }}/dist-newstyle":/mnt/dist-newstyle \
-            ghcr.io/spex-lang/static-build:9.6.6 \
-            build all --dry-run --project-dir=/mnt -v
+          ${{ env.cabal }} build all --dry-run --project-dir=/mnt 
             # The last step generates dist-newstyle/cache/plan.json for the cache key.
 
       - name: Restore cached dependencies
@@ -125,7 +117,7 @@ jobs:
           key: ${{ runner.os }}-ghc-${{ matrix.ghc-version }}-cabal-${{ matrix.cabal-version }}
         with:
           path: |
-            ~/.cabal/packages
+            ~/.cache/cabal
             ~/.cabal/store
             ${{ github.workspace }}/dist-newstyle
           key: ${{ env.key }}-plan-${{ hashFiles('**/plan.json') }}
@@ -135,13 +127,7 @@ jobs:
         # If we had an exact cache hit, the dependencies will be up to date.
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
-          docker run \
-            -v "${{ github.workspace }}":/mnt/:ro \
-            -v "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
-            -v "${HOME}/.cabal/store":/root/.local/state/cabal/store \
-            -v "${{ github.workspace }}/dist-newstyle":/mnt/dist-newstyle \
-            ghcr.io/spex-lang/static-build:9.6.6 \
-            build all --only-dependencies --project-dir=/mnt
+          ${{ env.cabal }} build all --only-dependencies --project-dir=/mnt
 
       - name: Inspect caches
         run: |
@@ -157,7 +143,7 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         with:
           path: |
-            ~/.cabal/packages
+            ~/.cache/cabal
             ~/.cabal/store
             ${{ github.workspace }}/dist-newstyle
           key: ${{ steps.cache.outputs.cache-primary-key }}
@@ -177,13 +163,8 @@ jobs:
 
       - name: Build static binary
         run: |
-          docker run \
-            -v "${{ github.workspace }}":/mnt/:ro \
-            -v "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
-            -v "${HOME}/.cabal/store":/root/.local/state/cabal/store \
-            -v "${{ github.workspace }}/dist-newstyle":/mnt/dist-newstyle \
-            ghcr.io/spex-lang/static-build:9.6.6 \
-            build exe:spex exe:spex-demo-petstore --enable-executable-static --project-dir=/mnt
+          ${{ env.cabal }} build exe:spex exe:spex-demo-petstore \
+            --enable-executable-static --project-dir=/mnt
 
       - name: Copy binaries
         run: |

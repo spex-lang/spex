@@ -23,7 +23,15 @@ static-build: build-image
 		-v "${PWD}/cache/cabal-cache-musl":/root/.cache/cabal \
 		-v "${PWD}/cache/cabal-store-musl":/root/.local/state/cabal/store \
 		-v "${PWD}/cache/dist-newstyle-musl":/mnt/dist-newstyle \
-		ghcr.io/spex-lang/static-build:$(GHC_VERSION)
+		ghcr.io/spex-lang/static-build:$(GHC_VERSION) \
+		update hackage.haskell.org,@1729577343 \
+	docker run \
+		-v "${PWD}/..":/mnt/:ro \
+		-v "${PWD}/cache/cabal-cache-musl":/root/.cache/cabal \
+		-v "${PWD}/cache/cabal-store-musl":/root/.local/state/cabal/store \
+		-v "${PWD}/cache/dist-newstyle-musl":/mnt/dist-newstyle \
+		ghcr.io/spex-lang/static-build:$(GHC_VERSION) \
+		build exe:spex exe:spex-demo-petstore --enable-executable-static --project-dir=/mnt
 
 build-image: Dockerfile
 	docker build --tag ghcr.io/spex-lang/static-build:$(GHC_VERSION) .
