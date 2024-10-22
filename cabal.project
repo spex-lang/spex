@@ -1,3 +1,3 @@
 packages: ./spex.cabal ./example/*/*.cabal
 
-index-state: hackage.haskell.org @@1729577343
+index-state: hackage.haskell.org @1729577343
