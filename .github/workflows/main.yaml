@@ -5,7 +5,7 @@ env:
   cabal: |
     docker run \
       --volume "${{ github.workspace }}":/mnt/ \
-      --volume "${HOME}/.cache/cabal":/root/.cache/cabal \
+      --volume "${HOME}/.cache/cabal/packages":/root/.cache/cabal/packages \
       --volume "${HOME}/.cabal/store":/root/.local/state/cabal/store \
       --volume "${{ github.workspace }}/dist-newstyle":/mnt/dist-newstyle \
       ghcr.io/spex-lang/static-build:9.6.6 \
@@ -116,7 +116,7 @@ jobs:
           key: ${{ runner.os }}-ghc-${{ matrix.ghc-version }}-cabal-${{ matrix.cabal-version }}
         with:
           path: |
-            ${HOME}/.cache/cabal
+            ${HOME}/.cache/cabal/packages
             ${HOME}/.cabal/store
             ${{ github.workspace }}/dist-newstyle
           key: ${{ env.key }}-plan-${{ hashFiles('**/plan.json') }}
@@ -135,19 +135,21 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         with:
           path: |
-            ${HOME}/.cache/cabal
+            ${HOME}/.cache/cabal/packages
             ${HOME}/.cabal/store
             ${{ github.workspace }}/dist-newstyle
           key: ${{ steps.cache.outputs.cache-primary-key }}
 
-      - name: "Inspect cache: ~/.cache/cabal"
+      - name: "Inspect cache: ~/.cache/cabal/packages"
         run: |
-          echo ${HOME}
-          ls -R "${HOME}/.cache/cabal" || true
+          echoh "${HOME}/.cache/cabal/packages" 
+          du -sh "${HOME}/.cache/cabal/packages" || true
+          ls -R "${HOME}/.cache/cabal/packages" || true
 
       - name: "Inspect cache: ~/.cabal/store"
         run: |
-          echo ${HOME}
+          echo "${HOME}/.cabal/store" 
+          du -sh "${HOME}/.cabal/store" || true
           ls -R "${HOME}/.cabal/store" || true
 
       - name: "Inspect cache: dist-newstyle"
@@ -179,7 +181,7 @@ jobs:
           ls -R "${{github.workspace }}/dist-newstyle/build"
           mkdir -p "${{ github.workspace }}/bin"
           cp "$(find ${{ github.workspace }}/dist-newstyle \
-            \\( -name spex -o -name spex-demo-petstore \\) -type f -executable)" \ 
+            ( -name spex -o -name spex-demo-petstore ) -type f -executable)" \ 
             "${{ github.workspace }}/bin"
 
       - name: Create new git tag, if merge to main and .cabal version is bumped

@@ -20,7 +20,7 @@ static-build: build-image
 		 cache/dist-newstyle-musl 
 	docker run \
 		-v "${PWD}/..":/mnt/:ro \
-		-v "${PWD}/cache/cabal-cache-musl":/root/.cache/cabal \
+		-v "${PWD}/cache/cabal-cache-musl":/root/.cache/cabal/packages \
 		-v "${PWD}/cache/cabal-store-musl":/root/.local/state/cabal/store \
 		-v "${PWD}/cache/dist-newstyle-musl":/mnt/dist-newstyle \
 		ghcr.io/spex-lang/static-build:$(GHC_VERSION) \
