@@ -3,7 +3,7 @@
 module Spex.CommandLine.ArgParser where
 
 import Data.Version (showVersion)
-import Development.GitRev (gitHash)
+import GitHash (giHash, tGitInfoCwd)
 import Options.Applicative
 
 import Paths_spex (version)
@@ -32,7 +32,9 @@ parseCmdLineArgs = execParser opts
       <> progDesc "The Spex specification language."
       <> header "spex - specification language"
       )
-    versionHash = "v" ++ showVersion version ++ " " ++ $(gitHash)
+    versionHash = concat [ "v", showVersion version, " ", giHash gi,
+                           if giDirty gi then "-dirty" else "" ]
+    gi = $$tGitInfoCwd
 
 cmdLineArgs :: Parser CmdLineArgs
 cmdLineArgs = CmdLineArgs

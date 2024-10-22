@@ -6,7 +6,8 @@
 
 cd /mnt \
     && cabal update hackage.haskell.org,2024-10-21T00:00:00Z \
-    && cabal build exe:spex exe:spex-demo-petstore --enable-executable-static
+    && cabal build all --only-dependencies --enable-static \
+    && cabal build exe:spex exe:spex-demo-petstore --enable-static --enable-executable-static
 
     # We can't use cabal install here, because that causes --version to break
     # due to the following bug: https://github.com/acfoltzer/gitrev/issues/23

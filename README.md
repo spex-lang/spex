@@ -244,6 +244,8 @@ Here's what I'm currently working on:
 - docs: document syntax?
 - Packaging
   + ci release job
+    * https://gitlab.com/benz0li/ghc-musl
+    * https://github.com/softprops/action-gh-release
   + install script?
     * https://raw.githubusercontent.com/haskell/ghcup-hs/refs/heads/master/scripts/bootstrap/bootstrap-haskell
   + changelog generator (semantic commit messages)

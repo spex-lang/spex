@@ -64,7 +64,7 @@ library
     , aeson
     , ansi-terminal
     , flatparse
-    , gitrev
+    , githash
     , http-client
     , http-types
     , optparse-applicative

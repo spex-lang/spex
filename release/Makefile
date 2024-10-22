@@ -1,3 +1,5 @@
+GHC_VERSION:=9.6.6
+
 all: bin/spex bin/spex-demo-petstore
 
 # We can't use cabal list-bin here, because it thinks the binary is in
@@ -21,15 +23,15 @@ static-build: build-image
 		-v "${PWD}/cache/cabal-cache-musl":/root/.cache/cabal \
 		-v "${PWD}/cache/cabal-store-musl":/root/.local/state/cabal/store \
 		-v "${PWD}/cache/dist-newstyle-musl":/mnt/dist-newstyle \
-		ghcr.io/spex-lang/static-build:9.6.6
+		ghcr.io/spex-lang/static-build:$(GHC_VERSION)
 
 build-image: Dockerfile
-	docker build --tag ghcr.io/spex-lang/static-build:9.6.6 .
+	docker build --tag ghcr.io/spex-lang/static-build:$(GHC_VERSION) .
 
 push-image: build-image
 	@echo ${GITHUB_TOKEN} | \
 		docker login ghrc.io --username spex-lang --password-stdin
-	docker push ghcr.io/spex-lang/static-build:9.6.6
+	docker push ghcr.io/spex-lang/static-build:$(GHC_VERSION)
 
 bin/spex.upx: bin/spex
 	upx --best -q bin/spex -o bin/spex.upx

@@ -87,6 +87,7 @@ RUN apk upgrade --no-cache \
   && apk add --no-cache \
     curl \
     gcc \
+    git \
     gmp-dev \
     libffi-dev \
     musl-dev \
