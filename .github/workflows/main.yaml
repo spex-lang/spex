@@ -190,18 +190,10 @@ jobs:
 
       - name: Copy binaries
         run: |
-          docker run \
-            -v "${PWD}":/mnt/:ro \
-            -v "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
-            -v "${HOME}/.cabal/store":/root/.local/state/cabal/store \
-            -v "${PWD}/dist-newstyle":/mnt/dist-newstyle \
-            ghcr.io/spex-lang/static-build:9.6.6 \
-            install exe:spex exe:spex-demo-petstore \
-              --enable-executable-static \
-              --install-method=copy \
-              --overwrite-policy=always \
-              --installdir=dist-newstyle/bin \
-              --project-dir=/mnt
+          mkdir -p dist-newstyle/bin
+          cp "$(find dist-newstyle -name spex               -type f -executable)" \ 
+             "$(find dist-newstyle -name spex-demo-petstore -type f -executable)" \
+             dist-newstyle/bin
 
       - name: Create new git tag, if merge to main and .cabal version is bumped
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
