@@ -113,7 +113,7 @@ jobs:
             -v "${PWD}":/mnt/:ro \
             -v "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
             -v "${HOME}/.cabal/store":/root/.local/state/cabal/store \
-            -v "${PWD}/dist-newstyle":/mnt/dist-newstyle \
+            -v "${{ github.workspace }}/dist-newstyle":/mnt/dist-newstyle \
             ghcr.io/spex-lang/static-build:9.6.6 \
             build all --dry-run --project-dir=/mnt -v
             # The last step generates dist-newstyle/cache/plan.json for the cache key.
@@ -127,7 +127,7 @@ jobs:
           path: |
             ~/.cabal/packages
             ~/.cabal/store
-            dist-newstyle"
+            ${{ github.workspace }}/dist-newstyle
           key: ${{ env.key }}-plan-${{ hashFiles('**/plan.json') }}
           restore-keys: ${{ env.key }}-
 
@@ -148,7 +148,7 @@ jobs:
           echo ${PWD}
           echo ${HOME}
           pwd
-          ls -R "${HOME}/.cabal/packages" "${HOME}/.cabal/store" "${PWD}/dist-newstyle"
+          ls -R "${HOME}/.cabal/packages" "${HOME}/.cabal/store" "${{ github.workspace }}/dist-newstyle"
 
       # Cache dependencies already here, so that we do not have to rebuild them
       # should the subsequent steps fail.
@@ -190,10 +190,10 @@ jobs:
 
       - name: Copy binaries
         run: |
-          mkdir -p dist-newstyle/bin
-          cp "$(find dist-newstyle -name spex               -type f -executable)" \ 
-             "$(find dist-newstyle -name spex-demo-petstore -type f -executable)" \
-             dist-newstyle/bin
+          mkdir -p "${{ github.workspace }}/dist-newstyle/bin/
+          cp "$(find ${{ github.workspace }}/dist-newstyle -name spex               -type f -executable)" \ 
+             "$(find ${{ github.workspace }}/dist-newstyle -name spex-demo-petstore -type f -executable)" \
+            "${{ github.workspace }}/dist-newstyle/bin"
 
       - name: Create new git tag, if merge to main and .cabal version is bumped
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
@@ -209,7 +209,7 @@ jobs:
           files: |
             CHANGELOG.md
             LICENSE
-            dist-newstyle/bin/*
+            "${{ github.workspace }}/dist-newstyle/bin/*"
 
       # - name: Create tarball
       #   run: cabal sdist
