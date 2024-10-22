@@ -143,8 +143,7 @@ jobs:
           path: |
             "${HOME}/.cabal/packages"
             "${HOME}/.cabal/store"
-            "${PWD}/dist-newstyle"
-
+            "dist-newstyle"
           key: ${{ steps.cache.outputs.cache-primary-key }}
 
       # - name: Build
@@ -162,6 +161,10 @@ jobs:
 
       - name: Build static binary
         run: |
+          # "fatal: detected dubious ownership in repository at '/mnt'\nTo add
+          # an exception for this directory, call:\n\n\tgit config --global
+          # --add safe.directory /mnt\n"
+          git config --global --add safe.directory /mnt
           docker run \
             -v "${PWD}":/mnt/:ro \
             -v "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
