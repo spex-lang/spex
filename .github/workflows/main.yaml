@@ -119,7 +119,7 @@ jobs:
           path: |
             ${HOME}/.cache/cabal/packages
             ${HOME}/.cabal/store
-          key: ${{ env.key }}-plan-${{ hashFiles(${{ github.workspace }}/cache/plan.json) }}
+          key: ${{ env.key }}-plan-${{ hashFiles('**/plan.json') }}
           restore-keys: ${{ env.key }}-
 
             # ${{ github.workspace }}/dist-newstyle
