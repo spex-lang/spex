@@ -183,8 +183,9 @@ jobs:
           ls -R "${{github.workspace }}/dist-newstyle/build"
           mkdir -p "${{ github.workspace }}/bin"
           cp "$(find ${{ github.workspace }}/dist-newstyle \
-            \( -name spex -o -name spex-demo-petstore \) -type f -executable)" \ 
-            "${{ github.workspace }}/bin"
+            -name spex -type f -executable)" "${{ github.workspace }}/bin"
+          cp "$(find ${{ github.workspace }}/dist-newstyle \
+            -name spex-demo-petstore -type f -executable)" "${{ github.workspace }}/bin"
 
       - name: Create new git tag, if merge to main and .cabal version is bumped
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
