@@ -2,15 +2,6 @@ name: main
 
 env:
   LANG: C.UTF-8
-  cabal: | 
-    docker run \
-      --user "$(id -u):$(id -g)" \
-      --volume "${{ github.workspace }}":/mnt/ \
-      --volume "${HOME}/.cabal/packages":"${HOME}/.cabal/packages" \
-      --volume "${HOME}/.cabal/store":"${HOME}/.cabal/store" \
-      --volume "${{ github.workspace }}/dist-newstyle":/mnt/dist-newstyle \
-      --workdir /mnt \
-      ghcr.io/spex-lang/static-build:9.6.6 \
 
 on:
   push:
@@ -34,12 +25,6 @@ jobs:
         cabal-version: ['3.12.1.0']
     steps:
       - uses: actions/checkout@v4
-
-      - name: Print user and group id
-        run: |
-          echo $(id -u)
-          echo $(id -g)
-          echo $(whoami)
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -87,16 +72,22 @@ jobs:
 
       - name: Configure the build
         run: |
-          ${{ env.cabal }} configure \
-            --enable-static \
-            --disable-shared \
-            --enable-executable-static \
-            --disable-executable-dynamic \
-            --disable-profiling \
-            --disable-library-for-ghci \
-            --enable-library-stripping \
-            --enable-executable-stripping \
-            --enable-tests --enable-benchmarks --disable-documentation 
+          docker run \
+            -v "${{ github.workspace }}":/mnt/ \
+            -v "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
+            -v "${HOME}/.cabal/store":/root/.local/state/cabal/store \
+            -v "${{ github.workspace }}/dist-newstyle":/mnt/dist-newstyle \
+            ghcr.io/spex-lang/static-build:9.6.6 \
+            configure \
+              --enable-static \
+              --disable-shared \
+              --enable-executable-static \
+              --disable-executable-dynamic \
+              --disable-profiling \
+              --disable-library-for-ghci \
+              --enable-library-stripping \
+              --enable-executable-stripping \
+              --enable-tests --enable-benchmarks --disable-documentation --project-dir=/mnt
 
       # XXX: this shouldn't be necessary, already done in image...
       # Using historical state as of 2024-10-21T00:00:00Z as explicitly requested (via
@@ -108,19 +99,17 @@ jobs:
       - name: Run cabal update
         run: |
           docker run \
-            --user "$(id -u):$(id -g)" \
-            --volume "${{ github.workspace }}":/mnt/ \
-            --volume "${HOME}/.cabal/packages":"${HOME}/.cabal/packages" \
-            --volume "${HOME}/.cabal/store":"${HOME}/.cabal/store" \
-            --volume "${{ github.workspace }}/dist-newstyle":/mnt/dist-newstyle \
+            -v "${{ github.workspace }}":/mnt/:ro \
+            -v "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
+            -v "${HOME}/.cabal/store":/root/.local/state/cabal/store \
+            -v "${{ github.workspace }}/dist-newstyle":/mnt/dist-newstyle \
             ghcr.io/spex-lang/static-build:9.6.6 \
-            update -v
+            update --project-dir=/mnt -v
           #update hackage.haskell.org,@1729577343 --project-dir=/mnt -v
 
       - name: Build the cache key
         run: |
           docker run \
-            --user "$(id -u):$(id -g)" \
             -v "${{ github.workspace }}":/mnt/:ro \
             -v "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
             -v "${HOME}/.cabal/store":/root/.local/state/cabal/store \
@@ -147,7 +136,6 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
           docker run \
-            --user "$(id -u):$(id -g)" \
             -v "${{ github.workspace }}":/mnt/:ro \
             -v "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
             -v "${HOME}/.cabal/store":/root/.local/state/cabal/store \
@@ -190,7 +178,6 @@ jobs:
       - name: Build static binary
         run: |
           docker run \
-            --user "$(id -u):$(id -g)" \
             -v "${{ github.workspace }}":/mnt/:ro \
             -v "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
             -v "${HOME}/.cabal/store":/root/.local/state/cabal/store \
