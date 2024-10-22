@@ -141,17 +141,17 @@ jobs:
             ${{ github.workspace }}/dist-newstyle
           key: ${{ steps.cache.outputs.cache-primary-key }}
 
-      - name: Inspect cache: ~/.cache/cabal
+      - name: "Inspect cache: ~/.cache/cabal"
         run: |
           echo ${HOME}
           ls -R "${HOME}/.cache/cabal" || true
 
-      - name: Inspect cache: ~/.cabal/store
+      - name: "Inspect cache: ~/.cabal/store"
         run: |
           echo ${HOME}
           ls -R "${HOME}/.cabal/store" || true
 
-      - name: Inspect cache: dist-newstyle
+      - name: "Inspect cache: dist-newstyle""
         run: |
           echo ${{ github.workspace }}
           ls -R "${{ github.workspace }}/dist-newstyle" || true
