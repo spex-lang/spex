@@ -10,7 +10,7 @@ env:
       --volume "${HOME}/.cabal/store":"${HOME}/.cabal/store" \
       --volume "${{ github.workspace }}/dist-newstyle":/mnt/dist-newstyle \
       --workdir /mnt \
-      ghcr.io/spex-lang/static-build:9.6.6
+      ghcr.io/spex-lang/static-build:9.6.6 \
 
 on:
   push:
@@ -96,7 +96,7 @@ jobs:
             --disable-library-for-ghci \
             --enable-library-stripping \
             --enable-executable-stripping \
-            --enable-tests --enable-benchmarks --disable-documentation --project-dir=/mnt
+            --enable-tests --enable-benchmarks --disable-documentation 
 
       # XXX: this shouldn't be necessary, already done in image...
       # Using historical state as of 2024-10-21T00:00:00Z as explicitly requested (via
