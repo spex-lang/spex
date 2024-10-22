@@ -141,12 +141,20 @@ jobs:
             ${{ github.workspace }}/dist-newstyle
           key: ${{ steps.cache.outputs.cache-primary-key }}
 
-      - name: Inspect caches
+      - name: Inspect cache: ~/.cache/cabal
         run: |
-          echo ${PWD}
           echo ${HOME}
-          pwd
-          ls -R "${HOME}/.cache/cabal" "${HOME}/.cabal/store" "${{ github.workspace }}/dist-newstyle" || true
+          ls -R "${HOME}/.cache/cabal" || true
+
+      - name: Inspect cache: ~/.cabal/store
+        run: |
+          echo ${HOME}
+          ls -R "${HOME}/.cabal/store" || true
+
+      - name: Inspect cache: dist-newstyle
+        run: |
+          echo ${{ github.workspace }}
+          ls -R "${{ github.workspace }}/dist-newstyle" || true
 
 
       # - name: Build
@@ -169,6 +177,7 @@ jobs:
 
       - name: Copy binaries
         run: |
+          ls -R "${{github.workspace }}/dist-newstyle/build"
           mkdir -p "${{ github.workspace }}/bin"
           cp "$(find ${{ github.workspace }}/dist-newstyle -name spex -name spex-demo-petstore -type f -executable)" \ 
             "${{ github.workspace }}/bin"
