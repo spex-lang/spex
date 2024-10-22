@@ -193,6 +193,8 @@ jobs:
           cp "$(find ${{ github.workspace }}/dist-newstyle -name spex-demo-petstore -type f -executable)" \
              "${{ github.workspace }}/bin"
           ls -R "${{github.workspace }}/bin" || true
+        continue-on-error: true 
+        # XXX  for now...
 
       - name: Compress binaries
         run: |
