@@ -180,12 +180,12 @@ jobs:
 
       - name: Copy binaries
         run: |
-          ls -R "${{github.workspace }}/dist-newstyle/build"
           mkdir -p "${{ github.workspace }}/bin"
-          cp "$(find ${{ github.workspace }}/dist-newstyle \
-            -name spex -type f -executable)" "${{ github.workspace }}/bin"
-          cp "$(find ${{ github.workspace }}/dist-newstyle \
-            -name spex-demo-petstore -type f -executable)" "${{ github.workspace }}/bin"
+          cp "$(find ${{ github.workspace }}/dist-newstyle -name spex -type f -executable)" \
+             "${{ github.workspace }}/bin"
+          cp "$(find ${{ github.workspace }}/dist-newstyle -name spex-demo-petstore -type f -executable)" \
+             "${{ github.workspace }}/bin"
+          ls -R "${{github.workspace }}/bin" || true
 
       - name: Create new git tag, if merge to main and .cabal version is bumped
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
@@ -201,7 +201,8 @@ jobs:
           files: |
             CHANGELOG.md
             LICENSE
-            "${{ github.workspace }}/bin/*"
+            "${{ github.workspace }}/bin/spex"
+            "${{ github.workspace }}/bin/spex-demo-petstore"
 
       # - name: Create tarball
       #   run: cabal sdist
