@@ -159,7 +159,7 @@ jobs:
           path: |
             ~/.cabal/packages
             ~/.cabal/store
-            dist-newstyle
+            ${{ github.workspace }}/dist-newstyle
           key: ${{ steps.cache.outputs.cache-primary-key }}
 
       # - name: Build
@@ -191,8 +191,7 @@ jobs:
       - name: Copy binaries
         run: |
           mkdir -p "${{ github.workspace }}/bin"
-          cp "$(find ${{ github.workspace }}/dist-newstyle -name spex               -type f -executable)" \ 
-             "$(find ${{ github.workspace }}/dist-newstyle -name spex-demo-petstore -type f -executable)" \
+          cp "$(find ${{ github.workspace }}/dist-newstyle -name spex -name spex-demo-petstore -type f -executable)" \ 
             "${{ github.workspace }}/bin"
 
       - name: Create new git tag, if merge to main and .cabal version is bumped
