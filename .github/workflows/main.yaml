@@ -73,10 +73,10 @@ jobs:
       - name: Configure the build
         run: |
           docker run \
-            -v "${PWD}":/mnt/ \
+            -v "${{ github.workspace }}":/mnt/ \
             -v "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
             -v "${HOME}/.cabal/store":/root/.local/state/cabal/store \
-            -v "${PWD}/dist-newstyle":/mnt/dist-newstyle \
+            -v "${{ github.workspace }}/dist-newstyle":/mnt/dist-newstyle \
             ghcr.io/spex-lang/static-build:9.6.6 \
             configure \
               --enable-static \
@@ -99,10 +99,10 @@ jobs:
       - name: Run cabal update
         run: |
           docker run \
-            -v "${PWD}":/mnt/:ro \
+            -v "${{ github.workspace }}":/mnt/:ro \
             -v "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
             -v "${HOME}/.cabal/store":/root/.local/state/cabal/store \
-            -v "${PWD}/dist-newstyle":/mnt/dist-newstyle \
+            -v "${{ github.workspace }}/dist-newstyle":/mnt/dist-newstyle \
             ghcr.io/spex-lang/static-build:9.6.6 \
             update --project-dir=/mnt -v
           #update hackage.haskell.org,@1729577343 --project-dir=/mnt -v
@@ -110,7 +110,7 @@ jobs:
       - name: Build the cache key
         run: |
           docker run \
-            -v "${PWD}":/mnt/:ro \
+            -v "${{ github.workspace }}":/mnt/:ro \
             -v "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
             -v "${HOME}/.cabal/store":/root/.local/state/cabal/store \
             -v "${{ github.workspace }}/dist-newstyle":/mnt/dist-newstyle \
@@ -136,10 +136,10 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
           docker run \
-            -v "${PWD}":/mnt/:ro \
+            -v "${{ github.workspace }}":/mnt/:ro \
             -v "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
             -v "${HOME}/.cabal/store":/root/.local/state/cabal/store \
-            -v "${PWD}/dist-newstyle":/mnt/dist-newstyle \
+            -v "${{ github.workspace }}/dist-newstyle":/mnt/dist-newstyle \
             ghcr.io/spex-lang/static-build:9.6.6 \
             build all --only-dependencies --project-dir=/mnt
 
@@ -177,14 +177,11 @@ jobs:
 
       - name: Build static binary
         run: |
-          # "fatal: detected dubious ownership in repository at '/mnt'\nTo add
-          # an exception for this directory, call:\n\n\tgit config --global
-          # --add safe.directory /mnt\n"
           docker run \
-            -v "${PWD}":/mnt/:ro \
+            -v "${{ github.workspace }}":/mnt/:ro \
             -v "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
             -v "${HOME}/.cabal/store":/root/.local/state/cabal/store \
-            -v "${PWD}/dist-newstyle":/mnt/dist-newstyle \
+            -v "${{ github.workspace }}/dist-newstyle":/mnt/dist-newstyle \
             ghcr.io/spex-lang/static-build:9.6.6 \
             build exe:spex exe:spex-demo-petstore --enable-executable-static --project-dir=/mnt
 
