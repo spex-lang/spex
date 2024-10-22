@@ -175,6 +175,11 @@ jobs:
       #   run: cabal haddock all
       #
 
+      - name: Create new git tag, if merge to main and .cabal version is bumped
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        uses: sol/haskell-autotag@v1
+        id: autotag
+
       - name: Build static binary
         run: |
           ${{ env.cabal }} build exe:spex exe:spex-demo-petstore \
@@ -192,15 +197,10 @@ jobs:
       - name: Compress binaries
         run: |
           docker run \
-            --volume "${{ github.workspace }}/bin":/mnt/ \
-            --entrypoint=upx  \
+            --volume "${{ github.workspace }}/bin":/mnt \
+            --entrypoint=upx \
             ghcr.io/spex-lang/static-build:9.6.6 \ 
             --best -q /mnt/spex
-
-      - name: Create new git tag, if merge to main and .cabal version is bumped
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        uses: sol/haskell-autotag@v1
-        id: autotag
 
       - name: Release
         run: |
