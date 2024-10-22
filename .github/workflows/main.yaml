@@ -142,19 +142,20 @@ jobs:
 
       - name: "Inspect cache: ~/.cache/cabal/packages"
         run: |
-          echoh "${HOME}/.cache/cabal/packages" 
+          echo "${HOME}/.cache/cabal/packages" || true
           du -sh "${HOME}/.cache/cabal/packages" || true
           ls -R "${HOME}/.cache/cabal/packages" || true
 
       - name: "Inspect cache: ~/.cabal/store"
         run: |
-          echo "${HOME}/.cabal/store" 
+          echo "${HOME}/.cabal/store"  || true
           du -sh "${HOME}/.cabal/store" || true
           ls -R "${HOME}/.cabal/store" || true
 
       - name: "Inspect cache: dist-newstyle"
         run: |
-          echo ${{ github.workspace }}
+          echo ${{ github.workspace }} || true
+          du -sh "${{ github.workspace}}/dist-newstyle" || true
           ls -R "${{ github.workspace }}/dist-newstyle" || true
 
 
