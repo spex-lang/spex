@@ -73,7 +73,7 @@ jobs:
       - name: Configure the build
         run: |
           docker run \
-            -v "${PWD}":/mnt/:ro \
+            -v "${PWD}":/mnt/ \
             -v "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
             -v "${HOME}/.cabal/store":/root/.local/state/cabal/store \
             -v "${PWD}/dist-newstyle":/mnt/dist-newstyle \
