@@ -71,7 +71,7 @@ jobs:
       #  key: ${{ steps.ghc-cabal-cache.outputs.cache-primary-key }}
 
       - name: Configure the build
-        run: |
+        run: 
           docker run \
             -v "${PWD}":/mnt/ \
             -v "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
@@ -79,6 +79,20 @@ jobs:
             -v "${PWD}/dist-newstyle":/mnt/dist-newstyle \
             ghcr.io/spex-lang/static-build:9.6.6 \
             configure --enable-tests --enable-benchmarks --disable-documentation --project-dir=/mnt
+
+      # XXX: this shouldn't be necessary, already done in image...
+      - name: Run cabal update
+        run:
+          docker run \
+            -v "${PWD}":/mnt/:ro \
+            -v "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
+            -v "${HOME}/.cabal/store":/root/.local/state/cabal/store \
+            -v "${PWD}/dist-newstyle":/mnt/dist-newstyle \
+            ghcr.io/spex-lang/static-build:9.6.6 \
+            update hackage.haskell.org,2024-10-21T00:00:00Z
+
+      - name: Build the cache key
+        run:
           docker run \
             -v "${PWD}":/mnt/:ro \
             -v "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
