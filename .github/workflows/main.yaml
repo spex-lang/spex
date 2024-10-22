@@ -120,9 +120,10 @@ jobs:
             ${HOME}/.cache/cabal/packages
             ${HOME}/.cabal/store
           key: ${{ env.key }}-plan-${{ hashFiles('**/plan.json') }}
-          restore-keys: ${{ env.key }}-
 
-            # ${{ github.workspace }}/dist-newstyle
+          #${{ github.workspace }}/dist-newstyle
+          #restore-keys: ${{ env.key }}-plan-
+
 
       - name: Install dependencies
         # If we had an exact cache hit, the dependencies will be up to date.
@@ -188,6 +189,14 @@ jobs:
              "${{ github.workspace }}/bin"
           ls -R "${{github.workspace }}/bin" || true
 
+      - name: Compress binaries
+        run: |
+          docker run \
+            --volume "${{ github.workspace }}/bin":/mnt/ \
+            --entrypoint=upx  \
+            ghcr.io/spex-lang/static-build:9.6.6 \ 
+            --best -q /mnt/spex
+
       - name: Create new git tag, if merge to main and .cabal version is bumped
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         uses: sol/haskell-autotag@v1
@@ -195,7 +204,8 @@ jobs:
 
       - name: Release
         run: |
-          gh release create --draft --notes-file=CHANGELOG.md "${{ github.workspace }}/bin/*"
+          gh release create --draft --notes-file=CHANGELOG.md \
+            ${{ steps.autotag.outputs.version  }} "${{ github.workspace }}/bin/*"
         #        uses: softprops/action-gh-release@v2
         #        # if: steps.autotag.outputs.created
         #        with:

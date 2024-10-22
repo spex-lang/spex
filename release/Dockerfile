@@ -94,6 +94,7 @@ RUN apk upgrade --no-cache \
     libffi-dev \
     musl-dev \
     ncurses-dev \
+    upx \
     zlib-dev \
     zlib-static \
   && git config --global --add safe.directory /mnt
