@@ -80,7 +80,9 @@ jobs:
             ghcr.io/spex-lang/static-build:9.6.6 \
             configure \
               --enable-static \
+              --disable-shared \
               --enable-executable-static \
+              --disable-executable-dynamic \
               --disable-profiling \
               --disable-library-for-ghci \
               --enable-library-stripping \
@@ -198,7 +200,7 @@ jobs:
               --enable-executable-static \
               --install-method=copy \
               --overwrite-policy=always \
-              --installdir=/mnt/bin \
+              --installdir=dist-newstyle/bin \
               --project-dir=/mnt
 
       - name: Create new git tag, if merge to main and .cabal version is bumped
@@ -215,7 +217,7 @@ jobs:
           files: |
             CHANGELOG.md
             LICENSE
-            /mnt/bin/*
+            dist-newstyle/bin/*
 
       # - name: Create tarball
       #   run: cabal sdist
