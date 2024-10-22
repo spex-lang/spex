@@ -102,8 +102,7 @@ jobs:
       # Hmmm? Try unix time instead?
       - name: Run cabal update
         run: |
-          ${{ env.cabal }} update --project-dir=/mnt 
-          #update hackage.haskell.org,@1729577343 --project-dir=/mnt -v
+          ${{ env.cabal }} update hackage.haskell.org,@1729577343 --project-dir=/mnt
 
       - name: Build the cache key
         run: |
@@ -117,8 +116,8 @@ jobs:
           key: ${{ runner.os }}-ghc-${{ matrix.ghc-version }}-cabal-${{ matrix.cabal-version }}
         with:
           path: |
-            ~/.cache/cabal
-            ~/.cabal/store
+            ${HOME}/.cache/cabal
+            ${HOME}/.cabal/store
             ${{ github.workspace }}/dist-newstyle
           key: ${{ env.key }}-plan-${{ hashFiles('**/plan.json') }}
           restore-keys: ${{ env.key }}-
@@ -136,8 +135,8 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         with:
           path: |
-            ~/.cache/cabal
-            ~/.cabal/store
+            ${HOME}/.cache/cabal
+            ${HOME}/.cabal/store
             ${{ github.workspace }}/dist-newstyle
           key: ${{ steps.cache.outputs.cache-primary-key }}
 
