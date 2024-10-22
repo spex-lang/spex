@@ -85,7 +85,7 @@ jobs:
             -v "${HOME}/.cabal/store":/root/.local/state/cabal/store \
             -v "${PWD}/dist-newstyle":/mnt/dist-newstyle \
             ghcr.io/spex-lang/static-build:9.6.6 \
-            build all --dry-run --project-dir=/mnt
+            build all --dry-run --project-dir=/mnt -v
             # The last step generates dist-newstyle/cache/plan.json for the cache key.
 
       - name: Restore cached dependencies
