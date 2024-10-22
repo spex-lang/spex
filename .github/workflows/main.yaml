@@ -139,7 +139,7 @@ jobs:
           echo ${PWD}
           echo ${HOME}
           pwd
-          ls -R "${HOME}/.cabal/packages" "${HOME}/.cabal/store" "dist-newstyle"
+          ls -R "${HOME}/.cabal/packages" "${HOME}/.cabal/store" "${PWD}/dist-newstyle"
 
       # Cache dependencies already here, so that we do not have to rebuild them
       # should the subsequent steps fail.
@@ -148,9 +148,9 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         with:
           path: |
-            "${HOME}/.cabal/packages"
-            "${HOME}/.cabal/store"
-            "$(pwd)/dist-newstyle"
+            ~/.cabal/packages
+            ~/.cabal/store
+            dist-newstyle
           key: ${{ steps.cache.outputs.cache-primary-key }}
 
       # - name: Build
@@ -179,10 +179,36 @@ jobs:
             ghcr.io/spex-lang/static-build:9.6.6 \
             build exe:spex exe:spex-demo-petstore --enable-executable-static --project-dir=/mnt
 
-      # - name: Create new git tag, if merge to main and .cabal version is bumped
-      #   if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-      #   uses: sol/haskell-autotag@v1
-      #   id: autotag
+      - name: Copy binaries
+        run: |
+          docker run \
+            -v "${PWD}":/mnt/:ro \
+            -v "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
+            -v "${HOME}/.cabal/store":/root/.local/state/cabal/store \
+            -v "${PWD}/dist-newstyle":/mnt/dist-newstyle \
+            ghcr.io/spex-lang/static-build:9.6.6 \
+            install exe:spex exe:spex-demo-petstore \
+              --enable-executable-static \
+              --install-method=copy \
+              --overwrite-policy=always \
+              --installdir=/mnt/bin
+
+      - name: Create new git tag, if merge to main and .cabal version is bumped
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        uses: sol/haskell-autotag@v1
+        id: autotag
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        # if: steps.autotag.outputs.created
+        with:
+          body_path: CHANGELOG.md
+          draft: true
+          files: |
+            CHANGELOG.md
+            LICENSE
+            /mnt/bin/*
+
 
       # - name: Create tarball
       #   run: cabal sdist
