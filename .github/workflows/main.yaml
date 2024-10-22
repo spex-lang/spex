@@ -134,6 +134,13 @@ jobs:
             ghcr.io/spex-lang/static-build:9.6.6 \
             build all --only-dependencies --project-dir=/mnt
 
+      - name: Inspect caches
+        run: |
+          echo ${PWD}
+          echo ${HOME}
+          pwd
+          ls -R "${HOME}/.cabal/packages" "${HOME}/.cabal/store" "dist-newstyle"
+
       # Cache dependencies already here, so that we do not have to rebuild them
       # should the subsequent steps fail.
       - name: Save cached dependencies
@@ -143,7 +150,7 @@ jobs:
           path: |
             "${HOME}/.cabal/packages"
             "${HOME}/.cabal/store"
-            "dist-newstyle"
+            "$(pwd)/dist-newstyle"
           key: ${{ steps.cache.outputs.cache-primary-key }}
 
       # - name: Build
@@ -164,7 +171,6 @@ jobs:
           # "fatal: detected dubious ownership in repository at '/mnt'\nTo add
           # an exception for this directory, call:\n\n\tgit config --global
           # --add safe.directory /mnt\n"
-          git config --global --add safe.directory /mnt
           docker run \
             -v "${PWD}":/mnt/:ro \
             -v "${HOME}/.cabal/packages":/root/.cache/cabal/packages \

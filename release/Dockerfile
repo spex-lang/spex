@@ -96,6 +96,6 @@ RUN apk upgrade --no-cache \
     ncurses-dev \
     zlib-dev \
     zlib-static \
-  && cabal update hackage.haskell.org,@1729577343
+  && git config --global --add safe.directory /mnt
 
 ENTRYPOINT [ "cabal" ]
