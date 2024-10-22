@@ -26,6 +26,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Print user and group id
+        run: |
+          echo $(id -u)
+          echo $(id -g)
+          echo $(whoami)
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
