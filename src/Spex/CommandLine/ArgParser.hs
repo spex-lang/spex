@@ -3,7 +3,7 @@
 module Spex.CommandLine.ArgParser where
 
 import Data.Version (showVersion)
-import GitHash (giHash, tGitInfoCwd)
+import GitHash (giDirty, giHash, tGitInfoCwd)
 import Options.Applicative
 
 import Paths_spex (version)

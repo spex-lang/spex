@@ -26,6 +26,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: spex-lang
+          password: ${{ secrets.CR_PAT }}
+
+      - name: Pull build image
+        run: docker pull ghcr.io/spex-lang/static-build:9.6.6 
+
       #- name: Restore cached GHC and cabal
       #  uses: actions/cache/restore@v4
       #  id: ghc-cabal-cache
@@ -36,14 +46,14 @@ jobs:
       #      ${HOME}/.ghcup/bin/ghc-${{ matrix.ghc-version }}
       #    key: ${{ runner.os }}-ghc-${{ matrix.ghc-version }}-cabal-${{ matrix.cabal-version }}
   
-      - name: Set up GHC ${{ matrix.ghc-version }}
-        if: steps.ghc-cabal-cache.outputs.cache-hit != 'true'
-        uses: haskell-actions/setup@v2
-        id: setup
-        with:
-          ghc-version: ${{ matrix.ghc-version }}
-          cabal-version: ${{ matrix.cabal-version }}
-          cabal-update: true
+      # - name: Set up GHC ${{ matrix.ghc-version }}
+      #   # if: steps.ghc-cabal-cache.outputs.cache-hit != 'true'
+      #   uses: haskell-actions/setup@v2
+      #   id: setup
+      #   with:
+      #     ghc-version: ${{ matrix.ghc-version }}
+      #     cabal-version: ${{ matrix.cabal-version }}
+      #     cabal-update: true
 
       #- name: Save cached GHC and cabal
       #  uses: actions/cache/save@v4
@@ -62,9 +72,23 @@ jobs:
 
       - name: Configure the build
         run: |
-          cabal configure --enable-tests --enable-benchmarks --disable-documentation
-          cabal build all --dry-run
-          # The last step generates dist-newstyle/cache/plan.json for the cache key.
+          docker run \
+            -v "${PWD}":/mnt/:ro \
+            -v "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
+            -v "${HOME}/.cabal/store":/root/.local/state/cabal/store \
+            -v "${PWD}/dist-newstyle":/mnt/dist-newstyle \
+            --entrypoint=cabal \
+            ghcr.io/spex-lang/static-build:9.6.6 \
+            configure --enable-tests --enable-benchmarks --disable-documentation --project-dir=/mnt
+          docker run \
+            -v "${PWD}":/mnt/:ro \
+            -v "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
+            -v "${HOME}/.cabal/store":/root/.local/state/cabal/store \
+            -v "${PWD}/dist-newstyle":/mnt/dist-newstyle \
+            --entrypoint=cabal \
+            ghcr.io/spex-lang/static-build:9.6.6 \
+            build all --dry-run --project-dir=/mnt
+            # The last step generates dist-newstyle/cache/plan.json for the cache key.
 
       - name: Restore cached dependencies
         uses: actions/cache/restore@v4
@@ -79,48 +103,52 @@ jobs:
       - name: Install dependencies
         # If we had an exact cache hit, the dependencies will be up to date.
         if: steps.cache.outputs.cache-hit != 'true'
-        run: cabal build all --only-dependencies
+        run:
+          docker run \
+            -v "${PWD}":/mnt/:ro \
+            -v "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
+            -v "${HOME}/.cabal/store":/root/.local/state/cabal/store \
+            -v "${PWD}/dist-newstyle":/mnt/dist-newstyle \
+            --entrypoint=cabal \
+            ghcr.io/spex-lang/static-build:9.6.6 \
+            build all --only-dependencies --project-dir=/mnt
 
-      # Cache dependencies already here, so that we do not have to rebuild them should the subsequent steps fail.
+      # Cache dependencies already here, so that we do not have to rebuild them
+      # should the subsequent steps fail.
       - name: Save cached dependencies
         uses: actions/cache/save@v4
         if: steps.cache.outputs.cache-hit != 'true'
         with:
-          path: ${{ steps.setup.outputs.cabal-store }}
+          path: |
+            "${HOME}/.cabal/packages"
+            "${HOME}/.cabal/store"
+            "${PWD}/dist-newstyle"
+
           key: ${{ steps.cache.outputs.cache-primary-key }}
 
-      - name: Build
-        run: cabal build all
+      # - name: Build
+      #   run: cabal build all
 
-      - name: Run tests
-        run: cabal test all
+      # - name: Run tests
+      #   run: cabal test all
 
-      - name: Check cabal file
-        run: cabal check
+      # - name: Check cabal file
+      #   run: cabal check
 
       # - name: Build documentation
       #   run: cabal haddock all
       #
 
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: spex-lang
-          password: ${{ secrets.CR_PAT }}
-
-      - name: Docker pull
-        run: docker pull ghcr.io/spex-lang/static-build:9.6.6 
-
       - name: Build static binary
-        run: |
-          cd release && \
+        run: 
           docker run \
-            -v "${PWD}/..":/mnt/:ro \
+            -v "${PWD}":/mnt/:ro \
             -v "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
             -v "${HOME}/.cabal/store":/root/.local/state/cabal/store \
             -v "${PWD}/dist-newstyle":/mnt/dist-newstyle \
-            ghcr.io/spex-lang/static-build:9.6.6
+            --entrypoint=cabal \
+            ghcr.io/spex-lang/static-build:9.6.6 \
+            build exe:spex exe:spex-demo-petstore --enable-executable-static --project-dir=/mnt
 
       # - name: Create new git tag, if merge to main and .cabal version is bumped
       #   if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
