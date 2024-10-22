@@ -81,6 +81,12 @@ jobs:
             configure --enable-tests --enable-benchmarks --disable-documentation --project-dir=/mnt
 
       # XXX: this shouldn't be necessary, already done in image...
+      # Using historical state as of 2024-10-21T00:00:00Z as explicitly requested (via
+      # command line / project configuration)
+      # There is no index-state for 'hackage.haskell.org' exactly at the requested
+      # timestamp (2024-10-21T00:00:00Z). Falling back to the previous index-state
+      # that exists: 2024-10-20T23:39:17Z 
+      # Hmmm? Try unix time instead?
       - name: Run cabal update
         run: |
           docker run \
@@ -89,7 +95,7 @@ jobs:
             -v "${HOME}/.cabal/store":/root/.local/state/cabal/store \
             -v "${PWD}/dist-newstyle":/mnt/dist-newstyle \
             ghcr.io/spex-lang/static-build:9.6.6 \
-            update hackage.haskell.org,2024-10-21T00:00:00Z
+            update hackage.haskell.org,@1729577343 --project-dir=/mnt -v
 
       - name: Build the cache key
         run: |
@@ -106,9 +112,12 @@ jobs:
         uses: actions/cache/restore@v4
         id: cache
         env:
-          key: ${{ runner.os }}-ghc-${{ steps.setup.outputs.ghc-version }}-cabal-${{ steps.setup.outputs.cabal-version }}
+          key: ${{ runner.os }}-ghc-${{ matrix.ghc-version }}-cabal-${{ matrix.cabal-version }}
         with:
-          path: ${{ steps.setup.outputs.cabal-store }}
+          path: |
+            "${HOME}/.cabal/packages"
+            "${HOME}/.cabal/store"
+            "${PWD}/dist-newstyle"
           key: ${{ env.key }}-plan-${{ hashFiles('**/plan.json') }}
           restore-keys: ${{ env.key }}-
 

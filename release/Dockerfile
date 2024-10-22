@@ -96,6 +96,6 @@ RUN apk upgrade --no-cache \
     ncurses-dev \
     zlib-dev \
     zlib-static \
-  && cabal update hackage.haskell.org,2024-10-21T00:00:00Z
+  && cabal update hackage.haskell.org,@1729577343
 
 ENTRYPOINT [ "cabal" ]
