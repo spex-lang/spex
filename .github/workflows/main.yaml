@@ -118,9 +118,10 @@ jobs:
           path: |
             ${HOME}/.cache/cabal/packages
             ${HOME}/.cabal/store
-            ${{ github.workspace }}/dist-newstyle
           key: ${{ env.key }}-plan-${{ hashFiles('**/plan.json') }}
           restore-keys: ${{ env.key }}-
+
+            # ${{ github.workspace }}/dist-newstyle
 
       - name: Install dependencies
         # If we had an exact cache hit, the dependencies will be up to date.
@@ -137,9 +138,9 @@ jobs:
           path: |
             ${HOME}/.cache/cabal/packages
             ${HOME}/.cabal/store
-            ${{ github.workspace }}/dist-newstyle
           key: ${{ steps.cache.outputs.cache-primary-key }}
 
+          # ${{ github.workspace }}/dist-newstyle
       - name: "Inspect cache: ~/.cache/cabal/packages"
         run: |
           echo "${HOME}/.cache/cabal/packages" || true
@@ -182,7 +183,7 @@ jobs:
           ls -R "${{github.workspace }}/dist-newstyle/build"
           mkdir -p "${{ github.workspace }}/bin"
           cp "$(find ${{ github.workspace }}/dist-newstyle \
-            ( -name spex -o -name spex-demo-petstore ) -type f -executable)" \ 
+            \( -name spex -o -name spex-demo-petstore \) -type f -executable)" \ 
             "${{ github.workspace }}/bin"
 
       - name: Create new git tag, if merge to main and .cabal version is bumped

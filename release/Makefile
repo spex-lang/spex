@@ -19,15 +19,15 @@ static-build: build-image
 		 cache/cabal-store-musl \
 		 cache/dist-newstyle-musl 
 	docker run \
-		-v "${PWD}/..":/mnt/:ro \
+		-v "${PWD}/..":/mnt/ \
 		-v "${PWD}/cache/cabal-cache-musl":/root/.cache/cabal/packages \
 		-v "${PWD}/cache/cabal-store-musl":/root/.local/state/cabal/store \
 		-v "${PWD}/cache/dist-newstyle-musl":/mnt/dist-newstyle \
 		ghcr.io/spex-lang/static-build:$(GHC_VERSION) \
-		update hackage.haskell.org,@1729577343 \
+		update hackage.haskell.org,@1729577343
 	docker run \
 		-v "${PWD}/..":/mnt/:ro \
-		-v "${PWD}/cache/cabal-cache-musl":/root/.cache/cabal \
+		-v "${PWD}/cache/cabal-cache-musl":/root/.cache/cabal/packages \
 		-v "${PWD}/cache/cabal-store-musl":/root/.local/state/cabal/store \
 		-v "${PWD}/cache/dist-newstyle-musl":/mnt/dist-newstyle \
 		ghcr.io/spex-lang/static-build:$(GHC_VERSION) \
