@@ -129,13 +129,6 @@ jobs:
         run: |
           ${{ env.cabal }} build all --only-dependencies --project-dir=/mnt
 
-      - name: Inspect caches
-        run: |
-          echo ${PWD}
-          echo ${HOME}
-          pwd
-          ls -R "${HOME}/.cabal/packages" "${HOME}/.cabal/store" "${{ github.workspace }}/dist-newstyle"
-
       # Cache dependencies already here, so that we do not have to rebuild them
       # should the subsequent steps fail.
       - name: Save cached dependencies
@@ -147,6 +140,14 @@ jobs:
             ~/.cabal/store
             ${{ github.workspace }}/dist-newstyle
           key: ${{ steps.cache.outputs.cache-primary-key }}
+
+      - name: Inspect caches
+        run: |
+          echo ${PWD}
+          echo ${HOME}
+          pwd
+          ls -R "${HOME}/.cache/cabal" "${HOME}/.cabal/store" "${{ github.workspace }}/dist-newstyle" || true
+
 
       # - name: Build
       #   run: cabal build all
