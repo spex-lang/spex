@@ -151,7 +151,7 @@ jobs:
           echo ${HOME}
           ls -R "${HOME}/.cabal/store" || true
 
-      - name: "Inspect cache: dist-newstyle""
+      - name: "Inspect cache: dist-newstyle"
         run: |
           echo ${{ github.workspace }}
           ls -R "${{ github.workspace }}/dist-newstyle" || true
