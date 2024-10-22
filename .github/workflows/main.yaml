@@ -71,7 +71,7 @@ jobs:
       #  key: ${{ steps.ghc-cabal-cache.outputs.cache-primary-key }}
 
       - name: Configure the build
-        run: 
+        run: |
           docker run \
             -v "${PWD}":/mnt/ \
             -v "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
@@ -82,7 +82,7 @@ jobs:
 
       # XXX: this shouldn't be necessary, already done in image...
       - name: Run cabal update
-        run:
+        run: |
           docker run \
             -v "${PWD}":/mnt/:ro \
             -v "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
@@ -92,7 +92,7 @@ jobs:
             update hackage.haskell.org,2024-10-21T00:00:00Z
 
       - name: Build the cache key
-        run:
+        run: |
           docker run \
             -v "${PWD}":/mnt/:ro \
             -v "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
@@ -115,7 +115,7 @@ jobs:
       - name: Install dependencies
         # If we had an exact cache hit, the dependencies will be up to date.
         if: steps.cache.outputs.cache-hit != 'true'
-        run:
+        run: |
           docker run \
             -v "${PWD}":/mnt/:ro \
             -v "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
@@ -151,7 +151,7 @@ jobs:
       #
 
       - name: Build static binary
-        run: 
+        run: |
           docker run \
             -v "${PWD}":/mnt/:ro \
             -v "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
