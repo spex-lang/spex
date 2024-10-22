@@ -82,6 +82,8 @@ ARG CABAL_VERSION
 
 COPY --from=build /root/.ghcup /root/.ghcup
 
+ENV PATH="/root/.ghcup/bin:$PATH"
+
 # Install system dependencies for cabal (curl), ghc (gmp and ncurses) and spex.
 RUN apk upgrade --no-cache \
   && apk add --no-cache \
@@ -93,10 +95,7 @@ RUN apk upgrade --no-cache \
     musl-dev \
     ncurses-dev \
     zlib-dev \
-    zlib-static
+    zlib-static \
+  && cabal update hackage.haskell.org,2024-10-21T00:00:00Z
 
-ENV PATH="/root/.ghcup/bin:$PATH"
-
-COPY --chmod=0755 entrypoint.sh /entrypoint.sh
-
-ENTRYPOINT [ "/entrypoint.sh" ]
+ENTRYPOINT [ "cabal" ]

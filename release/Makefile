@@ -29,7 +29,7 @@ build-image: Dockerfile
 	docker build --tag ghcr.io/spex-lang/static-build:$(GHC_VERSION) .
 
 push-image: build-image
-	@echo ${GITHUB_TOKEN} | \
+	@echo ${CR_PAT} | \
 		docker login ghrc.io --username spex-lang --password-stdin
 	docker push ghcr.io/spex-lang/static-build:$(GHC_VERSION)
 
