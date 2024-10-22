@@ -190,7 +190,7 @@ jobs:
 
       - name: Copy binaries
         run: |
-          mkdir -p "${{ github.workspace }}/dist-newstyle/bin/
+          mkdir -p "${{ github.workspace }}/dist-newstyle/bin/"
           cp "$(find ${{ github.workspace }}/dist-newstyle -name spex               -type f -executable)" \ 
              "$(find ${{ github.workspace }}/dist-newstyle -name spex-demo-petstore -type f -executable)" \
             "${{ github.workspace }}/dist-newstyle/bin"
