@@ -95,7 +95,8 @@ jobs:
             -v "${HOME}/.cabal/store":/root/.local/state/cabal/store \
             -v "${PWD}/dist-newstyle":/mnt/dist-newstyle \
             ghcr.io/spex-lang/static-build:9.6.6 \
-            update hackage.haskell.org,@1729577343 --project-dir=/mnt -v
+            update --project-dir=/mnt -v
+          #update hackage.haskell.org,@1729577343 --project-dir=/mnt -v
 
       - name: Build the cache key
         run: |
