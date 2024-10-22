@@ -118,7 +118,7 @@ jobs:
           path: |
             ${HOME}/.cache/cabal/packages
             ${HOME}/.cabal/store
-          key: ${{ env.key }}-plan-${{ hashFiles('**/plan.json') }}
+          key: ${{ env.key }}-plan-${{ hashFiles('${{ github.workspace }}/cache/plan.json') }}
           restore-keys: ${{ env.key }}-
 
             # ${{ github.workspace }}/dist-newstyle
@@ -193,17 +193,19 @@ jobs:
         id: autotag
 
       - name: Release
-        uses: softprops/action-gh-release@v2
-        # if: steps.autotag.outputs.created
-        with:
-          body_path: CHANGELOG.md
-          draft: true
-          files: |
-            CHANGELOG.md
-            LICENSE
-            "${{ github.workspace }}/bin/spex"
-            "${{ github.workspace }}/bin/spex-demo-petstore"
-
+        run: |
+          gh release create --draft --notes-file=CHANGELOG.md "${{ github.workspace }}/bin/*"
+        #        uses: softprops/action-gh-release@v2
+        #        # if: steps.autotag.outputs.created
+        #        with:
+        #          body_path: CHANGELOG.md
+        #          draft: true
+        #          files: |
+        #            CHANGELOG.md
+        #            LICENSE
+        #            "${{ github.workspace }}/bin/spex"
+        #            "${{ github.workspace }}/bin/spex-demo-petstore"
+        #
       # - name: Create tarball
       #   run: cabal sdist
       #   if: steps.autotag.outputs.created
