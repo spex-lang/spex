@@ -9,6 +9,7 @@ env:
       --volume "${HOME}/.cabal/store":/root/.local/state/cabal/store \
       --volume "${{ github.workspace }}/dist-newstyle":/mnt/dist-newstyle \
       ghcr.io/spex-lang/static-build:9.6.6 \
+  GH_TOKEN: ${{ github.token }}
 
 #     --volume "${{ github.workspace }}":/mnt/:ro \
 # --volume "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
@@ -118,7 +119,7 @@ jobs:
           path: |
             ${HOME}/.cache/cabal/packages
             ${HOME}/.cabal/store
-          key: ${{ env.key }}-plan-${{ hashFiles('${{ github.workspace }}/cache/plan.json') }}
+          key: ${{ env.key }}-plan-${{ hashFiles(${{ github.workspace }}/cache/plan.json) }}
           restore-keys: ${{ env.key }}-
 
             # ${{ github.workspace }}/dist-newstyle
