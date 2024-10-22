@@ -78,7 +78,14 @@ jobs:
             -v "${HOME}/.cabal/store":/root/.local/state/cabal/store \
             -v "${PWD}/dist-newstyle":/mnt/dist-newstyle \
             ghcr.io/spex-lang/static-build:9.6.6 \
-            configure --enable-tests --enable-benchmarks --disable-documentation --project-dir=/mnt
+            configure \
+              --enable-static \
+              --enable-executable-static \
+              --disable-profiling \
+              --disable-library-for-ghci \
+              --enable-library-stripping \
+              --enable-executable-stripping \
+              --enable-tests --enable-benchmarks --disable-documentation --project-dir=/mnt
 
       # XXX: this shouldn't be necessary, already done in image...
       # Using historical state as of 2024-10-21T00:00:00Z as explicitly requested (via
@@ -191,7 +198,8 @@ jobs:
               --enable-executable-static \
               --install-method=copy \
               --overwrite-policy=always \
-              --installdir=/mnt/bin
+              --installdir=/mnt/bin \
+              --project-dir=/mnt
 
       - name: Create new git tag, if merge to main and .cabal version is bumped
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
@@ -208,7 +216,6 @@ jobs:
             CHANGELOG.md
             LICENSE
             /mnt/bin/*
-
 
       # - name: Create tarball
       #   run: cabal sdist
