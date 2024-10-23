@@ -1,9 +1,7 @@
-{-# LANGUAGE TemplateHaskell #-}
-
 module Spex.CommandLine.ArgParser where
 
 import Data.Version (showVersion)
-import GitHash (giDirty, giHash, tGitInfoCwd)
+import GitHash (getGitInfo, giDirty, giHash)
 import Options.Applicative
 
 import Paths_spex (version)
@@ -25,16 +23,21 @@ data CmdLineArgs = CmdLineArgs
 data Logging = Quiet Bool | Verbose Bool | VeryVerbose Bool
 
 parseCmdLineArgs :: IO CmdLineArgs
-parseCmdLineArgs = execParser opts
+parseCmdLineArgs = do
+  git <- getGitInfo "." >>= \case
+           Right gi -> return $ giHash gi ++ if giDirty gi
+                                             then "-dirty"
+                                             else ""
+           Left _e  -> return "UNKNOWN"
+  execParser (opts git)
   where
-    opts = info (cmdLineArgs <**> simpleVersioner versionHash <**> helper)
+    opts git = info (cmdLineArgs <**> simpleVersioner versionHash <**> helper)
       ( fullDesc
       <> progDesc "The Spex specification language."
       <> header "spex - specification language"
       )
-    versionHash = concat [ "v", showVersion version, " ", giHash gi,
-                           if giDirty gi then "-dirty" else "" ]
-    gi = $$tGitInfoCwd
+      where
+        versionHash = concat [ "v", showVersion version, " ", git ]
 
 cmdLineArgs :: Parser CmdLineArgs
 cmdLineArgs = CmdLineArgs
