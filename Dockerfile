@@ -1,10 +1,12 @@
 ARG GHC_VERSION=9.6.6
 ARG CABAL_VERSION=3.12.1.0
+ARG SPEX_VERSION="UNKNOWN"
 
 FROM docker.io/library/alpine:3.20 AS build
 
 ARG GHC_VERSION
 ARG CABAL_VERSION
+ARG SPEX_VERSION
 
 LABEL org.opencontainers.image.source=https://github.com/spex-lang/spex
 LABEL org.opencontainers.image.description="Spex's build and test image"
@@ -115,8 +117,6 @@ RUN --mount=type=cache,target=/root/.local/state/cabal/store \
 
 COPY . .
 
-ENV SPEX_GIT_HASH="$(git rev-parse HEAD)" 
-
 # We copied example/*/*.cabal into the working directory to build all
 # dependencies, but now we have all those cabal files there, in addition to
 # where they originally were inside the examples folder, so we have to remove
@@ -126,7 +126,7 @@ RUN --mount=type=cache,target=/root/.local/state/cabal/store \
     --mount=type=cache,target=dist-newstyle \
   find . -maxdepth 1 \( -name '*.cabal' -a ! -name spex.cabal \) -delete \
   && cabal update \
-  && SPEX_GIT_HASH=$SPEX_GIT_HASH cabal build lib:spex lib:petstore \
+  && SPEX_GIT_HASH=$SPEX_VERSION cabal build lib:spex lib:petstore \
   && cabal test all
 
 ## XXX: ^- update shouldn't be needed...

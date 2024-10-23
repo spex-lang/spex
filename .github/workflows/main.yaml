@@ -79,6 +79,7 @@ jobs:
           pull: true
           push: ${{ github.event_name != 'pull_request' }} # Don't push on PRs.
           file: Dockerfile
+          build-args: SPEX_VERSION=${{ github.sha }}
           tags: |
             ${{ steps.meta.outputs.tags }}
             ghcr.io/spex-lang/spex-build:latest
