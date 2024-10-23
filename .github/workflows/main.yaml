@@ -38,25 +38,41 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ github.token }}
 
-      - name: Build and push
+      - name: Build and test
         uses: docker/build-push-action@v6
         with:
           pull: true
           push: ${{ github.event_name != 'pull_request' }} # Don't push on PRs.
-          tags: ghcr.io/spex-lang/spex-build:${{ github.sha }}
+          tags: ghcr.io/spex-lang/spex-build:latest
           # https://docs.docker.com/build/ci/github-actions/cache/#github-cache
           cache-from: type=gha
           cache-to: type=gha,mode=max
           context: .
 
-      ##      - name: Docker pull
-      ##        run: docker pull ghcr.io/spex-lang/spex-build:latest
-      ##
-      ##      - name: Docker build
-      ##        run: docker build --tag ghcr.io/spex-lang/spex-build:latest .
-      ##
-      ##      - name: Docker push
-      ##        if: ${{ github.event_name != 'pull_request' }} # Don't push on PRs.
-      ##        run: docker push ghcr.io/spex-lang/spex-build:latest
-      ##
+      - name: Create new git tag, if merge to main and .cabal version is bumped
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        uses: sol/haskell-autotag@v1
+        id: autotag
+
+      - name: Build static binaries
+        # if: steps.autotag.outputs.created
+        uses: docker/build-push-action@v6
+        with:
+          pull: true
+          push: ${{ github.event_name != 'pull_request' }} # Don't push on PRs.
+          tags: ghcr.io/spex-lang/spex:latest
+          # https://docs.docker.com/build/ci/github-actions/cache/#github-cache
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: BUILDKIT_CONTEXT_KEEP_GIT_DIR=1
+          context: .
+
+      - name: Release
+        # if: steps.autotag.outputs.created
+        run: |
+          docker create --name dummy ghcr.io/spex-lang/spex:latest
+          docker cp dummy:/usr/local/bin/spex "${{ github.workspace }}/bin/"
+          docker rm -f dummy
+          gh release create --draft --notes-file=CHANGELOG.md \
+            ${{ steps.autotag.outputs.version  }} 
 

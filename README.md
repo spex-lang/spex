@@ -248,6 +248,7 @@ Here's what I'm currently working on:
     * https://github.com/softprops/action-gh-release
   + install script?
     * https://raw.githubusercontent.com/haskell/ghcup-hs/refs/heads/master/scripts/bootstrap/bootstrap-haskell
+    * https://install.determinate.systems/nix
   + changelog generator (semantic commit messages)
   + commit hook for conventional commits?
 - https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-and-highlighting-code-blocks#syntax-highlighting

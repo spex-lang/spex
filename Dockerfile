@@ -94,11 +94,13 @@ RUN apk upgrade --no-cache \
     upx \
     zlib-dev \
     zlib-static
+# XXX: remove upx
 
 WORKDIR /spex
 
 COPY spex.cabal cabal.project cabal.project.freeze example/*/*.cabal .
 
+# XXX: https://docs.docker.com/reference/dockerfile/#run---mount
 RUN cabal configure \
        --enable-executable-static \
        --disable-profiling \
