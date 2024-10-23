@@ -24,4 +24,4 @@ FROM scratch AS release
 
 COPY --from=build /usr/local/bin .
 
-ENTRYPOINT [ "spex" ]
+ENTRYPOINT [ "/spex" ]
