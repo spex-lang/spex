@@ -1,8 +1,8 @@
+FROM ghcr.io/spex-lang/spex-build
+
 LABEL org.opencontainers.image.source=https://github.com/spex-lang/spex
 LABEL org.opencontainers.image.description="Spex's static binary build image"
 LABEL org.opencontainers.image.licenses=BSD-2-Clause
-
-FROM ghcr.io/spex-lang/spex-build
 
 RUN apk upgrade --no-cache \
   && apk add --no-cache \
