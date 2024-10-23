@@ -85,6 +85,7 @@ ENV PATH="/root/.ghcup/bin:$PATH"
 RUN apk upgrade --no-cache \
   && apk add --no-cache \
     curl \
+    gcc \
     gmp-dev \
     ncurses-dev \
     zlib-dev \
