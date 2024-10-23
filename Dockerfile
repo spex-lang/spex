@@ -79,6 +79,8 @@ RUN  rm -r /root/.ghcup/cache \
 
 FROM docker.io/library/alpine:3.20
 
+ARG SPEX_VERSION
+
 COPY --from=build /root/.ghcup /root/.ghcup
 
 ENV PATH="/root/.ghcup/bin:$PATH"
