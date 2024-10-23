@@ -119,6 +119,8 @@ RUN --mount=type=cache,target=/root/.local/state/cabal/store \
 
 COPY . .
 
+ENV SPEX_VERSION=$SPEX_VERSION
+
 # We copied example/*/*.cabal into the working directory to build all
 # dependencies, but now we have all those cabal files there, in addition to
 # where they originally were inside the examples folder, so we have to remove
@@ -128,7 +130,7 @@ RUN --mount=type=cache,target=/root/.local/state/cabal/store \
     --mount=type=cache,target=dist-newstyle \
   find . -maxdepth 1 \( -name '*.cabal' -a ! -name spex.cabal \) -delete \
   && cabal update \
-  && SPEX_GIT_HASH=$SPEX_VERSION cabal build lib:spex lib:petstore \
+  && cabal build lib:spex lib:petstore \
   && cabal test all
 
 ## XXX: ^- update shouldn't be needed...

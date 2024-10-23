@@ -31,7 +31,7 @@ parseCmdLineArgs = do
            Right gi -> return $ giHash gi ++ if giDirty gi
                                              then "-dirty"
                                              else ""
-           Left _e  -> lookupEnv "SPEX_GIT_HASH" >>= \case
+           Left _e  -> lookupEnv "SPEX_VERSION" >>= \case
                          Nothing  -> return "UNKNOWN"
                          Just git -> return git
   execParser (opts git)
