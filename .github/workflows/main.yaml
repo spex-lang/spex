@@ -12,7 +12,7 @@ on:
 
 permissions:
   contents: write
-  # packages: read, write
+  packages: read, write
 
 jobs:
   build-and-test:
