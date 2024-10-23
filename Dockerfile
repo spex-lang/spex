@@ -126,7 +126,7 @@ RUN --mount=type=cache,target=/root/.local/state/cabal/store \
     --mount=type=cache,target=dist-newstyle \
   find . -maxdepth 1 \( -name '*.cabal' -a ! -name spex.cabal \) -delete \
   && cabal update \
-  && cabal build lib:spex lib:petstore \
+  && SPEX_GIT_HASH=$SPEX_GIT_HASH cabal build lib:spex lib:petstore \
   && cabal test all
 
 ## XXX: ^- update shouldn't be needed...
