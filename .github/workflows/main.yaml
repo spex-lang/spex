@@ -76,11 +76,12 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          pull: true
           push: ${{ github.event_name != 'pull_request' }} # Don't push on PRs.
           file: Dockerfile
           tags: |
             ${{ steps.meta.outputs.tags }}
-            latest
+            ghcr.io/spex-lang/spex-build:latest
           labels: ${{ steps.meta.outputs.labels }}
           build-args: BUILDKIT_CONTEXT_KEEP_GIT_DIR=1
           # https://docs.docker.com/build/ci/github-actions/cache/#github-cache
@@ -110,11 +111,12 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          pull: true
           push: ${{ github.event_name != 'pull_request' }} # Don't push on PRs.
           file: release/Dockerfile
           tags:
             ${{ steps.meta-release.outputs.tags }}
-            latest
+            ghcr.io/spex-lang/spex:latest
           labels: ${{ steps.meta-release.outputs.labels }}
           outputs: type=local,dest=${{ github.workspace }}/bin/
           # https://docs.docker.com/build/ci/github-actions/cache/#github-cache
