@@ -2,17 +2,7 @@ name: main
 
 env:
   LANG: C.UTF-8
-  cabal: |
-    docker run \
-      --volume "${{ github.workspace }}":/mnt/ \
-      --volume "${HOME}/.cache/cabal/packages":/root/.cache/cabal/packages \
-      --volume "${HOME}/.cabal/store":/root/.local/state/cabal/store \
-      --volume "${{ github.workspace }}/dist-newstyle":/mnt/dist-newstyle \
-      ghcr.io/spex-lang/static-build:9.6.6 \
   GH_TOKEN: ${{ github.token }}
-
-#     --volume "${{ github.workspace }}":/mnt/:ro \
-# --volume "${HOME}/.cabal/packages":/root/.cache/cabal/packages \
 
 on:
   push:
@@ -24,8 +14,7 @@ permissions:
   contents: write
 
 jobs:
-  # Follows https://github.com/haskell-actions/setup#model-cabal-workflow-with-caching
-  build-and-deploy:
+  build-and-test:
     name: GHC ${{ matrix.ghc-version }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -37,6 +26,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Following https://github.com/docker/build-push-action?tab=readme-ov-file#usage
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -44,188 +37,11 @@ jobs:
           username: spex-lang
           password: ${{ secrets.CR_PAT }}
 
-      - name: Pull build image
-        run: docker pull ghcr.io/spex-lang/static-build:9.6.6 
-
-      #- name: Restore cached GHC and cabal
-      #  uses: actions/cache/restore@v4
-      #  id: ghc-cabal-cache
-      #  env:
-      #  with:
-      #    path: |
-      #      ${HOME}/.cabal/bin/cabal
-      #      ${HOME}/.ghcup/bin/ghc-${{ matrix.ghc-version }}
-      #    key: ${{ runner.os }}-ghc-${{ matrix.ghc-version }}-cabal-${{ matrix.cabal-version }}
-  
-      # - name: Set up GHC ${{ matrix.ghc-version }}
-      #   # if: steps.ghc-cabal-cache.outputs.cache-hit != 'true'
-      #   uses: haskell-actions/setup@v2
-      #   id: setup
-      #   with:
-      #     ghc-version: ${{ matrix.ghc-version }}
-      #     cabal-version: ${{ matrix.cabal-version }}
-      #     cabal-update: true
-
-      #- name: Save cached GHC and cabal
-      #  uses: actions/cache/save@v4
-      #  if: steps.cache.outputs.ghc-cabal-cache-hit != 'true'
-      #  with:
-      #    path: |
-      #      $HOME/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/lib/x86_64-linux-ghc-$GHC_VERSION/*.so 
-      #      $HOME/.ghcup/ghc/${{ matrix.ghc-version }}/lib/ghc-${{ matrix.ghc-version }}/bin/ 
-      #      $HOME/.ghcup/ghc/${{ matrix.ghc-version }}/lib/ghc-${{ matrix.ghc-version }}/lib/settings
-      #      $HOME/.ghcup/ghc/${{ matrix.ghc-version }}/lib/ghc-${{ matrix.ghc-version }}/lib/package.conf.d
-      #      ${HOME}/.cabal/bin/cabal
-
-      #      # /root/.ghcup/bin/cabal 
-      #      # ${HOME}/.ghcup/bin/ghc-${{ matrix.ghc-version }}
-      #  key: ${{ steps.ghc-cabal-cache.outputs.cache-primary-key }}
-
-      - name: Configure the build
-        run: |
-          ${{ env.cabal }} configure \
-            --enable-static \
-            --disable-shared \
-            --enable-executable-static \
-            --disable-executable-dynamic \
-            --disable-profiling \
-            --disable-library-for-ghci \
-            --enable-library-stripping \
-            --enable-executable-stripping \
-            --enable-tests --enable-benchmarks --disable-documentation --project-dir=/mnt
-
-      # XXX: this shouldn't be necessary, already done in image...
-      # Using historical state as of 2024-10-21T00:00:00Z as explicitly requested (via
-      # command line / project configuration)
-      # There is no index-state for 'hackage.haskell.org' exactly at the requested
-      # timestamp (2024-10-21T00:00:00Z). Falling back to the previous index-state
-      # that exists: 2024-10-20T23:39:17Z 
-      # Hmmm? Try unix time instead?
-      - name: Run cabal update
-        run: |
-          ${{ env.cabal }} update hackage.haskell.org,@1729577343 --project-dir=/mnt
-
-      - name: Build the cache key
-        run: |
-          ${{ env.cabal }} build all --dry-run --project-dir=/mnt 
-            # The last step generates dist-newstyle/cache/plan.json for the cache key.
-
-      - name: Restore cached dependencies
-        uses: actions/cache/restore@v4
-        id: cache
-        env:
-          key: ${{ runner.os }}-ghc-${{ matrix.ghc-version }}-cabal-${{ matrix.cabal-version }}
+      - name: Build and push
+        uses: docker/build-push-action@v6
         with:
-          path: |
-            ${HOME}/.cache/cabal/packages
-            ${HOME}/.cabal/store
-          key: ${{ env.key }}-plan-${{ hashFiles('**/plan.json') }}
-
-          #${{ github.workspace }}/dist-newstyle
-          #restore-keys: ${{ env.key }}-plan-
-
-
-      - name: Install dependencies
-        # If we had an exact cache hit, the dependencies will be up to date.
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: |
-          ${{ env.cabal }} build all --only-dependencies --project-dir=/mnt
-
-      # Cache dependencies already here, so that we do not have to rebuild them
-      # should the subsequent steps fail.
-      - name: Save cached dependencies
-        uses: actions/cache/save@v4
-        if: steps.cache.outputs.cache-hit != 'true'
-        with:
-          path: |
-            ${HOME}/.cache/cabal/packages
-            ${HOME}/.cabal/store
-          key: ${{ steps.cache.outputs.cache-primary-key }}
-
-          # ${{ github.workspace }}/dist-newstyle
-      - name: "Inspect cache: ~/.cache/cabal/packages"
-        run: |
-          echo "${HOME}/.cache/cabal/packages" || true
-          du -sh "${HOME}/.cache/cabal/packages" || true
-          ls -R "${HOME}/.cache/cabal/packages" || true
-
-      - name: "Inspect cache: ~/.cabal/store"
-        run: |
-          echo "${HOME}/.cabal/store"  || true
-          du -sh "${HOME}/.cabal/store" || true
-          ls -R "${HOME}/.cabal/store" || true
-
-      - name: "Inspect cache: dist-newstyle"
-        run: |
-          echo ${{ github.workspace }} || true
-          du -sh "${{ github.workspace}}/dist-newstyle" || true
-          ls -R "${{ github.workspace }}/dist-newstyle" || true
-
-
-      # - name: Build
-      #   run: cabal build all
-
-      # - name: Run tests
-      #   run: cabal test all
-
-      # - name: Check cabal file
-      #   run: cabal check
-
-      # - name: Build documentation
-      #   run: cabal haddock all
-      #
-
-      - name: Create new git tag, if merge to main and .cabal version is bumped
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        uses: sol/haskell-autotag@v1
-        id: autotag
-
-      - name: Build static binary
-        run: |
-          ${{ env.cabal }} build exe:spex exe:spex-demo-petstore \
-            --enable-executable-static --project-dir=/mnt
-
-      - name: Copy binaries
-        run: |
-          mkdir -p "${{ github.workspace }}/bin"
-          cp "$(find ${{ github.workspace }}/dist-newstyle -name spex -type f -executable)" \
-             "${{ github.workspace }}/bin"
-          cp "$(find ${{ github.workspace }}/dist-newstyle -name spex-demo-petstore -type f -executable)" \
-             "${{ github.workspace }}/bin"
-          ls -R "${{github.workspace }}/bin" || true
-        continue-on-error: true 
-        # XXX  for now...
-
-      - name: Compress binaries
-        run: |
-          docker run \
-            --volume "${{ github.workspace }}/bin":/mnt \
-            --entrypoint=upx \
-            ghcr.io/spex-lang/static-build:9.6.6 \ 
-            --best -q /mnt/spex
-
-      - name: Release
-        run: |
-          gh release create --draft --notes-file=CHANGELOG.md \
-            ${{ steps.autotag.outputs.version  }} "${{ github.workspace }}/bin/*"
-        #        uses: softprops/action-gh-release@v2
-        #        # if: steps.autotag.outputs.created
-        #        with:
-        #          body_path: CHANGELOG.md
-        #          draft: true
-        #          files: |
-        #            CHANGELOG.md
-        #            LICENSE
-        #            "${{ github.workspace }}/bin/spex"
-        #            "${{ github.workspace }}/bin/spex-demo-petstore"
-        #
-      # - name: Create tarball
-      #   run: cabal sdist
-      #   if: steps.autotag.outputs.created
-
-      # - uses: haskell-actions/hackage-publish@v1.1
-      #   with:
-      #     # http://hackage.haskell.org/users/account-management
-      #     hackageToken: ${{ secrets.HACKAGE_AUTH_TOKEN }}
-      #     publish: true
-      #   if: steps.autotag.outputs.created
+          push: ${{ github.event_name != 'pull_request' }} # Don't push on PR.
+          tags: spex-lang/spex-build:latest
+          # https://docs.docker.com/build/ci/github-actions/cache/#github-cache
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

@@ -1,3 +1,4 @@
-packages: ./spex.cabal ./example/*/*.cabal
+packages: ./*.cabal
+optional-packages: ./example/*/*.cabal
 
 index-state: hackage.haskell.org @1729577343

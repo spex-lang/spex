@@ -1,0 +1,13 @@
+# Ignore everything.
+*
+
+# Allow files and directories.
+!*.cabal
+!cabal.project
+!cabal.project.freeze
+
+!/src
+!/test
+!/app
+!/example
+!/.git
