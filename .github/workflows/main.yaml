@@ -32,8 +32,7 @@ jobs:
         with:
           registry: https://ghcr.io
           username: spex-lang
-          password: ${{ secrets.CR_PAT }}
-          # XXX: use github token instead?
+          password: ${{ github.token }}
 
       - name: Docker pull
         run: docker pull ghcr.io/spex-lang/spex-build:latest
