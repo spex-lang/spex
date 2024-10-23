@@ -115,6 +115,8 @@ RUN --mount=type=cache,target=/root/.local/state/cabal/store \
 
 COPY . .
 
+ENV SPEX_GIT_HASH="$(git rev-parse HEAD)" 
+
 # We copied example/*/*.cabal into the working directory to build all
 # dependencies, but now we have all those cabal files there, in addition to
 # where they originally were inside the examples folder, so we have to remove
@@ -122,9 +124,8 @@ COPY . .
 RUN --mount=type=cache,target=/root/.local/state/cabal/store \
     --mount=type=cache,target=/root/.cache/cabal \
     --mount=type=cache,target=dist-newstyle \
-    --mount=target=. \
   find . -maxdepth 1 \( -name '*.cabal' -a ! -name spex.cabal \) -delete \
-  && SPEX_GIT_HASH="$(git rev-parse HEAD)" cabal build lib:spex lib:petstore \
+  && cabal build lib:spex lib:petstore \
   && cabal test all
 
 ENTRYPOINT [ "/bin/sh" ]
