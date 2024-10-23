@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: write
+  # packages: read, write
 
 jobs:
   build-and-test:
@@ -32,18 +33,30 @@ jobs:
           registry: https://ghcr.io
           username: spex-lang
           password: ${{ secrets.CR_PAT }}
+          # XXX: use github token instead?
 
-      # Following https://github.com/docker/build-push-action?tab=readme-ov-file#usage
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Docker pull
+        run: docker pull ghcr.io/spex-lang/spex-build:latest
 
-      - name: Build and push
-        uses: docker/build-push-action@v6
-        with:
-          pull: true
-          push: ${{ github.event_name != 'pull_request' }} # Don't push on PRs.
-          tags: spex-lang/spex-build:latest
-          # https://docs.docker.com/build/ci/github-actions/cache/#github-cache
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          context: .
+      - name: Docker build
+        run: docker build --tag ghcr.io/spex-lang/spex-build:latest .
+
+      - name: Docker push
+        if: ${{ github.event_name != 'pull_request' }} # Don't push on PRs.
+        run: docker push ghcr.io/spex-lang/spex-build:latest
+
+
+          ##      # Following https://github.com/docker/build-push-action?tab=readme-ov-file#usage
+          ##      - name: Set up Docker Buildx
+          ##        uses: docker/setup-buildx-action@v3
+          ##
+          ##      - name: Build and push
+          ##        uses: docker/build-push-action@v6
+          ##        with:
+          ##          pull: true
+          ##          push: ${{ github.event_name != 'pull_request' }} # Don't push on PRs.
+          ##          tags: spex-lang/spex-build:latest
+          ##          # https://docs.docker.com/build/ci/github-actions/cache/#github-cache
+          ##          cache-from: type=gha
+          ##          cache-to: type=gha,mode=max
+          ##          context: .
