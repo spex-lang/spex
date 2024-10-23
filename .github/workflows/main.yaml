@@ -49,8 +49,8 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
 
-      - name: Restore cache
-        uses: actions/cache/restore@v4
+      - name: Cache
+        uses: actions/cache@v4
         id: cache
         with:
           path: |
@@ -79,8 +79,8 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }} # Don't push on PRs.
           file: Dockerfile
           tags: |
-            ghcr.io/spex-lang/spex-build:${{ steps.meta.outputs.tags }}
-            ghcr.io/spex-lang/spex-build:latest
+            ${{ steps.meta.outputs.tags }}
+            latest
           labels: ${{ steps.meta.outputs.labels }}
           build-args: BUILDKIT_CONTEXT_KEEP_GIT_DIR=1
           # https://docs.docker.com/build/ci/github-actions/cache/#github-cache
@@ -112,8 +112,9 @@ jobs:
           context: .
           push: ${{ github.event_name != 'pull_request' }} # Don't push on PRs.
           file: release/Dockerfile
-            ghcr.io/spex-lang/spex:${{ steps.meta-release.outputs.tags }}
-            ghcr.io/spex-lang/spex:latest
+          tags:
+            ${{ steps.meta-release.outputs.tags }}
+            latest
           labels: ${{ steps.meta-release.outputs.labels }}
           outputs: type=local,dest=${{ github.workspace }}/bin/
           # https://docs.docker.com/build/ci/github-actions/cache/#github-cache
