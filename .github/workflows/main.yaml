@@ -62,6 +62,8 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }} # Don't push on PRs.
           file: release/Dockerfile
           tags: ghcr.io/spex-lang/spex:latest
+          outputs:
+            - type=local,dest=${{ github.workspace }}/bin/
           # https://docs.docker.com/build/ci/github-actions/cache/#github-cache
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -71,9 +73,6 @@ jobs:
       - name: Release
         # if: steps.autotag.outputs.created
         run: |
-          docker buildx create --name dummy ghcr.io/spex-lang/spex:latest
-          docker cp dummy:/usr/local/bin/spex "${{ github.workspace }}/bin/"
-          docker buildx rm -f dummy
           gh release create --draft --notes-file=CHANGELOG.md \
-            ${{ steps.autotag.outputs.version  }} 
+            ${{ steps.autotag.outputs.version  }} ${{ github.workspace }}/bin/*
 

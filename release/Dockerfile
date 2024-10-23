@@ -1,4 +1,4 @@
-FROM ghcr.io/spex-lang/spex-build
+FROM ghcr.io/spex-lang/spex-build AS build
 
 LABEL org.opencontainers.image.source=https://github.com/spex-lang/spex
 LABEL org.opencontainers.image.description="Spex's static binary build image"
@@ -27,4 +27,8 @@ RUN cabal build exe:spex exe:spex-demo-petstore \
   # && upx -q /usr/local/bin/*
   # XXX: Use --best flag?
 
-ENTRYPOINT [ "/bin/sh" ]
+FROM scratch AS release
+
+COPY --from=build /usr/local/bin .
+
+ENTRYPOINT [ "spex" ]
