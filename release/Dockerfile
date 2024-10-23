@@ -11,7 +11,7 @@ RUN apk upgrade --no-cache \
     upx 
 
 RUN --mount=type=cache,target=/root/.local/state/cabal/store \
-    --mount=type=cache,target=/root/.cache/cabal/packages \
+    --mount=type=cache,target=/root/.cache/cabal \
     --mount=type=cache,target=dist-newstyle \
   cabal build exe:spex exe:spex-demo-petstore \
     --enable-executable-static \
