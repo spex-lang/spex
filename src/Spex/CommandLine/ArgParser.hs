@@ -5,6 +5,7 @@ module Spex.CommandLine.ArgParser where
 import Data.Version (showVersion)
 import GitHash (getGitInfo, giDirty, giHash)
 import Options.Applicative
+import System.Environment (lookupEnv)
 
 import Paths_spex (version)
 
@@ -30,7 +31,9 @@ parseCmdLineArgs = do
            Right gi -> return $ giHash gi ++ if giDirty gi
                                              then "-dirty"
                                              else ""
-           Left _e  -> return "UNKNOWN"
+           Left _e  -> lookupEnv "SPEX_GIT_HASH" >>= \case
+                         Nothing  -> return "UNKNOWN"
+                         Just git -> return git
   execParser (opts git)
   where
     opts git = info (cmdLineArgs <**> simpleVersioner versionHash <**> helper)

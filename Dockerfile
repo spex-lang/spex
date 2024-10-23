@@ -123,7 +123,7 @@ RUN --mount=type=cache,target=/root/.local/state/cabal/store \
     --mount=type=cache,target=/root/.cache/cabal \
     --mount=type=cache,target=dist-newstyle \
   find . -maxdepth 1 \( -name '*.cabal' -a ! -name spex.cabal \) -delete \
-  && cabal build lib:spex lib:petstore \
+  && SPEX_GIT_HASH="$(git rev-parse HEAD)" cabal build lib:spex lib:petstore \
   && cabal test all
 
 ENTRYPOINT [ "/bin/sh" ]
