@@ -83,7 +83,8 @@ jobs:
             ${{ steps.meta.outputs.tags }}
             ghcr.io/spex-lang/spex-build:latest
           labels: ${{ steps.meta.outputs.labels }}
-          build-args: BUILDKIT_CONTEXT_KEEP_GIT_DIR=1
+          # XXX: copying in .git breaks cache?!
+          # build-args: BUILDKIT_CONTEXT_KEEP_GIT_DIR=1
           # https://docs.docker.com/build/ci/github-actions/cache/#github-cache
           # https://docs.docker.com/build/ci/github-actions/cache/#cache-mounts
           cache-from: type=gha
