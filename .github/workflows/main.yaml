@@ -38,17 +38,50 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ github.token }}
 
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/spex-lang/spex-build
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      - name: Restore cache
+        uses: actions/cache/restore@v4
+        id: cache
+        with:
+          path: |
+            root-local-state-cabal-store 
+            root-cache-cabal-packages 
+            dist-newstyle 
+          key: ${{ runner.os }}-ghc-${{ matrix.ghc-version }}
+
+      - name: Inject cache into docker
+        uses: reproducible-containers/buildkit-cache-dance@v3.1.0
+        with:
+          cache-map: |
+            {
+              "root-local-state-cabal-store": "/root/.local/state/cabal/store",
+              "root-cache-cabal-packages":    "/root/.cache/cabal/packages",
+              "dist-newstyle":                "dist-newstyle"
+            }
+          skip-extraction: ${{ steps.cache.outputs.cache-hit }}
+
       - name: Build and test
         uses: docker/build-push-action@v6
         with:
-          pull: true
+          context: .
           push: ${{ github.event_name != 'pull_request' }} # Don't push on PRs.
-          tags: ghcr.io/spex-lang/spex-build:latest
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           build-args: BUILDKIT_CONTEXT_KEEP_GIT_DIR=1
           # https://docs.docker.com/build/ci/github-actions/cache/#github-cache
+          # https://docs.docker.com/build/ci/github-actions/cache/#cache-mounts
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          context: .
 
       - name: Create new git tag, if merge to main and .cabal version is bumped
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
@@ -59,7 +92,6 @@ jobs:
         # if: steps.autotag.outputs.created
         uses: docker/build-push-action@v6
         with:
-          pull: true
           push: ${{ github.event_name != 'pull_request' }} # Don't push on PRs.
           file: release/Dockerfile
           tags: ghcr.io/spex-lang/spex:latest
