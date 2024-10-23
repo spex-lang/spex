@@ -62,8 +62,7 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }} # Don't push on PRs.
           file: release/Dockerfile
           tags: ghcr.io/spex-lang/spex:latest
-          outputs:
-            - type=local,dest=${{ github.workspace }}/bin/
+          outputs: type=local,dest=${{ github.workspace }}/bin/
           # https://docs.docker.com/build/ci/github-actions/cache/#github-cache
           cache-from: type=gha
           cache-to: type=gha,mode=max
