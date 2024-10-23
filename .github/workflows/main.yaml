@@ -40,10 +40,10 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          context: .
           pull: true
           push: ${{ github.event_name != 'pull_request' }} # Don't push on PRs.
           tags: spex-lang/spex-build:latest
           # https://docs.docker.com/build/ci/github-actions/cache/#github-cache
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          context: .
