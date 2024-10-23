@@ -1,5 +1,8 @@
 GHC_VERSION:=9.6.6
 
+docker: Dockerfile
+	docker build --tag ghcr.io/spex-lang/spex:latest .
+
 all: bin/spex bin/spex-demo-petstore
 
 # We can't use cabal list-bin here, because it thinks the binary is in

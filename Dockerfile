@@ -81,35 +81,32 @@ COPY --from=build /root/.ghcup /root/.ghcup
 
 ENV PATH="/root/.ghcup/bin:$PATH"
 
-# Install system dependencies for cabal (curl), ghc (gmp and ncurses) and spex.
+# Install system dependencies for cabal (curl), ghc (gmp and ncurses).
 RUN apk upgrade --no-cache \
   && apk add --no-cache \
     curl \
-    gcc \
-    git \
     gmp-dev \
-    libffi-dev \
-    musl-dev \
     ncurses-dev \
-    upx \
     zlib-dev \
     zlib-static
-# XXX: remove upx
 
 WORKDIR /spex
 
 COPY spex.cabal cabal.project cabal.project.freeze example/*/*.cabal .
 
-# XXX: https://docs.docker.com/reference/dockerfile/#run---mount
-RUN cabal configure \
-       --enable-executable-static \
-       --disable-profiling \
-       --disable-library-for-ghci \
-       --enable-library-stripping \
-       --enable-executable-stripping \
-       --enable-tests \
-       --enable-benchmarks \
-       --disable-documentation \
+# https://docs.docker.com/reference/dockerfile/#run---mount
+RUN --mount=type=cache,target=/root/.local/state/cabal/store \
+    --mount=type=cache,target=/root/.cache/cabal/packages \
+    --mount=type=cache,target=dist-newstyle \
+  cabal configure \
+    --enable-executable-static \
+    --disable-profiling \
+    --disable-library-for-ghci \
+    --enable-library-stripping \
+    --enable-executable-stripping \
+    --enable-tests \
+    --enable-benchmarks \
+    --disable-documentation \
   && cabal update \
   && cabal build all --only-dependencies
 
@@ -119,8 +116,11 @@ COPY . .
 # dependencies, but now we have all those cabal files there, in addition to
 # where they originally were inside the examples folder, so we have to remove
 # them.
-RUN find . -maxdepth 1 \( -name '*.cabal' -a ! -name spex.cabal \) -delete \
-  && cabal build all \
+RUN --mount=type=cache,target=/root/.local/state/cabal/store \
+    --mount=type=cache,target=/root/.cache/cabal/packages \
+    --mount=type=cache,target=dist-newstyle \
+  find . -maxdepth 1 \( -name '*.cabal' -a ! -name spex.cabal \) -delete \
+  && cabal build lib:spex lib:petstore \
   && cabal test all
 
 ENTRYPOINT [ "/bin/sh" ]

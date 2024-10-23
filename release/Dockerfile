@@ -8,24 +8,18 @@ RUN apk upgrade --no-cache \
   && apk add --no-cache \
     gcc \
     git \
-    gmp-dev \
-    libffi-dev \
     musl-dev \
-    upx \
-    zlib-dev \
-    zlib-static
+    upx 
 
-COPY --from=ghcr.io/spex-lang/spex-build \
-  /root/.cache/cabal /root/.cache/cabal
-COPY --from=ghcr.io/spex-lang/spex-build \
-  /root/.local/state/cabal/store /root/.local/state/cabal/store 
-
-RUN cabal build exe:spex exe:spex-demo-petstore \
-      --enable-executable-static \
+RUN --mount=type=cache,target=/root/.local/state/cabal/store \
+    --mount=type=cache,target=/root/.cache/cabal/packages \
+    --mount=type=cache,target=dist-newstyle \
+  cabal build exe:spex exe:spex-demo-petstore \
+    --enable-executable-static \
   && find ./dist-newstyle -name 'spex*' -type f -executable \
-       -exec cp {} /usr/local/bin \; 
-  # && upx -q /usr/local/bin/*
-  # XXX: Use --best flag?
+       -exec cp {} /usr/local/bin \; \
+  && upx -q /usr/local/bin/*
+  # XXX: upx --best?
 
 FROM scratch AS release
 
