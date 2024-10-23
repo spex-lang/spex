@@ -87,6 +87,7 @@ RUN apk upgrade --no-cache \
     curl \
     gcc \
     gmp-dev \
+    musl-dev \
     ncurses-dev \
     zlib-dev \
     zlib-static
