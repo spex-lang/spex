@@ -263,6 +263,9 @@ Here's what I'm currently working on:
   ident ::= [a-z][a-zA-Z0-9]*
 
 - Packaging
+  + caching
+    * https://github.com/moby/buildkit/issues/1673 
+     cache /var/lib/buildkit?
   + install script?
       spexup [update] [spexup|spex] -- install latest version
     * spexup list -- lists available releases

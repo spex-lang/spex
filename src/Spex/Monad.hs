@@ -18,7 +18,6 @@ import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Maybe
 import Data.Set (Set)
-import qualified Data.Set as Set
 import Network.HTTP.Client (HttpException(..), HttpExceptionContent(..))
 import qualified Network.HTTP.Client as Http
 
@@ -99,7 +98,7 @@ noAnsiLogger = Logger
 ansiLogger :: Logger
 ansiLogger = Logger
   { loggerInfo  = putStrLn . (cyan "i " ++)
-  , loggerError = putStrLn . (boldRed "Error: " ++ )
+  , loggerError = putStrLn . ((boldRed "Error" ++ ": ") ++ )
   , loggerDebug = \_s -> return ()
   , loggerTrace = \_s -> return ()
   }
