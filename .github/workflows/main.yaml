@@ -86,8 +86,8 @@ jobs:
           build-args: SPEX_VERSION=${{ github.sha }}
           # https://docs.docker.com/build/ci/github-actions/cache/#github-cache
           # https://docs.docker.com/build/ci/github-actions/cache/#cache-mounts
-          cache-from: type=registry,ref=spex-lang/spex-build:buildcache
-          cache-to: type=registry,ref=spex-lang/spex-build:buildcache,mode=max
+          cache-from: type=registry,ref=ghcr.io/spex-lang/spex-build:buildcache
+          cache-to: type=registry,ref=ghcr.io/spex-lang/spex-build:buildcache,mode=max
 
       - name: Create new git tag, if merge to main and .cabal version is bumped
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
@@ -120,8 +120,8 @@ jobs:
           labels: ${{ steps.meta-release.outputs.labels }}
           outputs: type=local,dest=${{ github.workspace }}/bin/
           # https://docs.docker.com/build/ci/github-actions/cache/#github-cache
-          cache-from: type=registry,ref=spex-lang/spex:buildcache
-          cache-to: type=registry,ref=spex-lang/spex:buildcache,mode=max
+          cache-from: type=registry,ref=ghcr.io/spex-lang/spex:buildcache
+          cache-to: type=registry,ref=ghcr.io/spex-lang/spex:buildcache,mode=max
 
       - name: Release
         # if: steps.autotag.outputs.created
