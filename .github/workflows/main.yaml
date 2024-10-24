@@ -127,5 +127,5 @@ jobs:
         # if: steps.autotag.outputs.created
         run: |
           gh release create --draft --notes-file=CHANGELOG.md \
-            ${{ steps.autotag.outputs.version  }} ${{ github.workspace }}/bin/*
+            "v${{ steps.autotag.outputs.version  }}" ${{ github.workspace }}/bin/*
 
