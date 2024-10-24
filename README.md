@@ -242,11 +242,31 @@ Here's what I'm currently working on:
 - print progress while testing
 - docs: contributing.md
 - docs: document syntax?
+
+  Spec ::= "component" Ident "where" Decl*
+
+  Decl ::= OpDecl | TypeDecl
+
+  OpDecl ::= ident ":" Method Path Body Type
+
+  Method ::= "GET" | "POST"
+
+  Path ::= "/"  XXX
+
+  Body ::= "" | "{" Mode Type "}"
+
+  Mode ::= "@" | "!"
+
+  Type ::= "" | "->" Type
+
+  Ident ::= [A-Z][a-zA-Z0-9]*
+  ident ::= [a-z][a-zA-Z0-9]*
+
 - Packaging
-  + ci release job
-    * https://gitlab.com/benz0li/ghc-musl
-    * https://github.com/softprops/action-gh-release
   + install script?
+      spexup [update] [spexup|spex] -- install latest version
+    * spexup list -- lists available releases
+      spexup install (spexup|spex) <version>
     * https://raw.githubusercontent.com/haskell/ghcup-hs/refs/heads/master/scripts/bootstrap/bootstrap-haskell
     * https://install.determinate.systems/nix
   + changelog generator (semantic commit messages)

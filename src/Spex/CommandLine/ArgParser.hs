@@ -3,11 +3,10 @@
 module Spex.CommandLine.ArgParser where
 
 import Data.Version (showVersion)
-import GitHash (getGitInfo, giDirty, giHash)
 import Options.Applicative
-import System.Environment (lookupEnv)
 
 import Paths_spex (version)
+import Spex.CommandLine.GitHash
 
 ------------------------------------------------------------------------
 
@@ -26,23 +25,17 @@ data CmdLineArgs = CmdLineArgs
 data Logging = Quiet Bool | Verbose Bool | VeryVerbose Bool
 
 parseCmdLineArgs :: IO CmdLineArgs
-parseCmdLineArgs = do
-  git <- getGitInfo "." >>= \case
-           Right gi -> return $ giHash gi ++ if giDirty gi
-                                             then "-dirty"
-                                             else ""
-           Left _e  -> lookupEnv "SPEX_VERSION" >>= \case
-                         Nothing  -> return "UNKNOWN"
-                         Just git -> return git
-  execParser (opts git)
+parseCmdLineArgs =
+  execParser opts
   where
-    opts git = info (cmdLineArgs <**> simpleVersioner versionHash <**> helper)
+    opts = info (cmdLineArgs <**> simpleVersioner versionHash <**> helper)
       ( fullDesc
       <> progDesc "The Spex specification language."
       <> header "spex - specification language"
       )
-      where
-        versionHash = concat [ "v", showVersion version, " ", git ]
+
+    versionHash = concat ["v", showVersion version, " ", hash ]
+    hash = $(tGitHash)
 
 cmdLineArgs :: Parser CmdLineArgs
 cmdLineArgs = CmdLineArgs

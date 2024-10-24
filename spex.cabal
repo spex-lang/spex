@@ -35,6 +35,7 @@ library
   exposed-modules:
     Spex.CommandLine.Ansi
     Spex.CommandLine.ArgParser
+    Spex.CommandLine.GitHash
     Spex.CommandLine.Spinner
     Spex.Lexer
     Spex.LibMain

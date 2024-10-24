@@ -1,6 +1,6 @@
 ARG GHC_VERSION=9.6.6
 ARG CABAL_VERSION=3.12.1.0
-ARG SPEX_VERSION="UNKNOWN"
+ARG SPEX_VERSION
 
 FROM docker.io/library/alpine:3.20 AS build
 
@@ -103,7 +103,7 @@ COPY spex.cabal cabal.project cabal.project.freeze example/*/*.cabal .
 
 # https://docs.docker.com/reference/dockerfile/#run---mount
 RUN --mount=type=cache,target=/root/.local/state/cabal/store \
-    --mount=type=cache,target=/root/.cache/cabal \
+    --mount=type=cache,target=/root/.cache/cabal/packages \
     --mount=type=cache,target=dist-newstyle \
   cabal configure \
     --enable-executable-static \
@@ -119,20 +119,16 @@ RUN --mount=type=cache,target=/root/.local/state/cabal/store \
 
 COPY . .
 
-ENV SPEX_VERSION=$SPEX_VERSION
-
 # We copied example/*/*.cabal into the working directory to build all
 # dependencies, but now we have all those cabal files there, in addition to
 # where they originally were inside the examples folder, so we have to remove
 # them.
 RUN --mount=type=cache,target=/root/.local/state/cabal/store \
-    --mount=type=cache,target=/root/.cache/cabal \
+    --mount=type=cache,target=/root/.cache/cabal/packages \
     --mount=type=cache,target=dist-newstyle \
   find . -maxdepth 1 \( -name '*.cabal' -a ! -name spex.cabal \) -delete \
-  && cabal update \
+  && echo $SPEX_VERSION > SPEX_VERSION \
   && cabal build lib:spex lib:petstore \
   && cabal test all
-
-## XXX: ^- update shouldn't be needed...
 
 ENTRYPOINT [ "/bin/sh" ]

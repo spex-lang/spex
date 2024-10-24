@@ -49,28 +49,28 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
 
-      - name: Cache
-        uses: actions/cache@v4
-        id: cache
-        with:
-          path: |
-            root-local-state-cabal-store 
-            root-cache-cabal 
-            dist-newstyle 
-          key: ${{ runner.os }}-ghc-${{ matrix.ghc-version }}
-          #  XXX: key: ${{ env.key }}-plan-${{ hashFiles('**/plan.json') }} ?
+      ## - name: Cache
+      ##   uses: actions/cache@v4
+      ##   id: cache
+      ##   with:
+      ##     path: |
+      ##       root-local-state-cabal-store 
+      ##       root-cache-cabal 
+      ##       dist-newstyle 
+      ##     key: ${{ runner.os }}-ghc-${{ matrix.ghc-version }}
+      ##     #  XXX: key: ${{ env.key }}-plan-${{ hashFiles('**/plan.json') }} ?
 
 
-      - name: Inject cache into docker
-        uses: reproducible-containers/buildkit-cache-dance@v3.1.0
-        with:
-          cache-map: |
-            {
-              "root-local-state-cabal-store": "/root/.local/state/cabal/store",
-              "root-cache-cabal":             "/root/.cache/cabal",
-              "dist-newstyle":                "dist-newstyle"
-            }
-          skip-extraction: ${{ steps.cache.outputs.cache-hit }}
+      ## - name: Inject cache into docker
+      ##   uses: reproducible-containers/buildkit-cache-dance@v3.1.0
+      ##   with:
+      ##     cache-map: |
+      ##       {
+      ##         "root-local-state-cabal-store": "/root/.local/state/cabal/store",
+      ##         "root-cache-cabal":             "/root/.cache/cabal",
+      ##         "dist-newstyle":                "dist-newstyle"
+      ##       }
+      ##     skip-extraction: ${{ steps.cache.outputs.cache-hit }}
 
       - name: Build and test
         uses: docker/build-push-action@v6
@@ -86,8 +86,8 @@ jobs:
           build-args: SPEX_VERSION=${{ github.sha }}
           # https://docs.docker.com/build/ci/github-actions/cache/#github-cache
           # https://docs.docker.com/build/ci/github-actions/cache/#cache-mounts
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=registry,ref=spex-lang/spex-build:buildcache
+          cache-to: type=registry,ref=spex-lang/spex-build:buildcache,mode=max
 
       - name: Create new git tag, if merge to main and .cabal version is bumped
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
@@ -120,8 +120,8 @@ jobs:
           labels: ${{ steps.meta-release.outputs.labels }}
           outputs: type=local,dest=${{ github.workspace }}/bin/
           # https://docs.docker.com/build/ci/github-actions/cache/#github-cache
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=registry,ref=spex-lang/spex:buildcache
+          cache-to: type=registry,ref=spex-lang/spex:buildcache,mode=max
 
       - name: Release
         # if: steps.autotag.outputs.created
