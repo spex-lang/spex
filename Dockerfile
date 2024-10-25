@@ -119,7 +119,8 @@ COPY . .
 # dependencies, but now we have all those cabal files there, in addition to
 # where they originally were inside the examples folder, so we have to remove
 # them.
-RUN --mount=type=cache,target=/root/.local/state/cabal/store \
+RUN --mount=type=secret,id=version \
+    --mount=type=cache,target=/root/.local/state/cabal/store \
     --mount=type=cache,target=/root/.cache/cabal/packages \
     --mount=type=cache,target=dist-newstyle \
   find . -maxdepth 1 \( -name '*.cabal' -a ! -name spex.cabal \) -delete \

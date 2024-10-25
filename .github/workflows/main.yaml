@@ -83,7 +83,8 @@ jobs:
             ${{ steps.meta.outputs.tags }}
             ghcr.io/spex-lang/spex-build:latest
           labels: ${{ steps.meta.outputs.labels }}
-          build-args: SPEX_VERSION=${{ github.sha }}
+          # https://docs.docker.com/build/building/secrets/
+          secrets: version=${{ github.sha }}
           # https://docs.docker.com/build/ci/github-actions/cache/#github-cache
           # https://docs.docker.com/build/ci/github-actions/cache/#cache-mounts
           cache-from: type=registry,ref=ghcr.io/spex-lang/spex-build:buildcache
