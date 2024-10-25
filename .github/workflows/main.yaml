@@ -126,6 +126,7 @@ jobs:
       - name: Release
         # if: steps.autotag.outputs.created
         run: |
+          mv bin/spex "bin/spex-{{ steps.autotag.outputs.version }}"
           gh release create --draft --notes-file=CHANGELOG.md \
-            "v${{ steps.autotag.outputs.version  }}" ${{ github.workspace }}/bin/*
+            "v${{ steps.autotag.outputs.version }}" ${{ github.workspace }}/bin/*
 

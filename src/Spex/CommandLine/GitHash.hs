@@ -11,8 +11,9 @@ import Language.Haskell.TH (Exp, Q, runIO)
 
 tGitHash :: Q Exp
 tGitHash = runIO $ do
-  s <- readFile "SPEX_VERSION" `catch` ((\(_e :: IOError) -> do
-    getGitInfo "." >>= \case
-      Left _e -> error "tGitHash: can't find git commit"
-      Right gi -> return (giHash gi ++ if giDirty gi then "-dirty" else "")))
-  [| fromString s |]
+  v <- readFile "/tmp/SPEX_VERSION" `catch`
+    (\(_ :: IOError) ->
+      getGitInfo "." >>= \case
+        Right gi -> return (giHash gi ++ if giDirty gi then "-dirty" else "")
+        Left _e  -> error "tGitHash: can't find git commit")
+  [| fromString v |]

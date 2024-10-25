@@ -1,12 +1,10 @@
 ARG GHC_VERSION=9.6.6
 ARG CABAL_VERSION=3.12.1.0
-ARG SPEX_VERSION
 
 FROM docker.io/library/alpine:3.20 AS build
 
 ARG GHC_VERSION
 ARG CABAL_VERSION
-ARG SPEX_VERSION
 
 LABEL org.opencontainers.image.source=https://github.com/spex-lang/spex
 LABEL org.opencontainers.image.description="Spex's build and test image"
@@ -79,8 +77,6 @@ RUN  rm -r /root/.ghcup/cache \
 
 FROM docker.io/library/alpine:3.20
 
-ARG SPEX_VERSION
-
 COPY --from=build /root/.ghcup /root/.ghcup
 
 ENV PATH="/root/.ghcup/bin:$PATH"
@@ -127,7 +123,6 @@ RUN --mount=type=cache,target=/root/.local/state/cabal/store \
     --mount=type=cache,target=/root/.cache/cabal/packages \
     --mount=type=cache,target=dist-newstyle \
   find . -maxdepth 1 \( -name '*.cabal' -a ! -name spex.cabal \) -delete \
-  && echo $SPEX_VERSION > SPEX_VERSION \
   && cabal build lib:spex lib:petstore \
   && cabal test all
 

@@ -225,6 +225,10 @@ cabal install spex spex-demo-petstore
 
 * Something about versioning, upgrades, refinement of specs...
 
+* Other types of specifications, e.g. syntax grammars where testing generates
+  random programs? And perhaps find minimal programs that create unique syntax
+  errors?
+
 ## Contributing
 
 If any of the above sounds interesting, or you have ideas of your own, feel
@@ -243,29 +247,56 @@ Here's what I'm currently working on:
 - docs: contributing.md
 - docs: document syntax?
 
+```
   Spec ::= "component" Ident "where" Decl*
+    Decl ::= OpDecl | TypeDecl
 
-  Decl ::= OpDecl | TypeDecl
+      -- XXX: Allow ModalType in response position? 
+      -- semantics: unique response type will never get reused, and abstract
+      -- response type will always get reused?
+      OpDecl ::= ident ":" Method Path Body? ("->" Type)? 
 
-  OpDecl ::= ident ":" Method Path Body Type
+        Method ::= "GET" | "POST"
 
-  Method ::= "GET" | "POST"
+        Path ::= ("/" PathSegment)* "/"?
 
-  Path ::= "/"  XXX
+          PathSegment = "{" ident ":" ModalType "}" | path
 
-  Body ::= "" | "{" Mode Type "}"
+        Body ::= "{" ModalType "}"
+
+      TypeDecl ::= "type" Ident "=" Type
+
+  ModalType ::= Mode? Type
 
   Mode ::= "@" | "!"
 
-  Type ::= "" | "->" Type
+  Type ::= BaseType | RecordDecl | Ident
+
+  BaseType ::= "Unit" | "Bool" | "Int" | "String"
+
+  RecordDecl ::= "{" Field ("," Field)* "}"  -- XXX: parser allows empty records?
+    Field ::= ident ":" Type                 -- XXX: Modal type
+
 
   Ident ::= [A-Z][a-zA-Z0-9]*
   ident ::= [a-z][a-zA-Z0-9]*
+
+  -- https://datatracker.ietf.org/doc/html/rfc3986#section-3.3
+  path ::= pchar+
+    pchar         = unreserved / pct-encoded / sub-delims / ":" / "@"
+
+    pct-encoded   = "%" HEXDIG HEXDIG
+
+    unreserved    = ALPHA / DIGIT / "-" / "." / "_" / "~"
+    sub-delims    = "!" / "$" / "&" / "'" / "(" / ")"
+                  / "*" / "+" / "," / ";" / "="
+```
 
 - Packaging
   + caching
     * https://github.com/moby/buildkit/issues/1673 
      cache /var/lib/buildkit?
+    * https://dev.doroshev.com/blog/docker-mount-type-cache/
   + install script?
       spexup [update] [spexup|spex] -- install latest version
     * spexup list -- lists available releases
