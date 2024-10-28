@@ -1,5 +1,6 @@
 # Spex
 
+[![IRC: #spex on libera](https://img.shields.io/badge/irc-%23spex)](https://web.libera.chat/#spex)
 ![Build status](https://github.com/spex-lang/spex/actions/workflows/main.yaml/badge.svg)
 
 Spex is a specification language and verifier that uses fuzzing and generative
@@ -207,5 +208,13 @@ cabal install spex spex-demo-petstore
 
 ## Contributing
 
-If any of the above sounds interesting, or you have ideas of your own, feel
-free to open a ticket!
+Spex is at an early stage of development and there are many ways to help out,
+here are some examples:
+
+* Help out with issues and PRs;
+* Contribute artwork under appropriate licenses (at least CC-BY-SA);
+* Be helpful and nice to others on:
+  - IRC: [#spex](https://web.libera.chat/#spex) at `irc.libera.chat`.
+* Contributed to releated projects:
+  - [`spexup`](https://github.com/spex-lang/spexup), the installer for the Spex
+    language.
