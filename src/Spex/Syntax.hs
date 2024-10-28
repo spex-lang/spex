@@ -3,6 +3,7 @@
 module Spex.Syntax where
 
 import Data.ByteString (ByteString)
+import Data.ByteString.Char8 as BS8
 import Data.String (IsString)
 
 import Spex.Syntax.Operation
@@ -40,13 +41,13 @@ data Deployment = Deployment
   deriving Show
 
 displayDeployment :: Deployment -> String
-displayDeployment d = d.hostPort.host <> ":" <> show d.hostPort.port
+displayDeployment d = BS8.unpack d.hostPort.host <> ":" <> show d.hostPort.port
 
-data HostPort = HostPort { host :: String, port :: Int }
+data HostPort = HostPort { host :: ByteString, port :: Int }
   deriving Show
 
-data HealthCheck = HealthCheckPath String | HealthCheckScript FilePath
+data HealthCheck = HealthCheckPath ByteString | HealthCheckScript FilePath
   deriving Show
 
-data Reset = ResetPath String | ResetScript FilePath
+data Reset = ResetPath ByteString | ResetScript FilePath
   deriving Show

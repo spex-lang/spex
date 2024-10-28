@@ -5,9 +5,11 @@ Here's what I'm currently working on:
 ### Features
 
 - Health check
+  + make the output nicer
 - use duration rather than numTests?
 - print progress while testing
 - docs: contributing.md
+  + https://github.com/rubyberlin/code-of-conduct?tab=readme-ov-file#readme ?
 - docs: document syntax?
 
 ```
@@ -59,6 +61,7 @@ Here's what I'm currently working on:
   + caching
     * https://github.com/moby/buildkit/issues/1673 
      cache /var/lib/buildkit?
+    * https://github.com/reproducible-containers/buildkit-cache-dance
     * https://dev.doroshev.com/blog/docker-mount-type-cache/
   + install script?
     * confirm with user
@@ -70,8 +73,6 @@ Here's what I'm currently working on:
     * spexup list -- lists available releases
       spexup install (spexup|spex) <version>
 
-    * https://raw.githubusercontent.com/haskell/ghcup-hs/refs/heads/master/scripts/bootstrap/bootstrap-haskell
-    * https://install.determinate.systems/nix
   + changelog generator (semantic commit messages)
   + commit hook for conventional commits?
 - https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-and-highlighting-code-blocks#syntax-highlighting

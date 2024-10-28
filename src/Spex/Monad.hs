@@ -152,10 +152,14 @@ data AppError
   | HttpClientException Op HttpException
   | HttpClientDecodeError Op ByteString String
   | HttpClientUnexpectedStatusCode Int ByteString
+  | HealthCheckFailed
   | TestFailure String Int
 
 throwA :: AppError -> App e
 throwA e = App (ReaderT (const (throwE e)))
+
+tryA :: App a -> App (Either AppError a)
+tryA (App m) = App (ReaderT (tryE . runReaderT m))
 
 infixl 8 <?>
 (<?>) :: App (Either e a) -> (e -> AppError) -> App a
@@ -176,6 +180,7 @@ displayAppError spec = \case
   HttpClientException op e   -> displayHttpException op e
   HttpClientDecodeError op body e -> "Couldn't decode the response of:\n\n    " <> displayOp displayValue op <> "\n\nfrom the body of the request: '" <> BS8.unpack body <> "'\n\nThe error being: " <> e
   HttpClientUnexpectedStatusCode _ _ -> "HTTP client returned 1xx or 3xx"
+  HealthCheckFailed          -> "Health check failed"
   TestFailure e seed         -> "Test failure: " <> e <>
                                 "\nUse --seed " <> show seed <> " to reproduce"
 

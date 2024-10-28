@@ -28,7 +28,7 @@ data HttpClient = HttpClient
 newHttpClient :: Deployment -> App HttpClient
 newHttpClient (Deployment (HostPort host port) _health _reset) = do
   mgr <- liftIO (Http.newManager Http.defaultManagerSettings)
-  let url  = host ++ ":" ++ show port
+  let url  = BS8.unpack host ++ ":" ++ show port
   req <- pure (Http.parseRequest url) ?> InvalidDeploymentUrl url
 
   return $ HttpClient mgr req { Http.requestHeaders =
@@ -50,7 +50,7 @@ httpRequest client op = do
               }
   trace $ "httpRequest, req: " <> show req
   case op.body of
-    Nothing    -> return ()
+    Nothing   -> return ()
     Just body -> trace $ "httpRequest, body: " <> LBS8.unpack (encode body)
   resp <- liftIO (try (Http.httpLbs req client.manager))
             <?> HttpClientException op
@@ -68,7 +68,7 @@ toHttpMethod Get  = Http.methodGet
 toHttpMethod Post = Http.methodPost
 
 toHttpPath :: [PathSegment Value] -> ByteString
-toHttpPath = ("/" <>) . BS8.intercalate "/" . map aux
+toHttpPath = BS8.intercalate "/" . map aux
   where
     aux (Path p)                = p
     aux (Hole _x (IntV i))      = BS8.pack (show i)

@@ -1,7 +1,9 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 module Spex.CommandLine.ArgParser where
 
+import Data.ByteString (ByteString)
 import Data.Version (showVersion)
 import Options.Applicative
 
@@ -11,10 +13,10 @@ import Spex.CommandLine.GitHash
 ------------------------------------------------------------------------
 
 data CmdLineArgs = CmdLineArgs
-  { host           :: String
+  { host           :: ByteString
   , port           :: Int
-  , health         :: String
-  , reset          :: String
+  , health         :: ByteString
+  , reset          :: ByteString
   , numTests       :: Maybe Word
   , seed           :: Maybe Int
   , logging        :: Logging

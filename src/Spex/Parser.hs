@@ -4,7 +4,9 @@
 
 module Spex.Parser where
 
-import qualified Data.ByteString as B
+import Data.ByteString (ByteString)
+import qualified Data.ByteString as BS
+import qualified Data.ByteString.Char8 as BS8
 import Data.Char (ord)
 import Data.Either (partitionEithers)
 import qualified Data.Map as Map
@@ -17,7 +19,7 @@ import Spex.Syntax.Type
 
 ------------------------------------------------------------------------
 
-type Name = B.ByteString
+type Name = BS.ByteString
 
 -- | Parse an identifier. This parser uses `isKeyword` to check that an identifier is not a
 --   keyword.
@@ -189,17 +191,17 @@ deploymentP = do
   $(symbol' "}")
   return (Deployment (HostPort host 80) healthPath resetPath)
 
-hostP :: Parser String
+hostP :: Parser ByteString
 hostP = urlP
 
-urlP :: Parser String
+urlP :: Parser ByteString
 urlP = do
   $(symbol "\"")
   url <- some $ satisfyAscii $ \c ->
            isLatinLetter c || isDigit c ||
            c `elem` (unreserved ++ reserved)
   $(symbol' "\"")
-  return url
+  return (BS8.pack url)
   where
     -- https://www.rfc-editor.org/rfc/rfc3986#section-2
     unreserved :: String

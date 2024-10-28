@@ -13,7 +13,8 @@ to think of it, is that `spex` let's you specify *what* the software under test
 should to, but not *how* it does it.
 
 Currently it only supports specifying and testing HTTP API servers, but the
-range of software that can be specified and tested will extended in the future.
+range of software that can be specified and tested will extended in the
+[future](ROADMAP.md).
 
 > [!CAUTION]
 > Spex is pre-alpha and not suitable for general use yet.
@@ -157,6 +158,9 @@ range of software that can be specified and tested will extended in the future.
 
 - [ ] Only presents new errors?
 
+See the [road map](ROADMAP.md) for features that are planned for later
+releases.
+
 ## Installation
 
 ### From precompiled binary
@@ -214,7 +218,7 @@ here are some examples:
 
 * Help out with issues and PRs;
 * Contribute artwork under appropriate licenses (at least CC-BY-SA);
-* Be helpful and nice to others on:
+* Discuss and be helpful to others on:
   - IRC in the channel [#spex](https://web.libera.chat/#spex) on `irc.libera.chat`;
   - [Zulip](https://spex.zulipchat.com/).
 * Contributed to releated projects:

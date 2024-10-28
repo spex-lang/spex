@@ -10,6 +10,7 @@ import Spex.Monad
 import Spex.Parser
 import Spex.Syntax
 import Spex.Verifier
+import Spex.Verifier.HealthChecker
 
 ------------------------------------------------------------------------
 
@@ -34,7 +35,7 @@ app = do
   info $ "Parsing the specification.\n"
   spec <- pure (runParser specP bs) <?> ParserError
   info $ "Waiting for health check to pass.\n"
-  -- XXX:
+  healthChecker deploy
   info $ "Starting to run tests.\n"
   result <- verify spec deploy
   info $ "All tests passed, here are the results: \n\n" <> displayResult result

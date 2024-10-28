@@ -49,6 +49,7 @@ library
     Spex.Verifier
     Spex.Verifier.Codec.Json
     Spex.Verifier.Generator
+    Spex.Verifier.HealthChecker
     Spex.Verifier.HttpClient
 
   autogen-modules:    Paths_spex
@@ -81,6 +82,7 @@ library
     , base          ^>=4.18.2.0
     , bytestring
     , containers
+    , process
     , text
     , transformers
     , unix
