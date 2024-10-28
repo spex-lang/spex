@@ -130,9 +130,9 @@ jobs:
       - name: Release
         # if: steps.autotag.outputs.created
         run: |
-          for bin in bin/*; do
-            mv "bin/$bin" "bin/$bin-${{ steps.autotag.outputs.version }}-${{ matrix.arch }}"
-          done
+          ls -R bin/
+          find bin/ -maxdepth 1 -type f -executable -exec \
+            mv {} "{}-${{ steps.autotag.outputs.version }}-${{ matrix.arch }}" \;
           gh release create --draft --notes-file=CHANGELOG.md \
             "v${{ steps.autotag.outputs.version }}" ${{ github.workspace }}/bin/*
 
