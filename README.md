@@ -1,6 +1,7 @@
 # Spex
 
-[![IRC: #spex on libera](https://img.shields.io/badge/irc-%23spex)](https://web.libera.chat/#spex)
+[![Zulip](https://img.shields.io/badge/zulip-join_chat-blue.svg)](https://spex.zulipchat.com/)
+[![IRC: #spex on libera.chat](https://img.shields.io/badge/IRC-%23spex%20on%20libera.chat-blue.svg)](https://web.libera.chat/#spex)
 ![Build status](https://github.com/spex-lang/spex/actions/workflows/main.yaml/badge.svg)
 
 Spex is a specification language and verifier that uses fuzzing and generative
@@ -214,7 +215,8 @@ here are some examples:
 * Help out with issues and PRs;
 * Contribute artwork under appropriate licenses (at least CC-BY-SA);
 * Be helpful and nice to others on:
-  - IRC: [#spex](https://web.libera.chat/#spex) at `irc.libera.chat`.
+  - IRC in the channel [#spex](https://web.libera.chat/#spex) on `irc.libera.chat`;
+  - [Zulip](https://spex.zulipchat.com/).
 * Contributed to releated projects:
   - [`spexup`](https://github.com/spex-lang/spexup), the installer for the Spex
     language.
