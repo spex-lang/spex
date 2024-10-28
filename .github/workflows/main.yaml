@@ -22,6 +22,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-24.04]
+        arch: ['x86_64']
         ghc-version: ['9.6.6']
         cabal-version: ['3.12.1.0']
     steps:
@@ -83,6 +84,8 @@ jobs:
             ${{ steps.meta.outputs.tags }}
             ghcr.io/spex-lang/spex-build:latest
           labels: ${{ steps.meta.outputs.labels }}
+          # We pass in the version as a secret, since they don't affect the
+          # container caching, this will be picked up and used by --version.
           # https://docs.docker.com/build/building/secrets/
           secrets: version=${{ github.sha }}
           # https://docs.docker.com/build/ci/github-actions/cache/#github-cache
@@ -127,7 +130,9 @@ jobs:
       - name: Release
         # if: steps.autotag.outputs.created
         run: |
-          mv bin/spex "bin/spex-${{ steps.autotag.outputs.version }}"
+          for bin in bin/*; do
+            mv "bin/$bin" "bin/$bin-${{ steps.autotag.outputs.version }}-${{ matrix.arch }}"
+          done
           gh release create --draft --notes-file=CHANGELOG.md \
             "v${{ steps.autotag.outputs.version }}" ${{ github.workspace }}/bin/*
 

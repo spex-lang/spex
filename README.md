@@ -2,12 +2,44 @@
 
 ![Build status](https://github.com/spex-lang/spex/actions/workflows/main.yaml/badge.svg)
 
-Spex is a programming language for working with specifications.
+Spex is a specification language and verifier that uses fuzzing and generative
+testing techniques to check if software is faithful to some specification.
+
+It's not a programming language in the traditional sense, meaning that the
+software it checks needs to first be written in another language. Another way
+to think of it, is that `spex` let's you specify *what* the software under test
+should to, but not *how* it does it.
+
+Currently it only supports specifying and testing HTTP API servers, but the
+range of software that can be specified and tested will extended in the future.
 
 > [!CAUTION]
 > Spex is pre-alpha and not suitable for general use yet.
 
 ## Installation
+
+### From precompiled binary
+
+#### Automatic
+
+> [!CAUTION]
+> Not supported just yet...
+
+```bash
+ curl --proto '=https' --tlsv1.2 -sSf \
+   https://raw.githubusercontent.com/spex-lang/spexup/refs/heads/main/spexup \
+ | sh
+```
+
+What does this do? It
+[automates](https://github.com/spex-lang/spexup/blob/main/spexup) the manual
+steps below.
+
+#### Manual
+
+1. Go to [releases](https://github.com/spex-lang/spex/releases);
+2. Click on "Assets" for the latest release;
+3. Download the binaries and put them into your PATH.
 
 ### From source
 
@@ -39,7 +71,7 @@ cabal install spex spex-demo-petstore
 
 ## Features
 
-- [x] Concise specification language for HTTP services
+- [x] Concise specification language for HTTP API servers
   <details>
   
   <summary>Example</summary>
@@ -94,7 +126,9 @@ cabal install spex spex-demo-petstore
   `getPet` requests would all most certainly return 404.
 
 - [x] Ability to annotate input types with abstract and unique modalities (@ and
-  !), e.g.:
+  !). Where an abstract type isn't generated, i.e. gets reused, and a unique type
+  is always generated and never reused. Without any annotation a coin is
+  flipped and the value either gets reused or generated.
   <details>
 
   <summary>Example</summary>
@@ -126,10 +160,6 @@ cabal install spex spex-demo-petstore
 
   Notice how many fewer 404 errors we get for `getPet` now, because of the
   abstract (`@`) annotation on `petId`.
-
-  Where an abstract type isn't generated, i.e. gets reused, and a unique type
-  is always generated and never reused. Without any annotation a coin is
-  flipped and the value either gets reused or generated.
   </details>
 
 - [ ] Keep track of previous responses and try to use them during generation 
@@ -214,7 +244,32 @@ cabal install spex spex-demo-petstore
 * REPL which generates data on tab-complete
 
 * Ability to specify protocols, e.g. which sequences of commands
-  are valid, and use this to do "run-time session type" checking
+  are valid, and use this to do "run-time session type" checking.
+  - https://www.youtube.com/watch?v=ed7A7r6DBsM
+  - https://www.youtube.com/watch?v=FqlewYgUcZU
+
+  - "We need languages to describe encodings and protocols not machine
+    instructions" (https://www.youtube.com/watch?v=ieEaaofM7uU)
+
+    start & open(File, Modes) ->
+      {ok, Handle} & ready |
+      {error, Reason} & closed.
+
+    ready & close(Handle) ->
+      ok & closed | 
+      {error, Reason} & closed.
+
+    ready & read(Handle, int) ->
+      {ok, Bin} & ready |
+      {error, E} & closed.
+
+    start 
+      & login : POST /login/{user : String} {password : String} -> {ok200, Token} & inside
+                                                           | unauthorized401 & start
+    inside & list : GET / -> List String & inside
+
+    inside & logout : POST /logout & start
+                                                          
 
 * Async specs where each component can be annotated with "produces
   events" and "consumes events", which can be visualised and linted
@@ -227,7 +282,7 @@ cabal install spex spex-demo-petstore
 
 * Other types of specifications, e.g. syntax grammars where testing generates
   random programs? And perhaps find minimal programs that create unique syntax
-  errors?
+  errors? Use grammars as generators?
 
 ## Contributing
 
@@ -309,6 +364,8 @@ Here's what I'm currently working on:
 
 ### Bugs
 
+- abstract types get generated, if there are not previous values to draw from.
+  Fix by allowing generation to throw?
 - unique types don't get checked
 - normal types should sometimes generate/sometimes reuse
 
