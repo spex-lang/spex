@@ -16,59 +16,6 @@ range of software that can be specified and tested will extended in the future.
 > [!CAUTION]
 > Spex is pre-alpha and not suitable for general use yet.
 
-## Installation
-
-### From precompiled binary
-
-#### Automatic
-
-> [!CAUTION]
-> Not supported just yet...
-
-```bash
- curl --proto '=https' --tlsv1.2 -sSf \
-   https://raw.githubusercontent.com/spex-lang/spexup/refs/heads/main/spexup \
- | sh
-```
-
-What does this do? It
-[automates](https://github.com/spex-lang/spexup/blob/main/spexup) the manual
-steps below.
-
-#### Manual
-
-1. Go to [releases](https://github.com/spex-lang/spex/releases);
-2. Click on "Assets" for the latest release;
-3. Download the binaries and put them into your PATH.
-
-### From source
-
-#### With Nix
-
-Install the [Nix](https://nixos.org/download/) package manager and then do:
-
-```bash
-git clone https://github.com/spex-lang/spex.git
-cd spex
-nix-shell
-cabal build all
-cabal install spex spex-demo-petstore
-```
-
-#### Without Nix
-
-Install [`ghcup`](https://www.haskell.org/ghcup/install/), the
-[Haskell](https://www.haskell.org/) installer, and then do:
-
-```bash
-git clone https://github.com/spex-lang/spex.git
-cd spex
-ghcup install cabal 3.12.1.0 --set
-ghcup install ghc 9.6.6 --set
-cabal build all
-cabal install spex spex-demo-petstore
-```
-
 ## Features
 
 - [x] Concise specification language for HTTP API servers
@@ -208,173 +155,57 @@ cabal install spex spex-demo-petstore
 
 - [ ] Only presents new errors?
 
-## Roadmap for future releases
+## Installation
 
-* Support for other content types than `application/json`
+### From precompiled binary
 
-* Ability to import/export OpenAPI (and later protobuf)
+#### Automatic
 
-* Editor support
+```bash
+ curl --proto '=https' --tlsv1.2 -sSf \
+   https://raw.githubusercontent.com/spex-lang/spexup/refs/heads/main/spexup \
+ | sh
+```
 
-* Optional models?
+What does this do? It
+[automates](https://github.com/spex-lang/spexup/blob/main/spexup) the manual
+steps below.
 
-* Generate prototype from model?
+#### Manual
 
-* Time-traveling debugger for fail test cases
+1. Go to [releases](https://github.com/spex-lang/spex/releases);
+2. Click on "Assets" for the latest release;
+3. Download the binaries and put them into your PATH.
 
-* REPL that can generate data on tab complete
+### From source
 
-* Lint the spec, e.g. can all commands be reached? Or does some
-  command have a parameter which no other command returns and we
-  cannot generate using the built-in types?
+#### With Nix
 
-* Refinement types, e.g. `/pet/{petId : Int | petId > 0}` and ability to generate
-  validation logic from them
-  - [Refinement Types: A Tutorial](https://arxiv.org/abs/2010.07763v1) (2021)
+Install the [Nix](https://nixos.org/download/) package manager and then do:
 
-* Use templating and (Lua?) extensions for doc/code generation from
-  spec, a bit similar to how pandoc does it.
+```bash
+git clone https://github.com/spex-lang/spex.git
+cd spex
+nix-shell
+cabal build all
+cabal install spex spex-demo-petstore
+```
 
-* Visualise by generating diagrams
-  + only makes sense if we have a bigger system out of multiple components and
-    some relations between them?
-  + complex systems approach? (actants, constructors)
-  + c4 model?
+#### Without Nix
 
-* REPL which generates data on tab-complete
+Install [`ghcup`](https://www.haskell.org/ghcup/install/), the
+[Haskell](https://www.haskell.org/) installer, and then do:
 
-* Ability to specify protocols, e.g. which sequences of commands
-  are valid, and use this to do "run-time session type" checking.
-  - https://www.youtube.com/watch?v=ed7A7r6DBsM
-  - https://www.youtube.com/watch?v=FqlewYgUcZU
-
-  - "We need languages to describe encodings and protocols not machine
-    instructions" (https://www.youtube.com/watch?v=ieEaaofM7uU)
-
-    start & open(File, Modes) ->
-      {ok, Handle} & ready |
-      {error, Reason} & closed.
-
-    ready & close(Handle) ->
-      ok & closed | 
-      {error, Reason} & closed.
-
-    ready & read(Handle, int) ->
-      {ok, Bin} & ready |
-      {error, E} & closed.
-
-    start 
-      & login : POST /login/{user : String} {password : String} -> {ok200, Token} & inside
-                                                           | unauthorized401 & start
-    inside & list : GET / -> List String & inside
-
-    inside & logout : POST /logout & start
-                                                          
-
-* Async specs where each component can be annotated with "produces
-  events" and "consumes events", which can be visualised and linted
-  for e.g. events that nobody consumes
-
-* Temporal logic on events? E.g. something like `if buyPet then eventually
-  paymentEvent`
-
-* Something about versioning, upgrades, refinement of specs...
-
-* Other types of specifications, e.g. syntax grammars where testing generates
-  random programs? And perhaps find minimal programs that create unique syntax
-  errors? Use grammars as generators?
+```bash
+git clone https://github.com/spex-lang/spex.git
+cd spex
+ghcup install cabal 3.12.1.0 --set
+ghcup install ghc 9.6.6 --set
+cabal build all
+cabal install spex spex-demo-petstore
+```
 
 ## Contributing
 
 If any of the above sounds interesting, or you have ideas of your own, feel
 free to open a ticket!
-
-For simplicity, while it's just me working, I'll just keep the issues here in
-the README. I'll clean this up and create proper tickets for the 0.0.0 release.
-
-Here's what I'm currently working on:
-
-### Features
-
-- Health check
-- use duration rather than numTests?
-- print progress while testing
-- docs: contributing.md
-- docs: document syntax?
-
-```
-  Spec ::= "component" Ident "where" Decl*
-    Decl ::= OpDecl | TypeDecl
-
-      -- XXX: Allow ModalType in response position? 
-      -- semantics: unique response type will never get reused, and abstract
-      -- response type will always get reused?
-      OpDecl ::= ident ":" Method Path Body? ("->" Type)? 
-
-        Method ::= "GET" | "POST"
-
-        Path ::= ("/" PathSegment)* "/"?
-
-          PathSegment = "{" ident ":" ModalType "}" | path
-
-        Body ::= "{" ModalType "}"
-
-      TypeDecl ::= "type" Ident "=" Type
-
-  ModalType ::= Mode? Type
-
-  Mode ::= "@" | "!"
-
-  Type ::= BaseType | RecordDecl | Ident
-
-  BaseType ::= "Unit" | "Bool" | "Int" | "String"
-
-  RecordDecl ::= "{" Field ("," Field)* "}"  -- XXX: parser allows empty records?
-    Field ::= ident ":" Type                 -- XXX: Modal type
-
-
-  Ident ::= [A-Z][a-zA-Z0-9]*
-  ident ::= [a-z][a-zA-Z0-9]*
-
-  -- https://datatracker.ietf.org/doc/html/rfc3986#section-3.3
-  path ::= pchar+
-    pchar         = unreserved / pct-encoded / sub-delims / ":" / "@"
-
-    pct-encoded   = "%" HEXDIG HEXDIG
-
-    unreserved    = ALPHA / DIGIT / "-" / "." / "_" / "~"
-    sub-delims    = "!" / "$" / "&" / "'" / "(" / ")"
-                  / "*" / "+" / "," / ";" / "="
-```
-
-- Packaging
-  + caching
-    * https://github.com/moby/buildkit/issues/1673 
-     cache /var/lib/buildkit?
-    * https://dev.doroshev.com/blog/docker-mount-type-cache/
-  + install script?
-      spexup [update] [spexup|spex] -- install latest version
-    * spexup list -- lists available releases
-      spexup install (spexup|spex) <version>
-    * https://raw.githubusercontent.com/haskell/ghcup-hs/refs/heads/master/scripts/bootstrap/bootstrap-haskell
-    * https://install.determinate.systems/nix
-  + changelog generator (semantic commit messages)
-  + commit hook for conventional commits?
-- https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-and-highlighting-code-blocks#syntax-highlighting
-
-### Bugs
-
-- abstract types get generated, if there are not previous values to draw from.
-  Fix by allowing generation to throw?
-- unique types don't get checked
-- normal types should sometimes generate/sometimes reuse
-
-### Refactor
-
-- rename CmdLineArgs to AppOptions?
-- remove ExceptT
-- remove use of String
-- pretty print
-- structured logs, returns json object with one error or one test result?
-- move Prng to AppEnv?
-- use formatter?
