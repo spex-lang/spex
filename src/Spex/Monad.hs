@@ -145,6 +145,7 @@ data AppError
   | HttpClientDecodeError Op ByteString String
   | HttpClientUnexpectedStatusCode Int ByteString
   | HealthCheckFailed
+  | ResetFailed
   | TestFailure String Int
 
 throwA :: AppError -> App e
@@ -173,6 +174,7 @@ displayAppError spec = \case
   HttpClientDecodeError op body e -> "Couldn't decode the response of:\n\n    " <> displayOp displayValue op <> "\n\nfrom the body of the request: '" <> BS8.unpack body <> "'\n\nThe error being: " <> e
   HttpClientUnexpectedStatusCode _ _ -> "HTTP client returned 1xx or 3xx"
   HealthCheckFailed          -> "Health check failed, make sure that the deployment is running."
+  ResetFailed                -> "Reset of the deploymnet failed, make sure that reset returns 2xx or exits with 0."
   TestFailure e seed         -> "Test failure: " <> e <>
                                 "\nUse --seed " <> show seed <> " to reproduce"
 

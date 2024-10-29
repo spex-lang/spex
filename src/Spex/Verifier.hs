@@ -13,6 +13,7 @@ import Spex.Verifier.Codec.Json
 import Spex.Verifier.Generator
 import Spex.Verifier.Generator.Env
 import Spex.Verifier.HttpClient
+import Spex.Verifier.Reseter
 
 ------------------------------------------------------------------------
 
@@ -48,6 +49,7 @@ verify spec deployment = do
   mSeed <- asks mSeed
   (prng, seed) <- liftIO (newPrng mSeed)
   client <- newHttpClient deployment
+  reseter client deployment.reset
   go numTests [] seed prng client 0 Map.empty
   where
     go :: Word -> [Op] -> Int -> Prng -> HttpClient -> Word -> Coverage -> App Result

@@ -52,6 +52,7 @@ library
     Spex.Verifier.Generator.Env
     Spex.Verifier.HealthChecker
     Spex.Verifier.HttpClient
+    Spex.Verifier.Reseter
 
   autogen-modules:    Paths_spex
   other-modules:      Paths_spex

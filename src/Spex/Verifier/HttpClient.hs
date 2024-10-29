@@ -68,8 +68,10 @@ httpRequest client op = do
                    status.statusCode status.statusMessage)
 
 toHttpMethod :: Method -> Http.Method
-toHttpMethod Get  = Http.methodGet
-toHttpMethod Post = Http.methodPost
+toHttpMethod Get    = Http.methodGet
+toHttpMethod Post   = Http.methodPost
+toHttpMethod Put    = Http.methodPut
+toHttpMethod Delete = Http.methodDelete
 
 toHttpPath :: [PathSegment Value] -> ByteString
 toHttpPath = BS8.intercalate "/" . map aux

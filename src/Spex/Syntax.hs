@@ -2,7 +2,6 @@
 
 module Spex.Syntax where
 
-import Data.ByteString (ByteString)
 import Data.ByteString.Char8 as BS8
 import Data.String (IsString)
 

@@ -31,12 +31,14 @@ type Record a = Map Field a
 newtype Field = Field ByteString
   deriving (Eq, Ord, Show, IsString)
 
-data Method = Get | Post
+data Method = Get | Post | Put | Delete
   deriving Show
 
 displayMethod :: Method -> String
-displayMethod Get  = "GET"
-displayMethod Post = "POST"
+displayMethod Get    = "GET"
+displayMethod Post   = "POST"
+displayMethod Put    = "PUT"
+displayMethod Delete = "DELETE"
 
 displayType :: Type -> String
 displayType UnitT          = "Unit"
