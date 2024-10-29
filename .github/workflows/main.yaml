@@ -39,28 +39,26 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ github.token }}
 
-      ## - name: Cache
-      ##   uses: actions/cache@v4
-      ##   id: cache
-      ##   with:
-      ##     path: |
-      ##       root-local-state-cabal-store 
-      ##       root-cache-cabal 
-      ##       dist-newstyle 
-      ##     key: ${{ runner.os }}-ghc-${{ matrix.ghc-version }}
-      ##     #  XXX: key: ${{ env.key }}-plan-${{ hashFiles('**/plan.json') }} ?
+      - name: Cache
+        uses: actions/cache@v4
+        id: cache
+        with:
+          path: |
+            root-local-state-cabal-store 
+            root-cache-cabal-packages
+            dist-newstyle 
+          key: plan-${{ hashFiles('dist-newstyle/cache/plan.json') }}
 
-
-      ## - name: Inject cache into docker
-      ##   uses: reproducible-containers/buildkit-cache-dance@v3.1.0
-      ##   with:
-      ##     cache-map: |
-      ##       {
-      ##         "root-local-state-cabal-store": "/root/.local/state/cabal/store",
-      ##         "root-cache-cabal":             "/root/.cache/cabal",
-      ##         "dist-newstyle":                "dist-newstyle"
-      ##       }
-      ##     skip-extraction: ${{ steps.cache.outputs.cache-hit }}
+      - name: Inject cache into docker
+        uses: reproducible-containers/buildkit-cache-dance@v3.1.0
+        with:
+          cache-map: |
+            {
+              "root-local-state-cabal-store": "/root/.local/state/cabal/store",
+              "root-cache-cabal-packages":    "/root/.cache/cabal/packages",
+              "dist-newstyle":                "dist-newstyle"
+            }
+          skip-extraction: ${{ steps.cache.outputs.cache-hit }}
 
       - name: Build and test
         uses: docker/build-push-action@v6
