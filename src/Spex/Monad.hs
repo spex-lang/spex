@@ -14,10 +14,7 @@ import Control.Monad.Trans.Reader hiding (asks)
 import qualified Control.Monad.Trans.Reader as Reader
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Char8 as BS8
-import Data.Map (Map)
-import qualified Data.Map as Map
 import Data.Maybe
-import Data.Set (Set)
 import Network.HTTP.Client (HttpException(..), HttpExceptionContent(..))
 import qualified Network.HTTP.Client as Http
 
@@ -25,8 +22,8 @@ import Spex.CommandLine.Ansi
 import Spex.CommandLine.ArgParser
 import Spex.Syntax
 import Spex.Syntax.Operation
-import Spex.Syntax.Type
 import Spex.Syntax.Value
+import Spex.Verifier.Generator.Env
 
 ------------------------------------------------------------------------
 
@@ -52,11 +49,6 @@ data AppEnv = AppEnv
   , logger     :: Logger
   , genEnv     :: GenEnv
   }
-
-type GenEnv = Map (Either Field Type) (Set Value)
-
-emptyGenEnv :: GenEnv
-emptyGenEnv = Map.empty
 
 newAppEnv :: CmdLineArgs -> IO AppEnv
 newAppEnv args = do
@@ -180,7 +172,7 @@ displayAppError spec = \case
   HttpClientException op e   -> displayHttpException op e
   HttpClientDecodeError op body e -> "Couldn't decode the response of:\n\n    " <> displayOp displayValue op <> "\n\nfrom the body of the request: '" <> BS8.unpack body <> "'\n\nThe error being: " <> e
   HttpClientUnexpectedStatusCode _ _ -> "HTTP client returned 1xx or 3xx"
-  HealthCheckFailed          -> "Health check failed"
+  HealthCheckFailed          -> "Health check failed, make sure that the deployment is running."
   TestFailure e seed         -> "Test failure: " <> e <>
                                 "\nUse --seed " <> show seed <> " to reproduce"
 

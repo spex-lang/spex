@@ -1,9 +1,11 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeOperators #-}
 
 module Petstore where
 
+import Control.Monad
 import Control.Monad.IO.Class
 import Data.Aeson
 import Data.IORef
@@ -40,7 +42,11 @@ server store = getPet :<|> addPet :<|> health :<|> reset
         Just pet -> return pet
 
     addPet :: Pet -> Handler ()
-    addPet pet = liftIO (modifyIORef store (pet :))
+    addPet pet = do
+      pets <- liftIO (readIORef store)
+      when (pet `elem` pets) $
+        throwError err409 { errBody = "Pet already exists" }
+      liftIO (writeIORef store (pet : pets))
 
     health :: Handler ()
     health = return ()

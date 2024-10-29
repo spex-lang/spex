@@ -4,8 +4,6 @@ Here's what I'm currently working on:
 
 ### Features
 
-- Health check
-  + make the output nicer
 - use duration rather than numTests?
 - print progress while testing
 - docs: contributing.md
@@ -87,7 +85,7 @@ Here's what I'm currently working on:
 ### Refactor
 
 - rename CmdLineArgs to AppOptions?
-- remove ExceptT
+- remove ExceptT?
 - remove use of String
 - pretty print
 - structured logs, returns json object with one error or one test result?

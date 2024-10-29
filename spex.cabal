@@ -49,6 +49,7 @@ library
     Spex.Verifier
     Spex.Verifier.Codec.Json
     Spex.Verifier.Generator
+    Spex.Verifier.Generator.Env
     Spex.Verifier.HealthChecker
     Spex.Verifier.HttpClient
 

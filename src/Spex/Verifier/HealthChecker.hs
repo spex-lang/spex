@@ -24,7 +24,7 @@ healthChecker deployment@(Deployment _hostPort health _reset) = do
       http 50 path client
     HealthCheckScript fp -> script 50 fp
   where
-    script 0 _fp = throwA HealthCheckFailed
+    script 0 _fp = info_ "" >> throwA HealthCheckFailed
     script n  fp = do
       (exitCode, _out, _err) <- liftIO (readProcessWithExitCode fp [] "")
       case exitCode of
@@ -33,7 +33,7 @@ healthChecker deployment@(Deployment _hostPort health _reset) = do
           wait n
           script (n - 1) fp
 
-    http 0 _path _client = throwA HealthCheckFailed
+    http 0 _path _client = info_ "" >> throwA HealthCheckFailed
     http n  path  client = do
       eResp <- tryA $
                  httpRequest client (Op "health" Get [Path path] Nothing UnitT)

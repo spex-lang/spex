@@ -11,6 +11,7 @@ import Spex.Syntax.Value
 import Spex.TypeChecker
 import Spex.Verifier.Codec.Json
 import Spex.Verifier.Generator
+import Spex.Verifier.Generator.Env
 import Spex.Verifier.HttpClient
 
 ------------------------------------------------------------------------
@@ -64,18 +65,23 @@ verify spec deployment = do
           debug_ $ "  ↳ 2xx " <> displayValue val
           let ok = typeCheck spec.component.typeDecls val op.responseType
           if ok
-          then local (\e -> e { genEnv = env' }) $
+          then local (\e -> e { genEnv = insertValue op.responseType val env' }) $
                  go (n - 1) (op : ops) seed prng' client n4xx cov'
           else do
             info $ "Typechecking failed, val: " ++ show val ++ " not of type " ++ show op.responseType
             let shrink xs _reset = xs
             let ops' = shrink (reverse (op : ops)) deployment.reset
             throwA (TestFailure (show ops') seed)
-        ClientError4xx -> do
-          debug_ $ "  ↳ 4xx"
-          local (\e -> e { genEnv = env' }) $
-            go (n - 1) ops seed prng' client (n4xx + 1) cov'
-        ServerError5xx -> do
+        ClientError4xx code -> do
+          debug_ $ "  ↳ " <> show code
+          if code == 404
+          then local (\e -> e { genEnv = env' }) $
+                 go (n - 1) ops seed prng' client (n4xx + 1) cov'
+          else do
+            let shrink xs _reset = xs
+            let ops' = shrink (reverse (op : ops)) deployment.reset
+            throwA (TestFailure (show ops') seed)
+        ServerError5xx _code -> do
           let shrink xs _reset = xs
           let ops' = shrink (reverse (op : ops)) deployment.reset
           throwA (TestFailure (show ops') seed)

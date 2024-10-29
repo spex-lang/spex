@@ -6,21 +6,20 @@ import Control.Monad
 import Control.Monad.Trans.Class
 import Control.Monad.Trans.Reader
 import Data.Foldable (toList)
-import Data.List (find, foldl')
-import Data.Map (Map)
+import Data.List (find)
 import qualified Data.Map as Map
-import Data.Set (Set)
 import qualified Data.Set as Set
 import Data.Text (Text)
 import Data.Vector (Vector)
 import System.Random
 
 import qualified Spex.Monad
-import Spex.Monad (App, GenEnv, debug, trace)
+import Spex.Monad (App, trace)
 import Spex.Syntax
 import Spex.Syntax.Operation
 import Spex.Syntax.Type
 import Spex.Syntax.Value
+import Spex.Verifier.Generator.Env
 
 ------------------------------------------------------------------------
 
@@ -87,8 +86,8 @@ genText = elements ["foo", "bar", "qux"]
 type GenCtx = [TypeDecl]
 
 data GenMEnv = GenMEnv
-  { genCtx :: GenCtx
-  , genEnv :: GenEnv
+  { genMCtx :: GenCtx
+  , genMEnv :: GenEnv
   }
 
 type GenM a = ReaderT GenMEnv Gen a
@@ -101,7 +100,7 @@ generate spec prng = do
   env <- Spex.Monad.asks Spex.Monad.genEnv -- XXX:
   let ctx             = spec.component.typeDecls
       (prng', prng'') = splitPrng prng
-      (decl, op)      = runGenM (genOp ctx env spec.component.opDecls) ctx env prng'
+      (decl, op)      = runGenM (genOp spec.component.opDecls) ctx env prng'
   let env' = newValues ctx env decl op
   trace $ "generate, new values: " <> show env'
   return  (op, prng'', env')
@@ -112,7 +111,7 @@ newValues ctx old decl op =
     tys  = concatMap removeRecordType $ map (removeUserDefined ctx . removeMode) (toList decl)
     vals = concatMap removeRecord $ toList op
   in
-    foldl' (\ih (ty, val) -> Map.insertWith (<>) (Right ty) (Set.singleton val) ih) old (zip tys vals)
+    insertValues (zip tys vals) old
 
 removeUserDefined :: GenCtx -> Type -> Type
 removeUserDefined ctx (UserT tid) =
@@ -134,8 +133,8 @@ removeRecordType :: Type -> [Type]
 removeRecordType (RecordT ftys) = concatMap removeRecordType (Map.elems ftys)
 removeRecordType ty = [ty]
 
-genOp :: GenCtx -> GenEnv -> [OpDecl] -> GenM (OpDecl, Op)
-genOp ctx env opdecls = do
+genOp :: [OpDecl] -> GenM (OpDecl, Op)
+genOp opdecls = do
   opdecl <- lift (elements opdecls)
   p <- genPath opdecl.path
   b <- genBody opdecl.body
@@ -149,10 +148,9 @@ genOp ctx env opdecls = do
 
 remembering :: Type -> Gen Value -> Mode -> GenM Value
 remembering ty g mode = do
-  ctx <- asks genCtx
-  env <- asks genEnv
+  env <- asks genMEnv
   case mode of
-    Abstract   -> case Map.lookup (Right ty) env of
+    Abstract   -> case lookupValue ty env of
                          Nothing -> lift g
                          Just vs -> lift (elements (Set.toList vs))
     _otherwise -> lift g
@@ -195,7 +193,7 @@ genRecord mode = fmap RecordV . traverse (flip genValue' mode)
 
 genUserDefined :: Mode -> TypeId -> GenM Value
 genUserDefined mode tid = do
-  ctx <- asks genCtx
+  ctx <- asks genMCtx
   case find (\tydecl -> tydecl.id == tid) ctx of
     Nothing     -> error "genUserDefined: impossible, scope checker"
     Just tydecl -> genValue' tydecl.rhs mode
