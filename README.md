@@ -112,7 +112,36 @@ range of software that can be specified and tested will extended in the
   abstract (`@`) annotation on `petId`.
   </details>
 
-- [ ] Keep track of previous responses and try to use them during generation 
+- [x] Keep track of previous responses and try to use them during generation 
+
+  <details>
+
+  <summary>Example</summary>
+
+  For example, imagine we got:
+  ```
+  addPet : POST /pet Pet
+  getPet : GET /pet/{petId : Int} -> Pet
+
+  type Pet =
+    { petId   : Int
+    , petName : String 
+    }
+  ```
+  and `addPet` is implemented such that it throws an error if we try to add the
+  exact same pet twice. Finding this error without reusing responses during
+  generation is difficult, because we'd need to randomly generate the same
+  `petId : Int` and petname : String` twice. 
+
+  If we reuse inputs and reponses on the other hand, then it's easy to find it.
+  Here's one scenario which would find the error:
+
+    1. We generate a random `Pet` for `addPet`;
+    2. A `getPet` operation gets generated that reuses the `petId` from step 1;
+    3. The response `Pet` from step 2 gets reused in a subsequent `addPet`,
+       casuing the error.
+
+  </details>
 
 - [ ] Nice CLI and errors
   + https://elm-lang.org/news/compiler-errors-for-humans
