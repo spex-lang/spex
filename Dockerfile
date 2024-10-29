@@ -99,7 +99,7 @@ COPY spex.cabal cabal.project cabal.project.freeze example/*/*.cabal .
 
 # https://docs.docker.com/reference/dockerfile/#run---mount
 RUN --mount=type=cache,target=/root/.local/state/cabal/store \
-    --mount=type=cache,target=/root/.cache/cabal/packages \
+    --mount=type=cache,target=/root/.cache/cabal \
     --mount=type=cache,target=dist-newstyle \
   cabal configure \
     --enable-executable-static \
@@ -121,7 +121,7 @@ COPY . .
 # them.
 RUN --mount=type=secret,id=version \
     --mount=type=cache,target=/root/.local/state/cabal/store \
-    --mount=type=cache,target=/root/.cache/cabal/packages \
+    --mount=type=cache,target=/root/.cache/cabal \
     --mount=type=cache,target=dist-newstyle \
   find . -maxdepth 1 \( -name '*.cabal' -a ! -name spex.cabal \) -delete \
   && cabal build lib:spex lib:petstore \
