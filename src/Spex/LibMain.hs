@@ -9,6 +9,7 @@ import Spex.Lexer
 import Spex.Monad
 import Spex.Parser
 import Spex.Syntax
+import Spex.TypeChecker
 import Spex.Verifier
 import Spex.Verifier.HealthChecker
 
@@ -32,8 +33,9 @@ app = do
   info $ "Verifying the deployment:    " <> displayDeployment deploy <> "\n" <>
          "  against the specification:   " <> specFile <> "\n"--  <> BS.unpack spec.component.id
   bs <- liftIO (try (BS.readFile specFile)) <?> ReadSpecFileError
-  info $ "Parsing the specification.\n"
+  info $ "Checking the specification.\n"
   spec <- pure (runParser specP bs) <?> ParserError
+  scopeCheck spec
   info $ "Waiting for health check to pass.\n"
   healthChecker deploy
   info $ "Starting to run tests.\n"

@@ -4,7 +4,8 @@ module Spex.Verifier.Generator where
 
 import Control.Monad
 import Control.Monad.Trans.Class
-import Control.Monad.Trans.Reader
+import Control.Monad.Trans.Reader (ReaderT)
+import qualified Control.Monad.Trans.Reader as Reader
 import Data.Foldable (toList)
 import Data.List (find)
 import qualified Data.Map as Map
@@ -13,8 +14,7 @@ import Data.Text (Text)
 import Data.Vector (Vector)
 import System.Random
 
-import qualified Spex.Monad
-import Spex.Monad (App, trace)
+import Spex.Monad (App, asks, genEnv, trace)
 import Spex.Syntax
 import Spex.Syntax.Operation
 import Spex.Syntax.Type
@@ -93,11 +93,11 @@ data GenMEnv = GenMEnv
 type GenM a = ReaderT GenMEnv Gen a
 
 runGenM :: GenM a -> GenCtx -> GenEnv -> Prng -> a
-runGenM m ctx env prng = runGen (runReaderT m (GenMEnv ctx env)) prng
+runGenM m ctx env prng = runGen (Reader.runReaderT m (GenMEnv ctx env)) prng
 
 generate :: Spec -> Prng -> App (Op, Prng, GenEnv)
 generate spec prng = do
-  env <- Spex.Monad.asks Spex.Monad.genEnv -- XXX:
+  env <- asks genEnv
   let ctx             = spec.component.typeDecls
       (prng', prng'') = splitPrng prng
       (decl, op)      = runGenM (genOp spec.component.opDecls) ctx env prng'
@@ -115,8 +115,8 @@ newValues ctx old decl op =
 
 removeUserDefined :: GenCtx -> Type -> Type
 removeUserDefined ctx (UserT tid) =
-  case find (\tydecl -> tydecl.id == tid) ctx of
-    Nothing   -> error "removeUserDefined: impossible, scope checker"
+  case find (\tydecl -> tydecl.typeId == tid) ctx of
+    Nothing   -> error "removeUserDefined: impossible, due to scope checker"
     Just decl -> decl.rhs
 removeUserDefined _ctx ty = ty
 
@@ -148,7 +148,7 @@ genOp opdecls = do
 
 remembering :: Type -> Gen Value -> Mode -> GenM Value
 remembering ty g mode = do
-  env <- asks genMEnv
+  env <- Reader.asks genMEnv
   case mode of
     Abstract   -> case lookupValue ty env of
                          Nothing -> lift g
@@ -193,7 +193,7 @@ genRecord mode = fmap RecordV . traverse (flip genValue' mode)
 
 genUserDefined :: Mode -> TypeId -> GenM Value
 genUserDefined mode tid = do
-  ctx <- asks genMCtx
-  case find (\tydecl -> tydecl.id == tid) ctx of
+  ctx <- Reader.asks genMCtx
+  case find (\tydecl -> tydecl.typeId == tid) ctx of
     Nothing     -> error "genUserDefined: impossible, scope checker"
     Just tydecl -> genValue' tydecl.rhs mode

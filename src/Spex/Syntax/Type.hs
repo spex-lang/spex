@@ -5,6 +5,8 @@ import qualified Data.ByteString.Char8 as BS8
 import Data.List (intersperse)
 import Data.Map (Map)
 import qualified Data.Map as Map
+import Data.Set (Set)
+import qualified Data.Set as Set
 import Data.String (IsString)
 import Data.Vector (Vector)
 import qualified Data.Vector as Vector
@@ -30,6 +32,18 @@ type Record a = Map Field a
 
 newtype Field = Field ByteString
   deriving (Eq, Ord, Show, IsString)
+
+userDefinedTypes :: Type -> Set TypeId
+userDefinedTypes = \case
+  UnitT        -> mempty
+  BoolT        -> mempty
+  StringT      -> mempty
+  IntT         -> mempty
+  ArrayT tys   -> foldMap userDefinedTypes tys
+  RecordT ftys -> foldMap userDefinedTypes ftys
+  UserT tid    -> Set.singleton tid
+  AbstractT ty -> userDefinedTypes ty
+  UniqueT ty   -> userDefinedTypes ty
 
 data Method = Get | Post | Put | Delete
   deriving Show

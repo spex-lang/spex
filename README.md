@@ -118,7 +118,7 @@ range of software that can be specified and tested will extended in the
 
   <summary>Example</summary>
 
-  For example, imagine we got:
+  Imagine we got:
   ```
   addPet : POST /pet Pet
   getPet : GET /pet/{petId : Int} -> Pet

@@ -25,7 +25,7 @@ data Component = Component
 newtype ComponentId = ComponentId ByteString
   deriving (Show, IsString)
 
-data TypeDecl = TypeDecl { id :: TypeId, rhs :: Type }
+data TypeDecl = TypeDecl { typeId :: TypeId, rhs :: Type }
   deriving Show
 
 data Deployment = Deployment
