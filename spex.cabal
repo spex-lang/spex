@@ -43,6 +43,7 @@ library
     Spex.Parser
     Spex.Syntax
     Spex.Syntax.Operation
+    Spex.Syntax.Position
     Spex.Syntax.Type
     Spex.Syntax.Value
     Spex.TypeChecker

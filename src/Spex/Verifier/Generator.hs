@@ -17,6 +17,7 @@ import System.Random
 import Spex.Monad (App, asks, genEnv, trace)
 import Spex.Syntax
 import Spex.Syntax.Operation
+import Spex.Syntax.Position
 import Spex.Syntax.Type
 import Spex.Syntax.Value
 import Spex.Verifier.Generator.Env
@@ -115,7 +116,7 @@ newValues ctx old decl op =
 
 removeUserDefined :: GenCtx -> Type -> Type
 removeUserDefined ctx (UserT tid) =
-  case find (\tydecl -> tydecl.typeId == tid) ctx of
+  case find (\tydecl -> tydecl.typeId == tid.item) ctx of
     Nothing   -> error "removeUserDefined: impossible, due to scope checker"
     Just decl -> decl.rhs
 removeUserDefined _ctx ty = ty
@@ -164,7 +165,7 @@ genValue IntT           = remembering IntT (IntV <$> genInt) Normal
 genValue StringT        = StringV <$> lift genText
 genValue (ArrayT tys)   = genArray tys
 genValue (RecordT ftys) = genRecord Normal ftys
-genValue (UserT x)      = genUserDefined Normal x
+genValue (UserT x)      = genUserDefined Normal x.item
 genValue (AbstractT ty) = genValue' ty Abstract
 genValue (UniqueT ty)   = genValue' ty Unique
 
@@ -175,7 +176,7 @@ genValue' IntT            mode = remembering IntT (IntV <$> genInt) mode
 genValue' StringT        _mode = StringV <$> lift genText
 genValue' (ArrayT tys)   _mode = genArray tys
 genValue' (RecordT ftys)  mode = genRecord mode ftys
-genValue' (UserT x)       mode = genUserDefined mode x
+genValue' (UserT x)       mode = genUserDefined mode x.item
 genValue' (AbstractT ty) _mode = error ""
 genValue' (UniqueT ty)   _mode = error ""
 

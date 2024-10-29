@@ -11,6 +11,8 @@ import Data.String (IsString)
 import Data.Vector (Vector)
 import qualified Data.Vector as Vector
 
+import Spex.Syntax.Position
+
 ------------------------------------------------------------------------
 
 data Type
@@ -20,7 +22,7 @@ data Type
   | IntT
   | ArrayT (Vector Type)
   | RecordT (Record Type)
-  | UserT TypeId
+  | UserT (Ann TypeId)
   | AbstractT Type
   | UniqueT Type
   deriving (Eq, Ord, Show)
@@ -33,7 +35,7 @@ type Record a = Map Field a
 newtype Field = Field ByteString
   deriving (Eq, Ord, Show, IsString)
 
-userDefinedTypes :: Type -> Set TypeId
+userDefinedTypes :: Type -> Set (Ann TypeId)
 userDefinedTypes = \case
   UnitT        -> mempty
   BoolT        -> mempty
@@ -42,7 +44,7 @@ userDefinedTypes = \case
   ArrayT tys   -> foldMap userDefinedTypes tys
   RecordT ftys -> foldMap userDefinedTypes ftys
   UserT tid    -> Set.singleton tid
-  AbstractT ty -> userDefinedTypes ty
+  AbstractT ty -> mempty -- NOTE: Abstract types don't need to be in scope.
   UniqueT ty   -> userDefinedTypes ty
 
 data Method = Get | Post | Put | Delete
@@ -61,7 +63,7 @@ displayType StringT        = "String"
 displayType IntT           = "Int"
 displayType (ArrayT a)     = displayArray displayType a
 displayType (RecordT ftys) = displayRecord displayType " : " ftys
-displayType (UserT tid)    = displayTypeId tid
+displayType (UserT tid)    = displayTypeId tid.item
 displayType (AbstractT ty) = "@" <> displayType ty
 displayType (UniqueT ty)   = "!" <> displayType ty
 

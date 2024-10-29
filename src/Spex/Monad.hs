@@ -14,6 +14,7 @@ import Control.Monad.Trans.Reader hiding (asks)
 import qualified Control.Monad.Trans.Reader as Reader
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Char8 as BS8
+import Data.List (intercalate)
 import Data.Maybe
 import Network.HTTP.Client (HttpException(..), HttpExceptionContent(..))
 import qualified Network.HTTP.Client as Http
@@ -22,6 +23,7 @@ import Spex.CommandLine.Ansi
 import Spex.CommandLine.ArgParser
 import Spex.Syntax
 import Spex.Syntax.Operation
+import Spex.Syntax.Type
 import Spex.Syntax.Value
 import Spex.Verifier.Generator.Env
 
@@ -140,7 +142,7 @@ trace s = do
 data AppError
   = ReadSpecFileError IOError
   | ParserError String
-  | ScopeError
+  | ScopeError [TypeId]
   | InvalidDeploymentUrl String
   | HttpClientException Op HttpException
   | HttpClientDecodeError Op ByteString String
@@ -170,7 +172,8 @@ displayAppError :: FilePath -> AppError -> String
 displayAppError spec = \case
   ReadSpecFileError _e    -> "Couldn't open specification file: " <> spec
   ParserError e              -> "Parse error: " <> e
-  ScopeError                 -> "Scope error"
+  ScopeError tids            -> "Scope error, the following types are used but not defined:\n\n    " <>
+                                 intercalate "," (map displayTypeId tids) <> "\n\nHint: Either define the types or mark them as abstract in case they shouldn't be generated."
   InvalidDeploymentUrl url   -> "Invalid deployment URL: " <> url
   HttpClientException op e   -> displayHttpException op e
   HttpClientDecodeError op body e -> "Couldn't decode the response of:\n\n    " <> displayOp displayValue op <> "\n\nfrom the body of the request: '" <> BS8.unpack body <> "'\n\nThe error being: " <> e

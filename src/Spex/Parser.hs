@@ -8,6 +8,7 @@ import Data.ByteString (ByteString)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BS8
 import Data.Char (ord)
+import Data.Coerce
 import Data.Either (partitionEithers)
 import qualified Data.Map as Map
 import FlatParse.Basic hiding (Parser, char, cut, runParser, string)
@@ -15,6 +16,7 @@ import FlatParse.Basic hiding (Parser, char, cut, runParser, string)
 import Spex.Lexer
 import Spex.Syntax
 import Spex.Syntax.Operation
+import Spex.Syntax.Position
 import Spex.Syntax.Type
 
 ------------------------------------------------------------------------
@@ -108,7 +110,10 @@ typeP = baseTypeP <|> recordDeclP <|> userTypeP
       "Int"    -> pure IntT
       "String" -> pure StringT
       |])
-    userTypeP = UserT <$> (TypeId <$> bident)
+    userTypeP = UserT <$> annP (TypeId <$> bident)
+
+annP :: Parser a -> Parser (Ann a)
+annP p = Ann <$> fmap coerce getPos <*> p
 
 typeP' :: Parser Type
 typeP' = typeP `cut` ["type"]

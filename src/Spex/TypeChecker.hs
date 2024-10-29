@@ -9,16 +9,22 @@ import qualified Data.Vector as Vector
 
 import Spex.Monad
 import Spex.Syntax
+import Spex.Syntax.Position
 import Spex.Syntax.Type
 import Spex.Syntax.Value
 
 ------------------------------------------------------------------------
 
 scopeCheck :: Spec -> App ()
-scopeCheck spec | freeTypes `Set.isSubsetOf` userDefined = return ()
-                | otherwise = throwA ScopeError
+scopeCheck spec
+  | freeTypes_ `Set.isSubsetOf` userDefined = return ()
+  | otherwise = throwA $
+      ScopeError (Set.toList (Set.difference freeTypes_ userDefined))
   where
-    freeTypes :: Set TypeId
+    freeTypes_ :: Set TypeId
+    freeTypes_ = Set.map item freeTypes
+
+    freeTypes :: Set (Ann TypeId)
     freeTypes = foldMap userDefinedTypes
                   (concatMap toList spec.component.opDecls)
 
@@ -36,7 +42,7 @@ typeCheck  ctx (RecordV fvs) (RecordT ftys) =
   Map.keys fvs == Map.keys ftys &&
   and (zipWith (typeCheck ctx) (Map.elems fvs) (Map.elems ftys))
 typeCheck ctx (RecordV fvs) (UserT tid) =
-  case find (\tyDecl -> tyDecl.typeId == tid) ctx of
+  case find (\tyDecl -> tyDecl.typeId == tid.item) ctx of
     Nothing -> error "typeCheck: impossible, due to scopechecker"
     Just tyDecl -> typeCheck ctx (RecordV fvs) tyDecl.rhs
 typeCheck _ _ _ = False
