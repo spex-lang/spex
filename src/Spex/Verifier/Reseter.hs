@@ -2,6 +2,7 @@
 
 module Spex.Verifier.Reseter where
 
+import qualified Data.ByteString.Char8 as BS8
 import System.Exit
 import System.Process
 
@@ -18,7 +19,8 @@ reseter :: HttpClient -> Reset -> App ()
 reseter client reset = do
   case reset of
     ResetPath path -> do
-      let op = Op "_reset" Delete [Path path] Nothing UnitT
+      let path' = BS8.dropWhile (== '/') path
+      let op = Op "reset" Delete [Path path'] Nothing UnitT
       debug (displayOp displayValue op)
       eResp <- tryA $ httpRequest client op
       case eResp of

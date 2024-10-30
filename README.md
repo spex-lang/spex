@@ -143,42 +143,71 @@ range of software that can be specified and tested will extended in the
 
   </details>
 
-- [x] Nice CLI and errors
+- [x] Nice command-line interface and errors for humans
 
   <details>
 
   <summary>Example</summary>
 
-  ```bash
+  ```
   $ cat example/petstore-bad-scope.spex
   component PetStore where
-  
+
   addPet : POST /pet Pet
   getPet : GET /pet/{petId : Int} -> Pet
 
   $ spex example/petstore-bad-scope.spex
   i Verifying the deployment:    http://localhost:8080
     against the specification:   example/petstore-bad-scope.spex
-  
+
   i Checking the specification.
-  
+
   Error: Scope error, the type Pet isn't defined.
-  
-    +--> example/petstore-bad-scope.spex:2:19
-    |
-  2 | addPet : POST /pet Pet
-    |                    ^^^
-  
+
+     ┌─ example/petstore-bad-scope.spex:2:19
+     │
+   2 │ addPet : POST /pet Pet
+     │                    ^^^
+
   Either define the type or mark it as abstract, in case it shouldn't be
   generated.
   ```
 
   </details>
 
+- [x] Test case minimisation aka shrinking
+  <details>
+
+  <summary>
+  Example
+  </summary>
+
+  ```
+  $ spex example/petstore-modal.spex --seed -2917004710203612904
+
+  i Verifying the deployment:    http://localhost:8080
+    against the specification:   example/petstore-modal.spex
+
+  i Checking the specification.
+
+  i Waiting for health check to pass.
+
+  i Starting to run tests.
+
+  Error: Test failure (8 shrinks):
+
+  addPet : POST /pet {petId = 27, petName = qux}
+  addPet : POST /pet {petId = 27, petName = qux}
+    ↳ 409
+
+  Use --seed -2917004710203612904 to reproduce
+  ```
+  Try running with `--no-shrinking` flag to see the original test case that
+  failed.
+  </details>
+
 - [ ] Coverage statistics and use coverage-guidance (endpoint coverage,
   but also check coverage of the range of values from responses.)
-
-- [ ] Shrinking
 
 - [ ] User provided coverage and minimal test cases
   + E.g. show me all the minimal test cases that lead to each error?

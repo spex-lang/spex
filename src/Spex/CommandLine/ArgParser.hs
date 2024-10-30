@@ -21,6 +21,7 @@ data CmdLineArgs = CmdLineArgs
   , seed           :: Maybe Int
   , logging        :: Logging
   , nonInteractive :: Bool
+  , noShrinking    :: Bool
   , specFilePath   :: FilePath
   }
 
@@ -91,6 +92,10 @@ cmdLineArgs = CmdLineArgs
   <*> switch
         (  long "non-interactive"
         <> help "Disable fancy logging"
+        )
+  <*> switch
+        (  long "no-shrinking"
+        <> help "Disable shrinking"
         )
   <*> strArgument
         (  metavar "FILE"

@@ -5,6 +5,7 @@ module Spex.Verifier.HealthChecker where
 import Control.Concurrent (threadDelay)
 import Control.Monad (when)
 import Data.ByteString (ByteString)
+import qualified Data.ByteString.Char8 as BS8
 import System.Exit
 import System.Process
 
@@ -22,7 +23,7 @@ healthChecker deployment@(Deployment _hostPort health _reset) = do
   case health of
     HealthCheckPath path -> do
       client <- newHttpClient deployment
-      http 50 path client
+      http 50 (BS8.dropWhile (== '/') path) client
     HealthCheckScript fp -> script 50 fp
   where
     script :: Word -> FilePath -> App ()

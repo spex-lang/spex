@@ -1,6 +1,7 @@
 module Spex.Verifier where
 
 import Data.ByteString.Lazy (ByteString)
+import qualified Data.List.NonEmpty as NonEmpty
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 
@@ -14,6 +15,7 @@ import Spex.Verifier.Generator
 import Spex.Verifier.Generator.Env
 import Spex.Verifier.HttpClient
 import Spex.Verifier.Reseter
+import Spex.Verifier.Shrinker
 
 ------------------------------------------------------------------------
 
@@ -70,20 +72,50 @@ verify spec deployment = do
           then local (\e -> e { genEnv = insertValue op.responseType val env' }) $
                  go (n - 1) (op : ops) seed prng' client n4xx cov'
           else do
-            info $ "Typechecking failed, val: " ++ show val ++ " not of type " ++ show op.responseType
-            let shrink xs _reset = xs
-            let ops' = shrink (reverse (op : ops)) deployment.reset
-            throwA (TestFailure (show ops') seed)
+            let err = "Typechecking failed, val: " ++ show val ++ " not of type " ++ show op.responseType
+            counterExample client (op : ops) err seed
         ClientError4xx code -> do
-          debug_ $ "  ↳ " <> show code
+          let ret = "  ↳ " <> show code
+          debug_ ret
           if code == 404
           then local (\e -> e { genEnv = env' }) $
                  go (n - 1) ops seed prng' client (n4xx + 1) cov'
-          else do
-            let shrink xs _reset = xs
-            let ops' = shrink (reverse (op : ops)) deployment.reset
-            throwA (TestFailure (show ops') seed)
-        ServerError5xx _code -> do
-          let shrink xs _reset = xs
-          let ops' = shrink (reverse (op : ops)) deployment.reset
-          throwA (TestFailure (show ops') seed)
+          else counterExample client (op : ops) ret seed
+        ServerError5xx code -> counterExample client (op : ops) ("  ↳ " <> show code) seed
+
+    counterExample :: HttpClient -> [Op] -> String -> Int -> App Result
+    counterExample client ops err seed = do
+      b <- asks noShrinking
+      ops' <- if b
+              then return (NonEmpty.singleton ops)
+              else shrinker
+                     (shrinkProp spec.component.typeDecls client deployment.reset)
+                     (shrinkList shrinkOp) (reverse ops)
+      throwA (TestFailure (NonEmpty.last ops') (NonEmpty.length ops' - 1) err seed)
+
+shrinkProp :: [TypeDecl] -> HttpClient -> Reset -> [Op] -> App Bool
+shrinkProp ctx client reset ops0 = do
+  reseter client reset
+  go ops0
+  where
+    go []         = debug_ "" >> return True
+    go (op : ops) = do
+      debug (displayOp displayValue op)
+      resp <- httpRequest client op
+      case resp of
+        Ok2xx body -> do
+          val <- pure (decode body) <?> HttpClientDecodeError op body
+          debug_ $ "  ↳ 2xx " <> displayValue val
+          let ok = typeCheck ctx val op.responseType
+          if ok
+          then go ops
+          else return False
+        ClientError4xx code -> do
+          debug_ $ "  ↳ " <> show code
+          if code == 404
+          then go ops
+          else return False
+        ServerError5xx {} -> return False
+
+shrinkOp :: Op -> [Op]
+shrinkOp _op = []

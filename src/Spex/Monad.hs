@@ -47,12 +47,13 @@ local f (App m) = App (Reader.local f m)
 ------------------------------------------------------------------------
 
 data AppEnv = AppEnv
-  { specFile   :: FilePath
-  , deployment :: Deployment
-  , numTests   :: Word
-  , mSeed      :: Maybe Int
-  , logger     :: Logger
-  , genEnv     :: GenEnv
+  { specFile    :: FilePath
+  , deployment  :: Deployment
+  , numTests    :: Word
+  , mSeed       :: Maybe Int
+  , logger      :: Logger
+  , genEnv      :: GenEnv
+  , noShrinking :: Bool
   }
 
 newAppEnv :: CmdLineArgs -> IO AppEnv
@@ -68,13 +69,14 @@ newAppEnv args = do
                    _otherwise       -> logger'
 
   return AppEnv
-    { specFile   = args.specFilePath
-    , deployment = Deployment (HostPort args.host args.port)
-                     (HealthCheckPath args.health) (ResetPath args.reset)
-    , numTests   = fromMaybe 100 args.numTests
-    , mSeed      = args.seed
-    , logger     = logger''
-    , genEnv     = emptyGenEnv
+    { specFile    = args.specFilePath
+    , deployment  = Deployment (HostPort args.host args.port)
+                      (HealthCheckPath args.health) (ResetPath args.reset)
+    , numTests    = fromMaybe 100 args.numTests
+    , mSeed       = args.seed
+    , logger      = logger''
+    , genEnv      = emptyGenEnv
+    , noShrinking = args.noShrinking
     }
 
 data Logger = Logger
@@ -152,7 +154,7 @@ data AppError
   | HttpClientUnexpectedStatusCode Int ByteString
   | HealthCheckFailed
   | ResetFailed
-  | TestFailure String Int
+  | TestFailure [Op] Int String Int
 
 throwA :: AppError -> App e
 throwA e = App (ReaderT (const (throwE e)))
@@ -184,9 +186,13 @@ displayAppError spec lbs = \case
   HttpClientUnexpectedStatusCode _ _ -> "HTTP client returned 1xx or 3xx"
   HealthCheckFailed                -> "Health check failed, make sure that the deployment is running."
   ResetFailed                      -> "Reset of the deploymnet failed, make sure that reset returns 2xx or exits with 0."
-  TestFailure e seed               -> "Test failure: " <> e <>
-                                      "\nUse --seed " <> show seed <> " to reproduce"
+  TestFailure ops shrinks err seed -> "Test failure" <>
+                                       (if shrinks > 0 then " (" <> show shrinks <> " shrinks)" else "") <>
+                                      ":\n\n" <> displayOps ops <>
+                                      err <>
+                                      "\n\nUse --seed " <> show seed <> " to reproduce"
 
+-- XXX: only displays one error at the time?!
 displayScopeError :: FilePath -> LazyByteString -> Pos -> [Ann TypeId] -> String
 displayScopeError fp lbs pos tids =
   let bs = LBS.toStrict lbs
@@ -197,18 +203,19 @@ displayScopeError fp lbs pos tids =
                      [] -> error "displayScopeError: impossible"
                      (l0, c0) : (_l1, c1) : _ -> (l0, c0, c1)
       line     = if l < length ls then ls !! l else ""
-      linum    = show l
+      linum    = " " ++ show l
       lpad     = map (const ' ') linum
 
       prevLine  = if l - 1 >= 0 then ls !! (l - 1) else ""
 
+  -- XXX: check $LANG for UTF8 support? otherwise use ascii box drawing?
   in "Scope error, the type " ++ displayTypeId tid ++ " isn't defined.\n\n" ++
-     lpad   ++ " +--> " ++ fp ++ ":" ++ show l ++ ":" ++ show c' ++ "\n" ++
-     lpad   ++ " |\n" ++
+     lpad   ++ " ┌── " ++ fp ++ ":" ++ show l ++ ":" ++ show c' ++ "\n" ++
+     lpad   ++ " │\n" ++
      (if null prevLine then "" else lpad   ++ " | " ++ prevLine ++ "\n") ++
-     linum  ++ " | " ++ line ++ "\n" ++
+     linum  ++ " │ " ++ line ++ "\n" ++
      -- XXX: We should avoid ANSI here, maybe introduce a "FancyError" type and let LibMain display it?
-     lpad   ++ " | " ++ replicate c' ' ' ++ red (replicate (length (displayTypeId tid)) '^') ++ "\n\n" ++
+     lpad   ++ " │ " ++ replicate c' ' ' ++ red (replicate (length (displayTypeId tid)) '^') ++ "\n\n" ++
      "Either define the type or mark it as abstract, in case it shouldn't be\ngenerated."
 
 displayHttpException :: Op -> HttpException -> String
