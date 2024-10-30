@@ -2,6 +2,7 @@ module Spex.LibMain where
 
 import Control.Exception
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Lazy as LBS
 import System.Exit
 
 import Spex.CommandLine.ArgParser
@@ -21,7 +22,8 @@ libMain = do
   appEnv <- newAppEnv args
   runApp appEnv app >>= \case
     Left err -> do
-      Right () <- runApp appEnv (logError (displayAppError appEnv.specFile err))
+      lbs <- LBS.readFile appEnv.specFile
+      Right () <- runApp appEnv (logError (displayAppError appEnv.specFile lbs err))
       exitFailure
     Right () -> exitSuccess
 

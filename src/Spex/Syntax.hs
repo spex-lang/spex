@@ -6,6 +6,7 @@ import Data.ByteString.Char8 as BS8
 import Data.String (IsString)
 
 import Spex.Syntax.Operation
+import Spex.Syntax.Position
 import Spex.Syntax.Type
 
 ------------------------------------------------------------------------
@@ -18,7 +19,7 @@ data Spec = Spec
 data Component = Component
   { id        :: ComponentId
   , typeDecls :: [TypeDecl]
-  , opDecls   :: [OpDecl]
+  , opDecls   :: [Ann OpDecl]
   }
   deriving Show
 

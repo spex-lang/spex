@@ -143,12 +143,37 @@ range of software that can be specified and tested will extended in the
 
   </details>
 
-- [ ] Nice CLI and errors
-  + https://elm-lang.org/news/compiler-errors-for-humans
-  + https://hackage.haskell.org/package/diagnose-2.5.1/docs/Error-Diagnose.html
-  + https://medium.com/designing-atlassian/10-design-principles-for-delightful-clis-522f363bac87
-  + https://github.com/charmbracelet/bubbletea
-  + https://gleam.run/
+- [x] Nice CLI and errors
+
+  <details>
+
+  <summary>Example</summary>
+
+  ```bash
+  $ cat example/petstore-bad-scope.spex
+  component PetStore where
+  
+  addPet : POST /pet Pet
+  getPet : GET /pet/{petId : Int} -> Pet
+
+  $ spex example/petstore-bad-scope.spex
+  i Verifying the deployment:    http://localhost:8080
+    against the specification:   example/petstore-bad-scope.spex
+  
+  i Checking the specification.
+  
+  Error: Scope error, the type Pet isn't defined.
+  
+    +--> example/petstore-bad-scope.spex:2:19
+    |
+  2 | addPet : POST /pet Pet
+    |                    ^^^
+  
+  Either define the type or mark it as abstract, in case it shouldn't be
+  generated.
+  ```
+
+  </details>
 
 - [ ] Coverage statistics and use coverage-guidance (endpoint coverage,
   but also check coverage of the range of values from responses.)

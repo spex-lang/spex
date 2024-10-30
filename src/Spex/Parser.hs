@@ -66,7 +66,7 @@ componentP = do
   $(keyword "component")
   x <- ComponentId <$> bident'
   $(keyword' "where")
-  decls <- many (fmap Left typeDeclP <|> fmap Right opDeclP)
+  decls <- many (fmap Left typeDeclP <|> fmap Right (annP opDeclP))
   let (tys, ops) = partitionEithers decls
   return (Component x tys ops)
 

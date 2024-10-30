@@ -101,7 +101,7 @@ generate spec prng = do
   env <- asks genEnv
   let ctx             = spec.component.typeDecls
       (prng', prng'') = splitPrng prng
-      (decl, op)      = runGenM (genOp spec.component.opDecls) ctx env prng'
+      (decl, op)      = runGenM (genOp (map item spec.component.opDecls)) ctx env prng'
   let env' = newValues ctx env decl op
   trace $ "generate, new values: " <> show env'
   return  (op, prng'', env')

@@ -18,15 +18,25 @@ import Spex.Syntax.Value
 scopeCheck :: Spec -> App ()
 scopeCheck spec
   | freeTypes_ `Set.isSubsetOf` userDefined = return ()
-  | otherwise = throwA $
-      ScopeError (Set.toList (Set.difference freeTypes_ userDefined))
+  | otherwise = throwA . ScopeError . map (fmap Set.toList) $
+      -- Set.filter (\ty -> ty.item `Set.member` missing) freeTypes
+      filter (\(pos, tys) -> any (\ty -> ty.item `Set.member` missing) tys) freeTypesPos
   where
+    missing :: Set TypeId
+    missing = Set.difference freeTypes_ userDefined
+
     freeTypes_ :: Set TypeId
     freeTypes_ = Set.map item freeTypes
 
     freeTypes :: Set (Ann TypeId)
     freeTypes = foldMap userDefinedTypes
-                  (concatMap toList spec.component.opDecls)
+                  (concatMap (toList . item) spec.component.opDecls)
+
+    freeTypesPos :: [(Pos, Set (Ann TypeId))]
+    freeTypesPos =
+      map
+        (\opDecl -> (opDecl.pos, foldMap userDefinedTypes (toList opDecl.item)))
+        spec.component.opDecls
 
     userDefined :: Set TypeId
     userDefined = foldMap (Set.singleton . typeId) spec.component.typeDecls

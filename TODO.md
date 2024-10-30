@@ -54,6 +54,13 @@ Here's what I'm currently working on:
     sub-delims    = "!" / "$" / "&" / "'" / "(" / ")"
                   / "*" / "+" / "," / ";" / "="
 ```
+- Nice errors
+  + Introduce FancyError datatype and display it in LibMain?
+  + https://elm-lang.org/news/compiler-errors-for-humans
+  + https://hackage.haskell.org/package/diagnose-2.5.1/docs/Error-Diagnose.html
+  + https://medium.com/designing-atlassian/10-design-principles-for-delightful-clis-522f363bac87
+  + https://github.com/charmbracelet/bubbletea
+  + https://gleam.run/
 
 - Packaging
   + caching
