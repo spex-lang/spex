@@ -38,8 +38,8 @@ newHttpClient (Deployment (HostPort host port) _health _reset) = do
 
 data Response
   = Ok2xx ByteString
-  | ClientError4xx Int
-  | ServerError5xx Int
+  | ClientError4xx Int ByteString
+  | ServerError5xx Int ByteString
 
 httpRequest :: HttpClient -> Op -> App Response
 httpRequest client op = do
@@ -56,13 +56,13 @@ httpRequest client op = do
             <?> HttpClientException op
   trace $ "httpRequest, resp: " <> show resp
   let status = Http.responseStatus resp
+      body   = LBS.toStrict (Http.responseBody resp)
   if | Http.statusIsSuccessful status -> do
-         let body = LBS.toStrict (Http.responseBody resp)
          return (Ok2xx body)
      | Http.statusIsClientError status ->
-         return (ClientError4xx status.statusCode)
+         return (ClientError4xx status.statusCode (status.statusMessage <> ": " <> body))
      | Http.statusIsServerError status ->
-         return (ServerError5xx status.statusCode)
+         return (ServerError5xx status.statusCode (status.statusMessage <> ": " <> body))
      | otherwise ->
          throwA (HttpClientUnexpectedStatusCode
                    status.statusCode status.statusMessage)

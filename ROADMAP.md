@@ -1,10 +1,20 @@
 # Roadmap for future releases
 
+* Coverage-guidance and mutation
+
+* User provided coverage and minimal test cases
+  + E.g. show me all the minimal test cases that lead to each error?
+
+* Check coverage of the range of values from responses?
+
 * Support for other content types than `application/json`
 
 * Ability to import/export OpenAPI (and later protobuf)
 
 * Editor support
+
+* Only presents new errors, abstract counterexamples like in "Find More Bugs
+  with QuickCheck!" paper?
 
 * Optional models?
 

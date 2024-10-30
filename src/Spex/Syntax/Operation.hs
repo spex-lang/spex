@@ -47,4 +47,7 @@ displayPathSegment (Path p)    = BS8.unpack p
 displayPathSegment (Hole _x s) = s
 
 displayOps :: [Op] -> String
-displayOps = foldl' (\ih op -> displayOp displayValue op <> "\n" <> ih) ""
+displayOps ops
+  = foldl' (\ih (i, op) -> show i <> ". " <> displayOp displayValue op <> "\n" <> ih) ""
+  . zip [length ops, length ops - 1 ..]
+  $ ops

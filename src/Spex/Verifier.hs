@@ -1,5 +1,6 @@
 module Spex.Verifier where
 
+import qualified Data.ByteString.Char8 as BS8
 import Data.ByteString.Lazy (ByteString)
 import qualified Data.List.NonEmpty as NonEmpty
 import Data.Map.Strict (Map)
@@ -74,14 +75,15 @@ verify spec deployment = do
           else do
             let err = "Typechecking failed, val: " ++ show val ++ " not of type " ++ show op.responseType
             counterExample client (op : ops) err seed
-        ClientError4xx code -> do
+        ClientError4xx code msg -> do
           let ret = "  ↳ " <> show code
           debug_ ret
           if code == 404
           then local (\e -> e { genEnv = env' }) $
                  go (n - 1) ops seed prng' client (n4xx + 1) cov'
-          else counterExample client (op : ops) ret seed
-        ServerError5xx code -> counterExample client (op : ops) ("  ↳ " <> show code) seed
+          else counterExample client (op : ops) (ret <> " " <> BS8.unpack msg) seed
+        ServerError5xx code msg ->
+          counterExample client (op : ops) ("  ↳ " <> show code <> " " <> BS8.unpack msg) seed
 
     counterExample :: HttpClient -> [Op] -> String -> Int -> App Result
     counterExample client ops err seed = do
@@ -110,7 +112,7 @@ shrinkProp ctx client reset ops0 = do
           if ok
           then go ops
           else return False
-        ClientError4xx code -> do
+        ClientError4xx code _msg -> do
           debug_ $ "  ↳ " <> show code
           if code == 404
           then go ops

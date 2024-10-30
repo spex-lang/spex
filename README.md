@@ -196,9 +196,9 @@ range of software that can be specified and tested will extended in the
 
   Error: Test failure (8 shrinks):
 
-  addPet : POST /pet {petId = 27, petName = qux}
-  addPet : POST /pet {petId = 27, petName = qux}
-    ↳ 409
+  1. addPet : POST /pet {petId = 27, petName = qux}
+  2. addPet : POST /pet {petId = 27, petName = qux}
+    ↳ 409 Conflict: Pet already exists
 
   Use --seed -2917004710203612904 to reproduce
   ```
@@ -206,11 +206,9 @@ range of software that can be specified and tested will extended in the
   failed.
   </details>
 
-- [ ] Coverage statistics and use coverage-guidance (endpoint coverage,
-  but also check coverage of the range of values from responses.)
+- [ ] Coverage statistics per endpoint
 
-- [ ] User provided coverage and minimal test cases
-  + E.g. show me all the minimal test cases that lead to each error?
+- [ ] Don't stop if error is found
 
 - [ ] Formatting of specs
   <details>
@@ -236,10 +234,6 @@ range of software that can be specified and tested will extended in the
   ```
 
   </details>
-
-- [ ] Don't stop if error is found
-
-- [ ] Only presents new errors?
 
 See the [road map](ROADMAP.md) for features that are planned for later
 releases.
