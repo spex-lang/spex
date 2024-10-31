@@ -59,12 +59,12 @@ verifyApp opts = do
   info $ "Checking the specification.\n"
   spec <- pure (runParser specP bs) <?> ParserError
   scopeCheck spec
-  info $ "Waiting for health check to pass.\n"
+  info "Waiting for health check to pass...\n"
   healthChecker deploy
-  info $ "Starting to run tests.\n"
+  done "Health check passed!\n"
+  info $ "Starting to run tests...\n"
   result <- verify opts spec deploy
-
-  info $ "All tests passed, here are the results: \n\n" <> displayResult result
+  done $ "Done testing, here are the results: \n\n" <> displayResult result
 
 formatApp :: FormatOptions -> App ()
 formatApp opts = do
