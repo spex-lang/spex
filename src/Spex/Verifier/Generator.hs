@@ -14,7 +14,7 @@ import Data.Text (Text)
 import Data.Vector (Vector)
 import System.Random
 
-import Spex.Monad (App, asks, genEnv, trace)
+import Spex.Monad (App, asks, trace)
 import Spex.Syntax
 import Spex.Verifier.Generator.Env
 
@@ -92,13 +92,12 @@ type GenM a = ReaderT GenMEnv Gen a
 runGenM :: GenM a -> GenCtx -> GenEnv -> Prng -> a
 runGenM m ctx env prng = runGen (Reader.runReaderT m (GenMEnv ctx env)) prng
 
-generate :: Spec -> Prng -> App (Op, Prng, GenEnv)
-generate spec prng = do
-  env <- asks genEnv
+generate :: Spec -> Prng -> GenEnv -> App (Op, Prng, GenEnv)
+generate spec prng env = do
   let ctx             = spec.component.typeDecls
       (prng', prng'') = splitPrng prng
       (decl, op)      = runGenM (genOp (map item spec.component.opDecls)) ctx env prng'
-  let env' = newValues ctx env decl op
+      env' = newValues ctx env decl op
   trace $ "generate, new values: " <> show env'
   return  (op, prng'', env')
 

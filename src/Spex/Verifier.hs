@@ -6,6 +6,7 @@ import qualified Data.List.NonEmpty as NonEmpty
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 
+import Spex.CommandLine.Option
 import Spex.Monad
 import Spex.Syntax
 import Spex.TypeChecker
@@ -44,21 +45,19 @@ displayResult res = unlines
 
 ------------------------------------------------------------------------
 
-verify :: Spec -> Deployment -> App Result
-verify spec deployment = do
-  numTests <- asks numTests
-  mSeed <- asks mSeed
-  (prng, seed) <- liftIO (newPrng mSeed)
+verify :: VerifyOptions -> Spec -> Deployment -> App Result
+verify opts spec deployment = do
+  (prng, seed) <- liftIO (newPrng opts.seed)
   client <- newHttpClient deployment
   reseter client deployment.reset
-  go numTests [] seed prng client 0 Map.empty
+  go opts.numTests [] seed prng emptyGenEnv client 0 Map.empty
   where
-    go :: Word -> [Op] -> Int -> Prng -> HttpClient -> Word -> Coverage -> App Result
-    go 0 _ops _seed _prng _client n4xx cov = do
+    go :: Word -> [Op] -> Int -> Prng -> GenEnv -> HttpClient -> Word -> Coverage -> App Result
+    go 0 _ops _seed _prng _genEnv _client n4xx cov = do
       debug_ ""
       return (Result [] n4xx cov)
-    go n  ops  seed  prng  client n4xx cov = do
-      (op, prng', env') <- generate spec prng
+    go n  ops  seed  prng  genEnv client n4xx cov = do
+      (op, prng', genEnv') <- generate spec prng genEnv
       let cov' = Map.insertWith (+) op.id 1 cov
       debug (displayOp displayValue op)
       resp <- httpRequest client op
@@ -68,8 +67,9 @@ verify spec deployment = do
           debug_ $ "  ↳ 2xx " <> displayValue val
           let ok = typeCheck spec.component.typeDecls val op.responseType
           if ok
-          then local (\e -> e { genEnv = insertValue op.responseType val env' }) $
-                 go (n - 1) (op : ops) seed prng' client n4xx cov'
+          then do
+            let genEnv'' = insertValue op.responseType val genEnv'
+            go (n - 1) (op : ops) seed prng' genEnv'' client n4xx cov'
           else do
             let err = "Typechecking failed, val: " ++ show val ++ " not of type " ++ show op.responseType
             counterExample client (op : ops) err seed
@@ -77,16 +77,14 @@ verify spec deployment = do
           let ret = "  ↳ " <> show code
           debug_ ret
           if code == 404
-          then local (\e -> e { genEnv = env' }) $
-                 go (n - 1) ops seed prng' client (n4xx + 1) cov'
+          then go (n - 1) ops seed prng' genEnv' client (n4xx + 1) cov'
           else counterExample client (op : ops) (ret <> " " <> BS8.unpack msg) seed
         ServerError5xx code msg ->
           counterExample client (op : ops) ("  ↳ " <> show code <> " " <> BS8.unpack msg) seed
 
     counterExample :: HttpClient -> [Op] -> String -> Int -> App Result
     counterExample client ops err seed = do
-      b <- asks noShrinking
-      ops' <- if b
+      ops' <- if opts.noShrinking
               then return (NonEmpty.singleton ops)
               else shrinker
                      (shrinkProp spec.component.typeDecls client deployment.reset)

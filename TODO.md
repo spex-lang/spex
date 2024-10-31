@@ -8,6 +8,7 @@ Here's what I'm currently working on:
 - print progress while testing
 - docs: contributing.md
   + https://github.com/rubyberlin/code-of-conduct?tab=readme-ov-file#readme ?
+  + https://github.com/Gabriella439/grace/blob/main/CODE_OF_CONDUCT.md ?
 - docs: document syntax?
 
 ```

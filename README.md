@@ -49,7 +49,7 @@ range of software that can be specified and tested will extended in the
   ```bash
   $ spex-demo-petstore &
   $ PID_PETSTORE=$!
-  $ spex example/petstore-basic.spex
+  $ spex verify example/petstore-basic.spex
 
   i Verifying the deployment:    http://localhost:8080
     against the specification:   example/petstore-basic.spex
@@ -89,8 +89,7 @@ range of software that can be specified and tested will extended in the
   - getPet : GET /pet/{petId : Int} -> Pet
   + addPet : POST /pet !Pet
   + getPet : GET /pet/{petId : @Int} -> Pet
-  $ spex example/petstore-modal.spex
-  cabal run spex -- example/petstore-modal.spex
+  $ spex verify example/petstore-modal.spex
 
   i Verifying the deployment:    http://localhost:8080
     against the specification:   example/petstore-modal.spex
@@ -156,7 +155,7 @@ range of software that can be specified and tested will extended in the
   addPet : POST /pet Pet
   getPet : GET /pet/{petId : Int} -> Pet
 
-  $ spex example/petstore-bad-scope.spex
+  $ spex verify example/petstore-bad-scope.spex
   i Verifying the deployment:    http://localhost:8080
     against the specification:   example/petstore-bad-scope.spex
 
@@ -183,7 +182,7 @@ range of software that can be specified and tested will extended in the
   </summary>
 
   ```
-  $ spex example/petstore-modal.spex --seed -2917004710203612904
+  $ spex verify example/petstore-modal.spex --seed -2917004710203612904
 
   i Verifying the deployment:    http://localhost:8080
     against the specification:   example/petstore-modal.spex
@@ -219,23 +218,23 @@ range of software that can be specified and tested will extended in the
   <summary>Example</summary>
   </details>
 
-- [ ] Formatting of specs
+- [x] Built-in specifications formatter
   <details>
 
   <summary>Example</summary>
 
   ```bash
-  $ cat example/petstore-badly-formatted.spex
+  $ cat example/petstore-bad-formatting.spex
   component PetStore
     where
-  
-  addPet     : POST   
+
+  addPet     : POST
     /pet Pet
 
-  getPet :GET /pet/{ petId  : 
+  getPet :GET /pet/{ petId  :
     Int} ->
-    Pet
-  $ spex fmt example/petstore-badly-formatted.spex
+      Pet
+  $ spex format example/petstore-bad-formatting.spex
   component PetStore where
   
   addPet : POST /pet Pet

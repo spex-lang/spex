@@ -21,7 +21,7 @@ import Network.HTTP.Client (HttpException(..), HttpExceptionContent(..))
 import qualified Network.HTTP.Client as Http
 
 import Spex.CommandLine.Ansi
-import Spex.CommandLine.ArgParser
+import Spex.CommandLine.Option
 import Spex.Syntax
 import Spex.Verifier.Generator.Env
 
@@ -42,36 +42,23 @@ local f (App m) = App (Reader.local f m)
 ------------------------------------------------------------------------
 
 data AppEnv = AppEnv
-  { specFile    :: FilePath
-  , deployment  :: Deployment
-  , numTests    :: Word
-  , mSeed       :: Maybe Int
-  , logger      :: Logger
-  , genEnv      :: GenEnv
-  , noShrinking :: Bool
+  { logger      :: Logger
   }
 
-newAppEnv :: CmdLineArgs -> IO AppEnv
-newAppEnv args = do
+newAppEnv :: Options -> IO AppEnv
+newAppEnv opts = do
   hasAnsi <- hasAnsiSupport
 
-  let logger' | not hasAnsi || args.nonInteractive = noAnsiLogger
+  let logger' | not hasAnsi || opts.nonInteractive = noAnsiLogger
               | otherwise = ansiLogger
-      logger'' = case args.logging of
+      logger'' = case opts.logging of
                    Verbose     True -> verboseLogger logger'
                    VeryVerbose True -> veryVerboseLogger logger'
                    Quiet       True -> quietLogger logger'
                    _otherwise       -> logger'
 
   return AppEnv
-    { specFile    = args.specFilePath
-    , deployment  = Deployment (HostPort args.host args.port)
-                      (HealthCheckPath args.health) (ResetPath args.reset)
-    , numTests    = fromMaybe 100 args.numTests
-    , mSeed       = args.seed
-    , logger      = logger''
-    , genEnv      = emptyGenEnv
-    , noShrinking = args.noShrinking
+    { logger = logger''
     }
 
 data Logger = Logger

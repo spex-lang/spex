@@ -34,13 +34,14 @@ library
   import:             warnings
   exposed-modules:
     Spex.CommandLine.Ansi
-    Spex.CommandLine.ArgParser
     Spex.CommandLine.GitHash
+    Spex.CommandLine.Option
     Spex.CommandLine.Spinner
     Spex.Lexer
     Spex.LibMain
     Spex.Monad
     Spex.Parser
+    Spex.PrettyPrinter
     Spex.Syntax
     Spex.Syntax.Operation
     Spex.Syntax.Position
