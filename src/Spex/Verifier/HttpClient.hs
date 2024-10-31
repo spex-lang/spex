@@ -13,9 +13,6 @@ import qualified Network.HTTP.Types as Http
 
 import Spex.Monad
 import Spex.Syntax
-import Spex.Syntax.Operation
-import Spex.Syntax.Type
-import Spex.Syntax.Value
 import Spex.Verifier.Codec.Json
 
 ------------------------------------------------------------------------

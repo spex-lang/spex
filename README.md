@@ -206,9 +206,18 @@ range of software that can be specified and tested will extended in the
   failed.
   </details>
 
-- [ ] Coverage statistics per endpoint
+- [ ] Coverage statistics per operation and response
+  <details>
 
-- [ ] Don't stop if error is found
+  <summary>Example</summary>
+  </details>
+
+- [ ] Don't stop if a potential problem is found, present all findings at the
+      end of a test run
+  <details>
+
+  <summary>Example</summary>
+  </details>
 
 - [ ] Formatting of specs
   <details>

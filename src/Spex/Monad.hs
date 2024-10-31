@@ -16,7 +16,6 @@ import Data.ByteString (ByteString)
 import qualified Data.ByteString.Char8 as BS8
 import Data.ByteString.Lazy (LazyByteString)
 import qualified Data.ByteString.Lazy as LBS
-import Data.List (intercalate)
 import Data.Maybe
 import Network.HTTP.Client (HttpException(..), HttpExceptionContent(..))
 import qualified Network.HTTP.Client as Http
@@ -24,10 +23,6 @@ import qualified Network.HTTP.Client as Http
 import Spex.CommandLine.Ansi
 import Spex.CommandLine.ArgParser
 import Spex.Syntax
-import Spex.Syntax.Operation
-import Spex.Syntax.Position
-import Spex.Syntax.Type
-import Spex.Syntax.Value
 import Spex.Verifier.Generator.Env
 
 ------------------------------------------------------------------------

@@ -44,6 +44,7 @@ library
     Spex.Syntax
     Spex.Syntax.Operation
     Spex.Syntax.Position
+    Spex.Syntax.Specification
     Spex.Syntax.Type
     Spex.Syntax.Value
     Spex.TypeChecker

@@ -8,9 +8,6 @@ import System.Process
 
 import Spex.Monad
 import Spex.Syntax
-import Spex.Syntax.Operation
-import Spex.Syntax.Type
-import Spex.Syntax.Value
 import Spex.Verifier.HttpClient
 
 ------------------------------------------------------------------------

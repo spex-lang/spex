@@ -8,8 +8,6 @@ import qualified Data.Map.Strict as Map
 
 import Spex.Monad
 import Spex.Syntax
-import Spex.Syntax.Operation
-import Spex.Syntax.Value
 import Spex.TypeChecker
 import Spex.Verifier.Codec.Json
 import Spex.Verifier.Generator

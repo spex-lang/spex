@@ -23,6 +23,8 @@
 * Time-traveling debugger for fail test cases
 
 * REPL that can generate data on tab complete
+  - https://abhinavsarkar.net/posts/repling-with-haskeline/
+  - https://github.com/Gabriella439/grace/blob/main/src/Grace/REPL.hs
 
 * Lint the spec, e.g. can all commands be reached? Or does some
   command have a parameter which no other command returns and we

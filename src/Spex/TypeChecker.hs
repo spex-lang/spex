@@ -9,9 +9,6 @@ import qualified Data.Vector as Vector
 
 import Spex.Monad
 import Spex.Syntax
-import Spex.Syntax.Position
-import Spex.Syntax.Type
-import Spex.Syntax.Value
 
 ------------------------------------------------------------------------
 

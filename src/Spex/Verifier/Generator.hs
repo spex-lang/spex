@@ -16,10 +16,6 @@ import System.Random
 
 import Spex.Monad (App, asks, genEnv, trace)
 import Spex.Syntax
-import Spex.Syntax.Operation
-import Spex.Syntax.Position
-import Spex.Syntax.Type
-import Spex.Syntax.Value
 import Spex.Verifier.Generator.Env
 
 ------------------------------------------------------------------------

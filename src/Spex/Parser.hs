@@ -15,9 +15,6 @@ import FlatParse.Basic hiding (Parser, char, cut, runParser, string)
 
 import Spex.Lexer
 import Spex.Syntax
-import Spex.Syntax.Operation
-import Spex.Syntax.Position
-import Spex.Syntax.Type
 
 ------------------------------------------------------------------------
 
