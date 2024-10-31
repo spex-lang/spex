@@ -67,7 +67,9 @@ parseCliOptions_ args =
 parserInfo :: ParserInfo Options
 parserInfo =
   info (helper <*> simpleVersioner versionHash <*> parser)
-    (progDesc "Command-line utility for the Spex language")
+    (progDesc "Command-line utility for the Spex language"
+       <> header "spex - specification language and verifier"
+       <> footer "See https://spex-lang.org for more documentation.")
   where
     versionHash = concat ["v", showVersion version, " ", ($(tGitHash)) ]
 
