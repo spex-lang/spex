@@ -62,15 +62,17 @@ newAppEnv opts = do
     }
 
 data Logger = Logger
-  { loggerInfo  :: String -> IO ()
+  { loggerInfo  :: Bool -> String -> IO ()
   , loggerError :: String -> IO ()
   , loggerDebug :: String -> IO ()
   , loggerTrace :: String -> IO ()
   }
 
+-- XXX: Check for unicode support, for checkmark?
 noAnsiLogger :: Logger
 noAnsiLogger = Logger
-  { loggerInfo  = putStrLn . ("i " ++)
+  { loggerInfo  = \b -> if b then putStrLn . ("✓ " ++)
+                             else putStrLn . ("i " ++)
   , loggerError = putStrLn . ("Error: " ++ )
   , loggerDebug = \_s -> return ()
   , loggerTrace = \_s -> return ()
@@ -78,14 +80,15 @@ noAnsiLogger = Logger
 
 ansiLogger :: Logger
 ansiLogger = Logger
-  { loggerInfo  = putStrLn . (cyan "i " ++)
+  { loggerInfo  = \b -> if b then putStrLn . (green "✓ " ++)
+                             else putStrLn . (cyan "i " ++)
   , loggerError = putStrLn . ((boldRed "Error" ++ ": ") ++ )
   , loggerDebug = \_s -> return ()
   , loggerTrace = \_s -> return ()
   }
 
 quietLogger :: Logger -> Logger
-quietLogger l = l { loggerInfo = const (return ()) }
+quietLogger l = l { loggerInfo = \_ _ -> return () }
 
 verboseLogger :: Logger -> Logger
 verboseLogger l =  l { loggerDebug = putStrLn . (faint "d " ++) }
@@ -97,12 +100,12 @@ veryVerboseLogger l = (verboseLogger l)
 info :: String -> App ()
 info s = do
   l <- asks logger
-  liftIO (l.loggerInfo s)
+  liftIO (l.loggerInfo False s)
 
 info_ :: String -> App ()
 info_ s = do
   l <- asks logger
-  liftIO (l.loggerInfo ("\b\b  " ++ s))
+  liftIO (l.loggerInfo False ("\b\b  " ++ s))
 
 logError :: String -> App ()
 logError s = do
@@ -123,6 +126,11 @@ trace :: String -> App ()
 trace s = do
   l <- asks logger
   liftIO (l.loggerTrace s)
+
+done :: String -> App ()
+done s = do
+  l <- asks logger
+  liftIO (l.loggerInfo True s)
 
 ------------------------------------------------------------------------
 

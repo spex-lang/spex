@@ -14,6 +14,9 @@ withSGR sgr s = setSGRCode sgr ++ s ++ setSGRCode []
 cyan :: String -> String
 cyan = withSGR [SetColor Foreground Vivid Cyan]
 
+green :: String -> String
+green = withSGR [SetColor Foreground Vivid Green]
+
 red :: String -> String
 red = withSGR [SetColor Foreground Vivid Red]
 

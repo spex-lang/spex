@@ -26,18 +26,27 @@ libMain = do
   mainWith opts
 
 mainWith :: Options -> IO ()
+mainWith (optsCommand -> Repl   {}) = notSupportedYet
+mainWith (optsCommand -> Import {}) = notSupportedYet
+mainWith (optsCommand -> Export {}) = notSupportedYet
 mainWith opts = do
   appEnv <- newAppEnv opts
   let (app, specFile) = case opts.optsCommand of
                           Verify vopts -> (verifyApp vopts, vopts.specFilePath)
                           Format fopts -> (formatApp fopts, fopts.specFilePath)
-                          _ -> error "Not supported yet!"
+                          Check  copts -> (checkApp  copts, copts.specFilePath)
+                          _ -> error "impossible"
   runApp appEnv app >>= \case
     Left err -> do
       lbs <- LBS.readFile specFile
       Right () <- runApp appEnv (logError (displayAppError specFile lbs err))
       exitFailure
     Right () -> exitSuccess
+
+notSupportedYet :: IO ()
+notSupportedYet = do
+  putStrLn "Not supported yet!"
+  exitFailure
 
 verifyApp :: VerifyOptions -> App ()
 verifyApp opts = do
@@ -62,6 +71,13 @@ formatApp opts = do
   bs <- liftIO (try (BS.readFile opts.specFilePath)) <?> ReadSpecFileError
   spec <- pure (runParser specP bs) <?> ParserError
   liftIO (putSpec spec)
+
+checkApp :: CheckOptions -> App ()
+checkApp opts = do
+  bs <- liftIO (try (BS.readFile opts.specFilePath)) <?> ReadSpecFileError
+  spec <- pure (runParser specP bs) <?> ParserError
+  scopeCheck spec
+  done "Specification is well-formed!"
 
 ------------------------------------------------------------------------
 

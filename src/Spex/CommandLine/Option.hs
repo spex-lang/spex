@@ -49,6 +49,8 @@ data FormatOptions = FormatOptions
   { specFilePath :: FilePath }
 
 data CheckOptions  = CheckOptions
+  { specFilePath :: FilePath }
+
 data ReplOptions   = ReplOptions
 data ImportOptions = ImportOptions
 data ExportOptions = ExportOptions
@@ -162,7 +164,7 @@ parser = Options
     format = FormatOptions <$> specFile
 
     check :: Parser CheckOptions
-    check = pure CheckOptions
+    check = CheckOptions <$> specFile
 
     repl :: Parser ReplOptions
     repl = pure ReplOptions
