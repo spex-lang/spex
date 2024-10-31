@@ -69,6 +69,12 @@ Here's what I'm currently working on:
      cache /var/lib/buildkit?
     * https://github.com/reproducible-containers/buildkit-cache-dance
     * https://dev.doroshev.com/blog/docker-mount-type-cache/
+  + ditch buildkit stuff and just copy out binaries?
+    ```
+    CONTAINER=$docker create my-builder)
+    docker cp "$CONTAINER:/usr/local/bin/*" .
+    docker rm "$CONTAINER"
+    ```
   + install script?
     * confirm with user
     * update spexup itself? 
