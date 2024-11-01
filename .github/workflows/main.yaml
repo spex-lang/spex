@@ -109,18 +109,57 @@ jobs:
   #          mv {} "{}-${{ steps.autotag.outputs.version }}-${{ matrix.platform }}" \;
   #        gh release create --draft --notes-file=CHANGELOG.md \
   #          "v${{ steps.autotag.outputs.version }}" ${{ github.workspace }}/bin/*
+  #
 
-  macos:
+  arm64-macos-binary:
     name: GHC ${{ matrix.ghc-version }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [macos-15]
-        platform: ['x86_64-macos']
+        platform: ['arm64-macos']
         ghc-version: ['9.6.6']
         cabal-version: ['3.12.1.0']
+    outputs:
+      new-version: ${{ steps.version-bump.outputs.new-version }}
     steps:
-      - name: uname
-        run: |
-          uname -a
+      - uses: actions/checkout@v4
+
+      - name: Set up GHC ${{ matrix.ghc-version }}
+        uses: haskell-actions/setup@v2
+        id: setup
+        with:
+          ghc-version: ${{ matrix.ghc-version }}
+          cabal-version: ${{ matrix.cabal-version }}
+          cabal-update: true
+
+      - name: Build dependencies
+        run: make build-deps
+
+      - name: Build 
+        run: make build
+
+      - name: Test
+        run: make test
+
+      - name: Check for version bump
+        id: version-bump
+        run: make bump
+
+      - name: Install binaries
+        run: make install
+
+  # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/passing-information-between-jobs
+  publish-release:
+    name: Publish release
+    runs-on: ubuntu-latest
+    needs: arm64-macos-binary
+    # needs: [x86_64-linux-binary, arm64-macos-binary]
+    steps:
+      - env:
+          NEW_VERSION: ${{needs.arm64-macos-binary.outputs.new-version}}
+      - name: Publish release
+        run: make release
+   
+
