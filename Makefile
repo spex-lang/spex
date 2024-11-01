@@ -58,7 +58,7 @@ install:
 	@echo "SPEX_BIN=$(SPEX_BIN)"
 	mkdir -p $(SPEX_BIN)
         ifdef NEW_VERSION
-		find ./dist-newstyle -name 'spex*' -type f -executable -exec sh -c ' \
+		find ./dist-newstyle -name 'spex*' -type f -perm +0111 -exec sh -c ' \
 			strip {} \
 			&& cp {} $(SPEX_BIN)/$$(basename {})-$(NEW_VERSION)-$(PLATFORM)' \; 
         else
