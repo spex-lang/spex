@@ -150,16 +150,27 @@ jobs:
       - name: Install binaries
         run: make install
 
-  # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/passing-information-between-jobs
-  publish-release:
-    name: Publish release
-    runs-on: ubuntu-latest
-    needs: arm64-macos-binary
-    # needs: [x86_64-linux-binary, arm64-macos-binary]
-    steps:
-      - env:
+      - uses: ncipollo/release-action@v1
+        env:
           NEW_VERSION: ${{needs.arm64-macos-binary.outputs.new-version}}
-        name: Publish release
-        run: make release
+        if: ${{ env.NEW_VERSION }}
+        with:
+          tag: ${{ env.NEW_VERSION }}
+          artifacts: "bin/*"
+          bodyFile: "CHANGELOG.md"
+          allowUpdates: true
+          draft: true
+
+  # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/passing-information-between-jobs
+  #publish-release:
+  #  name: Publish release
+  #  runs-on: ubuntu-latest
+  #  needs: arm64-macos-binary
+  #  # needs: [x86_64-linux-binary, arm64-macos-binary]
+  #  steps:
+  #    - env:
+  #        NEW_VERSION: ${{needs.arm64-macos-binary.outputs.new-version}}
+  #      name: Publish release
+  #      run: make release
    
 
