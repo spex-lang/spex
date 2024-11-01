@@ -159,7 +159,7 @@ jobs:
     steps:
       - env:
           NEW_VERSION: ${{needs.arm64-macos-binary.outputs.new-version}}
-      - name: Publish release
+        name: Publish release
         run: make release
    
 
