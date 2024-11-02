@@ -1,6 +1,8 @@
 PLATFORM := "$(shell uname -m)-$(shell uname -s | tr '[:upper:]' '[:lower:]')"
 CABAL_VERSION := $(shell awk '/^version:/ { print "v"$$2 }' spex.cabal)
-RELEASED_VERSION := $(shell gh release list --limit 1 --exclude-drafts --json tagName --jq '.[].tagName')
+RELEASED_VERSION := $(shell gh release list --limit 1 \
+			--exclude-drafts --exclude-prereleases \
+			--json tagName --jq '.[].tagName')
 GITHUB_ACTIONS ?= "false"
 
 # This default file is used for simulating GitHub actions outputs locally:
@@ -66,23 +68,25 @@ install:
 		@echo "No new version to install..."
         endif
 
-#release:
-#  ifeq ($(GITHUB_ACTIONS),"true")
-#	gh release create --draft --notes-file=CHANGELOG.md \
-#		"v$(NEW_VERSION)" $(SPEX_BIN)/*
-#  else
-#	@echo Running locally, skipping automatic release...
-#	@echo 
-#	@echo If you really want to make a release, manually run:
-#	@echo 
-#	@echo "  gh release create --draft --notes-file=CHANGELOG.md \
-#		"v$(NEW_VERSION)" $(SPEX_BIN)/spex"
-#	@echo 
-#	@echo You might want to add more binaries. One of the reasons for releasing 
-#	@echo "being disabled locally, is because it's difficult to tell programatically"
-#	@echo exactly what binaries to include in the release. See the following issue:
-#	@echo https://github.com/haskell/cabal/issues/9732 for more infomation.
-#  endif
+release:
+  ifeq ($(GITHUB_ACTIONS),"true")
+	upx -q $(SPEX_BIN)
+	gh release create --draft --notes-file=CHANGELOG.md \
+		"v$(NEW_VERSION)" $(SPEX_BIN)/*
+  else
+	@echo Running locally, skipping automatic release...
+	@echo 
+	@echo If you really want to make a release, manually run:
+	@echo 
+	@echo "  upx -q $(SPEX_BIN)/spex"
+	@echo "  gh release create --draft --notes-file=CHANGELOG.md \
+		"v$(NEW_VERSION)" $(SPEX_BIN)/spex"
+	@echo 
+	@echo You might want to add more binaries. One of the reasons for releasing 
+	@echo "being disabled locally, is because it's difficult to tell programatically"
+	@echo exactly what binaries to include in the release. See the following issue:
+	@echo https://github.com/haskell/cabal/issues/9732 for more infomation.
+  endif
 
 clean:
 

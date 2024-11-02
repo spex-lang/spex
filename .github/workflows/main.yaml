@@ -150,27 +150,58 @@ jobs:
       - name: Install binaries
         run: make install
 
-      - uses: ncipollo/release-action@v1
-        env:
-          NEW_VERSION: ${{needs.arm64-macos-binary.outputs.new-version}}
+      - name: Upload binary artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: spex-${{ matrix.platform }}
+          path: bin/*
+
+  check-for-new-version:
+    name: Check for new version
+    runs-on: ubuntu-latest
+    outputs:
+      new-version: ${{ steps.version-bump.outputs.new-version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            spex.cabal
+            Makefile
+          sparse-checkout-cone-mode: false
+
+      - name: Check for version bump
+        id: version-bump
+        run: make bump
+
+  create-release:
+    name: Create release
+    runs-on: ubuntu-latest
+    needs: [check-for-new-version, arm64-macos-binary]
+    env:
+      NEW_VERSION: ${{ check-for-new-version.outputs.new-version }}
+    steps:
+      - uses: actions/checkout@v4
         if: ${{ env.NEW_VERSION }}
         with:
-          tag: ${{ env.NEW_VERSION }}
-          artifacts: "bin/*"
-          bodyFile: "CHANGELOG.md"
-          allowUpdates: true
-          draft: true
+          sparse-checkout: |
+            Makefile
+            CHANGELOG.md
+          sparse-checkout-cone-mode: false
 
-  # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/passing-information-between-jobs
-  #publish-release:
-  #  name: Publish release
-  #  runs-on: ubuntu-latest
-  #  needs: arm64-macos-binary
-  #  # needs: [x86_64-linux-binary, arm64-macos-binary]
-  #  steps:
-  #    - env:
-  #        NEW_VERSION: ${{needs.arm64-macos-binary.outputs.new-version}}
-  #      name: Publish release
-  #      run: make release
-   
+      - name: Download binary artifacts
+        if: ${{ env.NEW_VERSION }}
+        uses: actions/download-artifact@v4
+        with:
+          path: bin
+          pattern: spex-*
+          merge-multiple: true
 
+      - name: Install upx
+        if: ${{ env.NEW_VERSION }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install upx-ucl
+
+      - name: Compress binaries and create release
+        if: ${{ env.NEW_VERSION }}
+        run: make release
