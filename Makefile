@@ -1,16 +1,16 @@
-OS := "$(shell uname -s | tr '[:upper:]' '[:lower:]')"
-PLATFORM := "$(shell uname -m)-$(OS)"
+OS := $(shell uname -s | tr '[:upper:]' '[:lower:]')
+PLATFORM := $(shell uname -m)-$(OS)
 CABAL_VERSION := $(shell awk '/^version:/ { print "v"$$2 }' spex.cabal)
 RELEASED_VERSION := $(shell gh release list --limit 1 \
 			--exclude-drafts --exclude-pre-releases \
 			--json tagName --jq '.[].tagName // "unreleased"')
-GITHUB_ACTIONS ?= "false"
+GITHUB_ACTIONS ?= false
 
 # This default file is used for simulating GitHub actions outputs locally:
 # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/passing-information-between-jobs
 GITHUB_OUTPUT ?= "$(TEMPDIR)/spex_github_output"
 
-ifeq ($(GITHUB_ACTIONS),"true")
+ifeq ($(GITHUB_ACTIONS),true)
 SPEX_BIN := "bin"
 else
 SPEX_BIN := $(or $(XDG_BIN_HOME),$(HOME)/.local/bin)
@@ -21,9 +21,9 @@ endif
 
 # The find command on MacOS doesn't have a -executable flag.
 ifeq ($(OS),"darwin")
-FIND_EXECUTABLE := "-perm +0111"
+FIND_EXECUTABLE := -perm +0111
 else
-FIND_EXECUTABLE := "-executable"
+FIND_EXECUTABLE := -executable
 endif
 
 all: build-deps build test bump install release
@@ -62,7 +62,6 @@ bump:
         endif
         endif
         endif
-	@echo "No new version..."
 
 install:
 	@echo "NEW_VERSION=$(NEW_VERSION)"

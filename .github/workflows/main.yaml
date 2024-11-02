@@ -148,11 +148,14 @@ jobs:
         run: make bump
 
       - name: Install binaries
-        # Only if there's a version bump and we are merging to main.
+        # Only if there's a version bump and we are merging to main, i.e
+        # exclude PRs.
         if: ${{ steps.version-bump.outputs.new-version &&
                 github.event_name == 'push' && 
                 github.ref == 'refs/heads/main' }}
         id: install
+        env:
+          NEW_VERSION: ${{ steps.version-bump.outputs.new-version }}
         run: make install
 
       - name: Upload binary artifacts
