@@ -1,13 +1,14 @@
-PLATFORM := "$(shell uname -m)-$(shell uname -s | tr '[:upper:]' '[:lower:]')"
+OS := "$(shell uname -s | tr '[:upper:]' '[:lower:]')"
+PLATFORM := "$(shell uname -m)-$(OS)"
 CABAL_VERSION := $(shell awk '/^version:/ { print "v"$$2 }' spex.cabal)
 RELEASED_VERSION := $(shell gh release list --limit 1 \
-			--exclude-drafts --exclude-prereleases \
-			--json tagName --jq '.[].tagName')
+			--exclude-drafts --exclude-pre-releases \
+			--json tagName --jq '.[].tagName // "unreleased"')
 GITHUB_ACTIONS ?= "false"
 
 # This default file is used for simulating GitHub actions outputs locally:
 # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/passing-information-between-jobs
-GITHUB_OUTPUT ?= "/tmp/spex_github_output"
+GITHUB_OUTPUT ?= "$(TEMPDIR)/spex_github_output"
 
 ifeq ($(GITHUB_ACTIONS),"true")
 SPEX_BIN := "bin"
@@ -16,6 +17,13 @@ SPEX_BIN := $(or $(XDG_BIN_HOME),$(HOME)/.local/bin)
 NEW_VERSION = "$(shell awk -F '=' '/^new-version/ \
 	{ gsub(/v/, "", $$2); print $$2 }' \
 	$(GITHUB_OUTPUT))"
+endif
+
+# The find command on MacOS doesn't have a -executable flag.
+ifeq ($(OS),"darwin")
+FIND_EXECUTABLE := "-perm +0111"
+else
+FIND_EXECUTABLE := "-executable"
 endif
 
 all: build-deps build test bump install release
@@ -46,14 +54,16 @@ test:
 bump: 
 	@echo "CABAL_VERSION=$(CABAL_VERSION)"
 	@echo "RELEASED_VERSION=$(RELEASED_VERSION)"
-        ifeq ($(CABAL_VERSION),$(RELEASED_VERSION))
-		@echo "No new version..."
-        else
+        ifdef CABAL_VERSION
+        ifdef RELEASED_VERSION
+        ifneq ($(CABAL_VERSION),$(RELEASED_VERSION))
 		@echo "New version!"
 		echo "new-version=$(CABAL_VERSION)" >> $(GITHUB_OUTPUT)
-endif
+        endif
+        endif
+        endif
+	@echo "No new version..."
 
-# XXX: use -executable on linux
 install:
 	@echo "NEW_VERSION=$(NEW_VERSION)"
 	@echo "PLATFORM=$(PLATFORM)"
@@ -61,7 +71,7 @@ install:
 	@echo "SPEX_BIN=$(SPEX_BIN)"
 	mkdir -p $(SPEX_BIN)
         ifdef NEW_VERSION
-		find ./dist-newstyle -name 'spex*' -type f -perm +0111 -exec sh -c ' \
+		find ./dist-newstyle -name 'spex*' -type f $(FIND_EXECUTABLE) -exec sh -c ' \
 			strip {} \
 			&& cp {} $(SPEX_BIN)/$$(basename {})-$(NEW_VERSION)-$(PLATFORM)' \; 
         else
@@ -91,3 +101,6 @@ release:
 clean:
 
 .PHONY: all build-deps build test bump install release clean
+
+# Make make fail if the shell commands fail.
+.SHELLFLAGS = -ec

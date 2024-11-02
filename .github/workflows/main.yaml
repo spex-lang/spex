@@ -148,40 +148,29 @@ jobs:
         run: make bump
 
       - name: Install binaries
+        # Only if there's a version bump and we are merging to main.
+        if: ${{ steps.version-bump.outputs.new-version &&
+                github.event_name == 'push' && 
+                github.ref == 'refs/heads/main' }}
+        id: install
         run: make install
 
       - name: Upload binary artifacts
+        if: steps.install.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: spex-${{ matrix.platform }}
           path: bin/*
 
-  check-for-new-version:
-    name: Check for new version
-    runs-on: ubuntu-latest
-    outputs:
-      new-version: ${{ steps.version-bump.outputs.new-version }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          sparse-checkout: |
-            spex.cabal
-            Makefile
-          sparse-checkout-cone-mode: false
-
-      - name: Check for version bump
-        id: version-bump
-        run: make bump
-
   create-release:
     name: Create release
     runs-on: ubuntu-latest
-    needs: [check-for-new-version, arm64-macos-binary]
+    needs: [arm64-macos-binary]
     env:
-      NEW_VERSION: ${{ needs.check-for-new-version.outputs.new-version }}
+      NEW_VERSION: ${{ needs.arm64-macos-binary.outputs.new-version }}
+    if: ${{ env.NEW_VERSION }}
     steps:
       - uses: actions/checkout@v4
-        if: ${{ env.NEW_VERSION }}
         with:
           sparse-checkout: |
             Makefile
@@ -189,7 +178,6 @@ jobs:
           sparse-checkout-cone-mode: false
 
       - name: Download binary artifacts
-        if: ${{ env.NEW_VERSION }}
         uses: actions/download-artifact@v4
         with:
           path: bin
@@ -197,11 +185,9 @@ jobs:
           merge-multiple: true
 
       - name: Install upx
-        if: ${{ env.NEW_VERSION }}
         run: |
           sudo apt-get update
           sudo apt-get install upx-ucl
 
       - name: Compress binaries and create release
-        if: ${{ env.NEW_VERSION }}
         run: make release
