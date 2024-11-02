@@ -1,9 +1,10 @@
 OS := $(shell uname -s | tr '[:upper:]' '[:lower:]')
 PLATFORM := $(shell uname -m)-$(OS)
-CABAL_VERSION := $(shell awk '/^version:/ { print "v"$$2 }' spex.cabal)
+CABAL_VERSION := $(shell awk '/^version:/ { print $$2 }' spex.cabal)
 RELEASED_VERSION := $(shell gh release list --limit 1 \
 			--exclude-drafts --exclude-pre-releases \
-			--json tagName --jq '.[].tagName // "unreleased"')
+			--json tagName \
+			--jq '.[].tagName // "unreleased" | sub("^v"; "") ')
 GITHUB_ACTIONS ?= false
 
 # This default file is used for simulating GitHub actions outputs locally:
@@ -78,7 +79,10 @@ install:
         endif
 
 release:
-  ifeq ($(GITHUB_ACTIONS),"true")
+	@echo "NEW_VERSION=$(NEW_VERSION)"
+	@echo "GITHUB_ACTIONS=$(GITHUB_ACTIONS)"
+	@echo "SPEX_BIN=$(SPEX_BIN)"
+  ifeq ($(GITHUB_ACTIONS),true)
 	upx -q $(SPEX_BIN)
 	gh release create --draft --notes-file=CHANGELOG.md \
 		"v$(NEW_VERSION)" $(SPEX_BIN)/*
