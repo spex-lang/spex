@@ -166,9 +166,7 @@ jobs:
     name: Create release
     runs-on: ubuntu-latest
     needs: [arm64-macos-binary]
-    env:
-      NEW_VERSION: ${{ needs.arm64-macos-binary.outputs.new-version }}
-    if: ${{ env.NEW_VERSION }}
+    if: ${{ needs.arm64-macos-binary.outputs.new-version }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -190,4 +188,6 @@ jobs:
           sudo apt-get install upx-ucl
 
       - name: Compress binaries and create release
+        env:
+          NEW_VERSION: ${{ needs.arm64-macos-binary.outputs.new-version }}
         run: make release
