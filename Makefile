@@ -83,7 +83,7 @@ release:
 	@echo "GITHUB_ACTIONS=$(GITHUB_ACTIONS)"
 	@echo "SPEX_BIN=$(SPEX_BIN)"
   ifeq ($(GITHUB_ACTIONS),true)
-	upx -q $(SPEX_BIN)
+	upx -q $(SPEX_BIN)/*
 	gh release create --draft --notes-file=CHANGELOG.md \
 		"v$(NEW_VERSION)" $(SPEX_BIN)/*
   else
