@@ -20,7 +20,7 @@ NEW_VERSION = "$(shell awk -F '=' '/^new-version/ \
 endif
 
 # The find command on MacOS doesn't have a -executable flag.
-ifeq ($(OS),"darwin")
+ifeq ($(OS),darwin)
 FIND_EXECUTABLE := -perm +0111
 else
 FIND_EXECUTABLE := -executable
