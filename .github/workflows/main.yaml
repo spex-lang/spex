@@ -164,12 +164,38 @@ jobs:
         if: ${{ env.platform == 'x86_64-linux' }}
         run: make push-image
 
+      - name: Restore cached dependencies
+        uses: actions/cache/restore@v4
+        id: cache
+        env:
+          key: ${{ runner.os }}-ghc-${{ matrix.ghc-version }}-cabal-${{ matrix.cabal-version }}
+        with:
+          path: |
+            ${HOME}/.cache/cabal/packages
+            ${HOME}/.cabal/store
+            dist-newstyle
+          key: ${{ env.key }}-plan-${{ hashFiles('**/plan.json') }}
+          restore-keys: ${{ env.key }}-plan-
+
       - name: Build dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
         run: make build-deps
+
+      # Cache dependencies already here, so that we do not have to rebuild them
+      # should the subsequent steps fail.
+      - name: Save cached dependencies
+        uses: actions/cache/save@v4
+        if: steps.cache.outputs.cache-hit != 'true'
+        with:
+          path: |
+            ${HOME}/.cache/cabal/packages
+            ${HOME}/.cabal/store
+            dist-newstyle
+          key: ${{ steps.cache.outputs.cache-primary-key }}
 
       - name: Build 
         env:
-          GIT_COMMIT: ${{ github.sha }}
+          SPEX_GIT_COMMIT: ${{ github.sha }}
         run: make build
 
       - name: Test
@@ -186,6 +212,8 @@ jobs:
                 github.event_name == 'push' && 
                 github.ref == 'refs/heads/main' }}
         id: install
+        env:
+          SPEX_GIT_COMMIT: ${{ github.sha }}
         run: make install
 
       - name: Upload binary artifacts

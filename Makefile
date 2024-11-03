@@ -25,9 +25,9 @@ endif
 ifeq ($(OS),linux)
 	CABAL := docker run --rm --entrypoint=cabal \
 			--volume $(PWD):/mnt \
-			--volume $(PWD)/.container-cache/cabal-store:/root/.local/state/cabal/store \
-			--volume $(PWD)/.container-cache/cabal-packages:/root/.cache/cabal/packages \
-			--volume $(PWD)/.container-cache/dist-newstyle:/mnt/dist-newstyle \
+			--volume $(HOME)/.cache/cabal/packages:/root/.cache/cabal/packages \
+			--volume $(HOME)/.cabal/store:/root/.local/state/cabal/store \
+			--volume $(PWD)/dist-newstyle:/mnt/dist-newstyle \
 			--env SPEX_GIT_COMMIT=$(SPEX_GIT_COMMIT) \
 			ghcr.io/spex-lang/spex-build:latest
 	ENABLE_STATIC := --enable-executable-static
@@ -41,9 +41,8 @@ all: build-deps build test bump install release
 
 dist-newstyle/cache/plan.json: cabal.project cabal.project.freeze spex.cabal
 ifeq ($(OS),linux)
-	mkdir -p .container-cache/cabal-store
-	mkdir -p .container-cache/cabal-packages
-	mkdir -p .container-cache/dist-newstyle
+	mkdir -p $(HOME)/.cache/cabal/packages
+	mkdir -p $(HOME)/.cabal/store
 endif
 	$(CABAL) configure \
 		$(ENABLE_STATIC) \
