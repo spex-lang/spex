@@ -9,9 +9,9 @@ import qualified Data.Text as Text
 import qualified Data.Text.IO as Text
 import GHC.Conc.Sync (ThreadStatus(..), threadStatus)
 import System.Console.ANSI
-import System.Exit
+-- import System.Exit
 import System.IO
-import System.Posix.Signals
+-- import System.Posix.Signals
 
 ------------------------------------------------------------------------
 
@@ -34,7 +34,7 @@ newSpinner msg frames delayMicros = do
   Just (row, col) <- getCursorPosition
   hSaveCursor stdout
   tid <- forkIO (go 0 row col var lock nls)
-  _ <- installHandler keyboardSignal (Catch (killThread tid >> exitWith (ExitFailure 130))) Nothing
+  -- _ <- installHandler keyboardSignal (Catch (killThread tid >> exitWith (ExitFailure 130))) Nothing
   return (Spinner tid var lock nls)
   where
     go i row col var lock nls = do

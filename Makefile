@@ -40,9 +40,11 @@ endif
 all: build-deps build test bump install release
 
 dist-newstyle/cache/plan.json: cabal.project cabal.project.freeze spex.cabal
+ifeq ($(OS),linux)
 	mkdir -p .container-cache/cabal-store
 	mkdir -p .container-cache/cabal-packages
 	mkdir -p .container-cache/dist-newstyle
+endif
 	$(CABAL) configure \
 		$(ENABLE_STATIC) \
 		--disable-profiling \

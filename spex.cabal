@@ -92,7 +92,6 @@ library
     , process
     , text
     , transformers
-    , unix
 
   -- pkgconfig-depends:  zlib
   -- extra-libraries:    z
