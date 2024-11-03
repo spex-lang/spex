@@ -206,7 +206,7 @@ jobs:
     name: Create release
     runs-on: ubuntu-latest
     needs: [build]
-    if: ${{ needs.build.outputs.new-version }}
+    # if: ${{ needs.build.outputs.new-version }}
     steps:
       - uses: actions/checkout@v4
         with:
