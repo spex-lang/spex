@@ -127,76 +127,69 @@ jobs:
     outputs:
       new-version: ${{ steps.version-bump.outputs.new-version }}
     steps:
-      #- uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      #- name: Set up GHC ${{ matrix.ghc-version }} (MacOS and Windows only)
-      #  if: ${{ env.platform != 'x86_64-linux' }}
-      #  uses: haskell-actions/setup@v2
-      #  id: setup
-      #  with:
-      #    ghc-version: ${{ matrix.ghc-version }}
-      #    cabal-version: ${{ matrix.cabal-version }}
-      #    cabal-update: true
+      - name: Set up GHC ${{ matrix.ghc-version }} (MacOS and Windows only)
+        if: ${{ env.platform != 'x86_64-linux' }}
+        uses: haskell-actions/setup@v2
+        id: setup
+        with:
+          ghc-version: ${{ matrix.ghc-version }}
+          cabal-version: ${{ matrix.cabal-version }}
+          cabal-update: true
 
-      # - name: Install make (Windows only)
-      #   if: ${{ env.platform == 'x86_64-windows' }}
-      #   run: |
-      #     choco install make
+       - name: Install make (Windows only)
+         if: ${{ env.platform == 'x86_64-windows' }}
+         run: |
+           choco install make
 
-      ## Use Alpine container to get static binaries on Linux.
-      #- name: Login to GitHub Container Registry (Linux only)
-      #  if: ${{ env.platform == 'x86_64-linux' }}
-      #  uses: docker/login-action@v3
-      #  with:
-      #    registry: ghcr.io
-      #    username: ${{ github.actor }}
-      #    password: ${{ github.token }}
+      # Use Alpine container to get static binaries on Linux.
+      - name: Login to GitHub Container Registry (Linux only)
+        if: ${{ env.platform == 'x86_64-linux' }}
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
 
-      #- name: Pull image (Linux only)
-      #  if: ${{ env.platform == 'x86_64-linux' }}
-      #  run: make pull-image
+      - name: Pull image (Linux only)
+        if: ${{ env.platform == 'x86_64-linux' }}
+        run: make pull-image
 
-      #- name: Build image (Linux only)
-      #  if: ${{ env.platform == 'x86_64-linux' }}
-      #  run: make build-image
+      - name: Build image (Linux only)
+        if: ${{ env.platform == 'x86_64-linux' }}
+        run: make build-image
 
-      #- name: Push image (Linux only)
-      #  if: ${{ env.platform == 'x86_64-linux' }}
-      #  run: make push-image
+      - name: Push image (Linux only)
+        if: ${{ env.platform == 'x86_64-linux' }}
+        run: make push-image
 
-      #- name: Build dependencies
-      #  run: make build-deps
+      - name: Build dependencies
+        run: make build-deps
 
-      #- name: Build 
-      #  env:
-      #    GIT_COMMIT: ${{ github.sha }}
-      #  run: make build
+      - name: Build 
+        env:
+          GIT_COMMIT: ${{ github.sha }}
+        run: make build
 
-      #- name: Test
-      #  run: make test
+      - name: Test
+        run: make test
 
-      #- name: Check for version bump
-      #  id: version-bump
-      #  run: make bump
+      - name: Check for version bump
+        id: version-bump
+        run: make bump
 
-      #- name: Install binaries
-      #  # Only if there's a version bump and we are merging to main, i.e
-      #  # exclude PRs.
-      #  if: ${{ steps.version-bump.outputs.new-version &&
-      #          github.event_name == 'push' && 
-      #          github.ref == 'refs/heads/main' }}
-      #  id: install
-      #  run: make install
-      #
-      - name: Test binaries
-        run: |
-          uname -s
-          uname -m
-          mkdir -p bin
-          echo "test" > bin/spex
-
+      - name: Install binaries
+        # Only if there's a version bump and we are merging to main, i.e
+        # exclude PRs.
+        if: ${{ steps.version-bump.outputs.new-version &&
+                github.event_name == 'push' && 
+                github.ref == 'refs/heads/main' }}
+        id: install
+        run: make install
+      
       - name: Upload binary artifacts
-        # if: steps.install.outcome == 'success'
+        if: steps.install.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.platform }}
@@ -206,7 +199,7 @@ jobs:
     name: Create release
     runs-on: ubuntu-latest
     needs: [build]
-    # if: ${{ needs.build.outputs.new-version }}
+    if: ${{ needs.build.outputs.new-version }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -223,5 +216,5 @@ jobs:
 
       - name: Compress binaries and create release
         env:
-          NEW_VERSION: 0.0.1 # ${{ needs.build.outputs.new-version }}
+          NEW_VERSION: ${{ needs.build.outputs.new-version }}
         run: make release

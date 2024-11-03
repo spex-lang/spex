@@ -96,8 +96,7 @@ release:
 		mv $(SPEX_BIN)/$$dir/spex \
 		   $(SPEX_BIN)/spex-$(NEW_VERSION)-$$(basename $$dir); \
 	done
-	#upx -q $(SPEX_BIN)/spex-*
-	echo upx -q $(SPEX_BIN)/spex-*
+	upx -q $(SPEX_BIN)/spex-*
 	gh release create --draft --notes-file=CHANGELOG.md \
 		"v$(NEW_VERSION)" $(SPEX_BIN)/spex-*
   else
