@@ -138,10 +138,10 @@ jobs:
           cabal-version: ${{ matrix.cabal-version }}
           cabal-update: true
 
-       - name: Install make (Windows only)
-         if: ${{ env.platform == 'x86_64-windows' }}
-         run: |
-           choco install make
+      - name: Install make (Windows only)
+        if: ${{ env.platform == 'x86_64-windows' }}
+        run: |
+          choco install make
 
       # Use Alpine container to get static binaries on Linux.
       - name: Login to GitHub Container Registry (Linux only)
@@ -187,7 +187,7 @@ jobs:
                 github.ref == 'refs/heads/main' }}
         id: install
         run: make install
-      
+
       - name: Upload binary artifacts
         if: steps.install.outcome == 'success'
         uses: actions/upload-artifact@v4
