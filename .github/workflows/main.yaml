@@ -111,65 +111,96 @@ jobs:
   #          "v${{ steps.autotag.outputs.version }}" ${{ github.workspace }}/bin/*
   #
 
-  arm64-macos-binary:
-    name: GHC ${{ matrix.ghc-version }} on ${{ matrix.os }}
+  build:
+    name: Build on ${{ matrix.os }} using GHC ${{ matrix.ghc-version }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-15]
-        platform: ['arm64-macos']
+        os: [ubuntu-24.04, macos-15, windows-2022]
         ghc-version: ['9.6.6']
         cabal-version: ['3.12.1.0']
+    env:
+      platform: ${{ startsWith(matrix.os, 'ubuntu')  && 'x86_64-linux' || 
+                    startsWith(matrix.os, 'macos')   && 'arm64-macos'  ||
+                    startsWith(matrix.os, 'windows') && 'x86_64-windows' }}
     outputs:
       new-version: ${{ steps.version-bump.outputs.new-version }}
     steps:
-      - uses: actions/checkout@v4
+      #- uses: actions/checkout@v4
 
-      - name: Set up GHC ${{ matrix.ghc-version }}
-        uses: haskell-actions/setup@v2
-        id: setup
-        with:
-          ghc-version: ${{ matrix.ghc-version }}
-          cabal-version: ${{ matrix.cabal-version }}
-          cabal-update: true
+      #- name: Set up GHC ${{ matrix.ghc-version }} (MacOS and Windows only)
+      #  if: ${{ env.platform != 'x86_64-linux' }}
+      #  uses: haskell-actions/setup@v2
+      #  id: setup
+      #  with:
+      #    ghc-version: ${{ matrix.ghc-version }}
+      #    cabal-version: ${{ matrix.cabal-version }}
+      #    cabal-update: true
 
-      - name: Build dependencies
-        run: make build-deps
+      ## Use Alpine container to get static binaries on Linux.
+      #- name: Login to GitHub Container Registry (Linux only)
+      #  if: ${{ env.platform == 'x86_64-linux' }}
+      #  uses: docker/login-action@v3
+      #  with:
+      #    registry: ghcr.io
+      #    username: ${{ github.actor }}
+      #    password: ${{ github.token }}
 
-      - name: Build 
-        run: make build
+      #- name: Pull image (Linux only)
+      #  if: ${{ env.platform == 'x86_64-linux' }}
+      #  run: make pull-image
 
-      - name: Test
-        run: make test
+      #- name: Build image (Linux only)
+      #  if: ${{ env.platform == 'x86_64-linux' }}
+      #  run: make build-image
 
-      - name: Check for version bump
-        id: version-bump
-        run: make bump
+      #- name: Push image (Linux only)
+      #  if: ${{ env.platform == 'x86_64-linux' }}
+      #  run: make push-image
 
-      - name: Install binaries
-        # Only if there's a version bump and we are merging to main, i.e
-        # exclude PRs.
-        if: ${{ steps.version-bump.outputs.new-version &&
-                github.event_name == 'push' && 
-                github.ref == 'refs/heads/main' }}
-        id: install
-        env:
-          NEW_VERSION: ${{ steps.version-bump.outputs.new-version }}
-        run: make install
+      #- name: Build dependencies
+      #  run: make build-deps
+
+      #- name: Build 
+      #  env:
+      #    GIT_COMMIT: ${{ github.sha }}
+      #  run: make build
+
+      #- name: Test
+      #  run: make test
+
+      #- name: Check for version bump
+      #  id: version-bump
+      #  run: make bump
+
+      #- name: Install binaries
+      #  # Only if there's a version bump and we are merging to main, i.e
+      #  # exclude PRs.
+      #  if: ${{ steps.version-bump.outputs.new-version &&
+      #          github.event_name == 'push' && 
+      #          github.ref == 'refs/heads/main' }}
+      #  id: install
+      #  run: make install
+      #
+      - name: Test binaries
+        run: |
+          uname -s
+          uname -m
+          echo "test" > bin/spex
 
       - name: Upload binary artifacts
         if: steps.install.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
-          name: spex-${{ matrix.platform }}
+          name: spex-${{ env.platform }}
           path: bin/*
 
   create-release:
     name: Create release
     runs-on: ubuntu-latest
-    needs: [arm64-macos-binary]
-    if: ${{ needs.arm64-macos-binary.outputs.new-version }}
+    needs: [build]
+    if: ${{ needs.build.outputs.new-version }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -184,9 +215,8 @@ jobs:
         with:
           path: bin
           pattern: spex-*
-          merge-multiple: true
 
       - name: Compress binaries and create release
         env:
-          NEW_VERSION: ${{ needs.arm64-macos-binary.outputs.new-version }}
+          NEW_VERSION: ${{ needs.build.outputs.new-version }}
         run: make release

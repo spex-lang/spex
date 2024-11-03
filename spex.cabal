@@ -84,6 +84,7 @@ library
 
   -- GHC boot library dependencies:
   -- (https://gitlab.haskell.org/ghc/ghc/-/blob/master/packages)
+  -- base-4.18.2.0 comes with GHC 9.6.6.
   build-depends:
     , base          ^>=4.18.2.0
     , bytestring

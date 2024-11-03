@@ -7,6 +7,8 @@ RELEASED_VERSION := $(shell gh release list --limit 1 \
 			--jq '.[].tagName // "unreleased" | sub("^v"; "") ')
 GITHUB_ACTIONS ?= false
 
+SPEX_GIT_COMMIT ?= $(shell git rev-parse HEAD)
+
 # This default file is used for simulating GitHub actions outputs locally:
 # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/passing-information-between-jobs
 GITHUB_OUTPUT ?= "$(TEMPDIR)/spex_github_output"
@@ -27,10 +29,26 @@ else
 FIND_EXECUTABLE := -executable
 endif
 
+ifeq ($(OS),linux)
+	CABAL := docker run -it --rm --entrypoint=cabal \
+			--volume $(PWD):/mnt \
+			--volume $(PWD)/.container-cache/cabal-store:/root/.local/state/cabal/store \
+			--volume $(PWD)/.container-cache/cabal-packages:/root/.cache/cabal/packages \
+			--volume $(PWD)/.container-cache/dist-newstyle:/mnt/dist-newstyle \
+			--env SPEX_GIT_COMMIT=$(SPEX_GIT_COMMIT) \
+			ghcr.io/spex-lang/spex-build:latest
+else
+	CABAL := cabal
+endif
+
 all: build-deps build test bump install release
 
 dist-newstyle/cache/plan.json: cabal.project cabal.project.freeze spex.cabal
-	cabal configure \
+	mkdir -p .container-cache/cabal-store
+	mkdir -p .container-cache/cabal-packages
+	mkdir -p .container-cache/dist-newstyle
+	$(CABAL) configure \
+		--enable-executable-static \
 		--disable-profiling \
 		--disable-library-for-ghci \
 		--enable-library-stripping \
@@ -38,19 +56,19 @@ dist-newstyle/cache/plan.json: cabal.project cabal.project.freeze spex.cabal
 		--enable-tests \
 		--enable-benchmarks \
 		--disable-documentation
-	cabal update
+	$(CABAL) update
 	# Generate dist-newstyle/cache/plan.json which can be used as cache key.
-	cabal build all --dry-run
+	$(CABAL) build all --dry-run
 
 build-deps: dist-newstyle/cache/plan.json
-	cabal build all --only-dependencies
+	$(CABAL) build all --only-dependencies
 
 build: 
-	cabal build all
+	$(CABAL) build all
 
 test: 
-	cabal test all
-	cabal check
+	$(CABAL) test all
+	$(CABAL) check
 
 bump: 
 	@echo "CABAL_VERSION=$(CABAL_VERSION)"
@@ -65,27 +83,18 @@ bump:
         endif
 
 install:
-	@echo "NEW_VERSION=$(NEW_VERSION)"
-	@echo "PLATFORM=$(PLATFORM)"
-	@echo "GITHUB_ACTIONS=$(GITHUB_ACTIONS)"
-	@echo "SPEX_BIN=$(SPEX_BIN)"
-	mkdir -p $(SPEX_BIN)
-        ifdef NEW_VERSION
-		find ./dist-newstyle -name 'spex*' -type f $(FIND_EXECUTABLE) -exec sh -c ' \
-			strip {} \
-			&& cp {} $(SPEX_BIN)/$$(basename {})-$(NEW_VERSION)-$(PLATFORM)' \; 
-        else
-		@echo "No new version to install..."
-        endif
+	$(CABAL) install all --installdir=$(SPEX_BIN) \
+		--install-method=copy --overwrite-policy=always
 
 release:
 	@echo "NEW_VERSION=$(NEW_VERSION)"
 	@echo "GITHUB_ACTIONS=$(GITHUB_ACTIONS)"
 	@echo "SPEX_BIN=$(SPEX_BIN)"
   ifeq ($(GITHUB_ACTIONS),true)
-	upx -q $(SPEX_BIN)/*
-	gh release create --draft --notes-file=CHANGELOG.md \
-		"v$(NEW_VERSION)" $(SPEX_BIN)/*
+	ls -R $(SPEX_BIN)
+	#upx -q $(SPEX_BIN)/*/*
+	#gh release create --draft --notes-file=CHANGELOG.md \
+	#	"v$(NEW_VERSION)" $(SPEX_BIN)/*/*
   else
 	@echo Running locally, skipping automatic release...
 	@echo 
@@ -103,7 +112,16 @@ release:
 
 clean:
 
-.PHONY: all build-deps build test bump install release clean
+pull-image:
+	docker pull ghcr.io/spex-lang/spex-build:latest
+
+build-image: Dockerfile
+	docker build --tag ghcr.io/spex-lang/spex-build:latest .
+
+push-image:
+	docker push ghcr.io/spex-lang/spex-build:latest
+
+.PHONY: all build-deps build test bump install release clean build-image
 
 # Make make fail if the shell commands fail.
 .SHELLFLAGS = -ec

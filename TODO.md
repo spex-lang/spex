@@ -113,10 +113,7 @@ Here's what I'm currently working on:
 
 ### Refactor
 
-- rename CmdLineArgs to AppOptions?
 - remove ExceptT?
 - remove use of String
-- pretty print
 - structured logs, returns json object with one error or one test result?
-- move Prng to AppEnv?
 - use formatter?
