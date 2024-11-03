@@ -25,7 +25,7 @@ endif
 ifeq ($(OS),linux)
 	CABAL := docker run --rm --entrypoint=cabal \
 			--volume $(PWD):/mnt \
-			--volume $(HOME)/.cache/cabal/packages:/root/.cache/cabal/packages \
+			--volume $(HOME)/.cache/cabal:/root/.cache/cabal \
 			--volume $(HOME)/.cabal/store:/root/.local/state/cabal/store \
 			--volume $(PWD)/dist-newstyle:/mnt/dist-newstyle \
 			--env SPEX_GIT_COMMIT=$(SPEX_GIT_COMMIT) \
@@ -61,6 +61,7 @@ build-deps: dist-newstyle/cache/plan.json
 	$(CABAL) build all --only-dependencies
 
 build: 
+	$(CABAL) update
 	$(CABAL) build all
 
 test: 
