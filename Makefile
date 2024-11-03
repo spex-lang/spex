@@ -22,13 +22,6 @@ NEW_VERSION = "$(shell awk -F '=' '/^new-version/ \
 	$(GITHUB_OUTPUT))"
 endif
 
-# The find command on MacOS doesn't have a -executable flag.
-ifeq ($(OS),darwin)
-FIND_EXECUTABLE := -perm +0111
-else
-FIND_EXECUTABLE := -executable
-endif
-
 ifeq ($(OS),linux)
 	CABAL := docker run --rm --entrypoint=cabal \
 			--volume $(PWD):/mnt \
@@ -37,8 +30,11 @@ ifeq ($(OS),linux)
 			--volume $(PWD)/.container-cache/dist-newstyle:/mnt/dist-newstyle \
 			--env SPEX_GIT_COMMIT=$(SPEX_GIT_COMMIT) \
 			ghcr.io/spex-lang/spex-build:latest
+	ENABLE_STATIC := --enable-executable-static
+
 else
 	CABAL := cabal
+	ENABLE_STATIC := ""
 endif
 
 all: build-deps build test bump install release
@@ -48,7 +44,7 @@ dist-newstyle/cache/plan.json: cabal.project cabal.project.freeze spex.cabal
 	mkdir -p .container-cache/cabal-packages
 	mkdir -p .container-cache/dist-newstyle
 	$(CABAL) configure \
-		--enable-executable-static \
+		$(ENABLE_STATIC) \
 		--disable-profiling \
 		--disable-library-for-ghci \
 		--enable-library-stripping \

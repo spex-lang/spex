@@ -94,8 +94,8 @@ library
     , transformers
     , unix
 
-  pkgconfig-depends:  zlib
-  extra-libraries:    z
+  -- pkgconfig-depends:  zlib
+  -- extra-libraries:    z
   hs-source-dirs:     src
   default-language:   GHC2021
 
