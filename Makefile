@@ -30,7 +30,7 @@ FIND_EXECUTABLE := -executable
 endif
 
 ifeq ($(OS),linux)
-	CABAL := docker run -it --rm --entrypoint=cabal \
+	CABAL := docker run --rm --entrypoint=cabal \
 			--volume $(PWD):/mnt \
 			--volume $(PWD)/.container-cache/cabal-store:/root/.local/state/cabal/store \
 			--volume $(PWD)/.container-cache/cabal-packages:/root/.cache/cabal/packages \

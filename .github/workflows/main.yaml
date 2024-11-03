@@ -136,12 +136,12 @@ jobs:
         with:
           ghc-version: ${{ matrix.ghc-version }}
           cabal-version: ${{ matrix.cabal-version }}
-          cabal-update: true
+          cabal-update: false
 
       - name: Install make (Windows only)
         if: ${{ env.platform == 'x86_64-windows' }}
         run: |
-          choco install make
+          choco install make pkgconfiglite
 
       # Use Alpine container to get static binaries on Linux.
       - name: Login to GitHub Container Registry (Linux only)
