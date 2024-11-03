@@ -74,7 +74,11 @@ bump:
         ifdef RELEASED_VERSION
         ifneq ($(CABAL_VERSION),$(RELEASED_VERSION))
 		@echo "New version!"
+                ifeq ($(OS),MSYS_NT-10.0-20348)
+		echo "new-version=$(CABAL_VERSION)" >> $ENV:GITHUB_OUTPUT
+                else
 		echo "new-version=$(CABAL_VERSION)" >> $(GITHUB_OUTPUT)
+                endif
         endif
         endif
         endif
@@ -90,8 +94,9 @@ release:
   ifeq ($(GITHUB_ACTIONS),true)
 	ls -R $(SPEX_BIN)
 	for dir in $$(ls $(SPEX_BIN)); do \
-		mv $(SPEX_BIN)/$$dir/spex \
-		   $(SPEX_BIN)/spex-$(NEW_VERSION)-$$(basename $$dir); \
+		for bin in $$(ls $(SPEX_BIN)/$$dir); do \
+			mv $$bin $(SPEX_BIN)/$$(basename $$bin)-$(NEW_VERSION)-$$(basename $$dir); \
+		done \
 	done
 	upx -q $(SPEX_BIN)/spex-*
 	gh release create --draft --notes-file=CHANGELOG.md \
