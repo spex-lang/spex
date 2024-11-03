@@ -199,7 +199,7 @@ jobs:
         # if: steps.install.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
-          name: spex-${{ env.platform }}
+          name: ${{ env.platform }}
           path: bin/*
 
   release:
@@ -220,9 +220,8 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: bin
-          pattern: spex-*
 
       - name: Compress binaries and create release
         env:
-          NEW_VERSION: ${{ needs.build.outputs.new-version }}
+          NEW_VERSION: 0.0.1 # ${{ needs.build.outputs.new-version }}
         run: make release
