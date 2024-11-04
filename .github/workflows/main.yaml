@@ -130,14 +130,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up GHC ${{ matrix.ghc-version }} (MacOS and Windows only)
-        if: ${{ env.platform != 'x86_64-linux' }}
-        uses: haskell-actions/setup@v2
-        id: setup
-        with:
-          ghc-version: ${{ matrix.ghc-version }}
-          cabal-version: ${{ matrix.cabal-version }}
-          cabal-update: false
+      #- name: Set up GHC ${{ matrix.ghc-version }} (MacOS and Windows only)
+      #  if: ${{ env.platform != 'x86_64-linux' }}
+      #  uses: haskell-actions/setup@v2
+      #  id: setup
+      #  with:
+      #    ghc-version: ${{ matrix.ghc-version }}
+      #    cabal-version: ${{ matrix.cabal-version }}
+      #    cabal-update: false
 
       #- name: Install make (Windows only)
       #  if: ${{ env.platform == 'x86_64-windows' }}
@@ -205,7 +205,7 @@ jobs:
       - name: Check for version bump
         id: version-bump
         run: | # make bump
-          echo "new-version=0.0.0 >> $env:GITHUB_OUTPUT
+          echo "new-version=0.0.0" >> $env:GITHUB_OUTPUT
 
 
       - name: Install binaries
