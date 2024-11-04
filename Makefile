@@ -12,16 +12,16 @@ SPEX_GIT_COMMIT ?= $(shell git rev-parse HEAD)
 
 # https://github.com/actions/runner/issues/2224
 # https://stackoverflow.com/questions/74443940/value-not-set-using-github-output
-# ifeq ($(findstring mingw64_nt,$(OS)),mingw64_nt) 
-#	SHELL := pwsh.exe
-#	.SHELLFLAGS := -Command
-# else
-# This default file is used for simulating GitHub actions outputs locally:
-# https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/passing-information-between-jobs
-GITHUB_OUTPUT ?= "$(TEMPDIR)/spex_github_output"
-# Make make fail if the shell commands fail.
-.SHELLFLAGS = -ec
-#endif
+ifeq ($(findstring mingw64_nt,$(OS)),mingw64_nt) 
+	SHELL := pwsh.exe
+	.SHELLFLAGS := -Command
+else
+	# This default file is used for simulating GitHub actions outputs locally:
+	# https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/passing-information-between-jobs
+	GITHUB_OUTPUT ?= "$(TEMPDIR)/spex_github_output"
+	# Make make fail if the shell commands fail.
+	.SHELLFLAGS = -ec
+endif
 
 ifeq ($(GITHUB_ACTIONS),true)
 SPEX_BIN := "bin"
