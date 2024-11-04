@@ -117,8 +117,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # os: [ubuntu-24.04, macos-15, windows-2022]
-        os: [windows-2022]
+        os: [ubuntu-24.04, macos-15, windows-2022]
         ghc-version: ['9.6.6']
         cabal-version: ['3.12.1.0']
     env:
@@ -209,16 +208,14 @@ jobs:
       - name: Install binaries
         # Only if there's a version bump and we are merging to main, i.e
         # exclude PRs.
-        #if: ${{ steps.version-bump.outputs.new-version &&
-        #        github.event_name == 'push' && 
-        #        github.ref == 'refs/heads/main' }}
-        #id: install
+        if: ${{ steps.version-bump.outputs.new-version != '' &&
+                github.event_name == 'push' && 
+                github.ref == 'refs/heads/main' }}
+        id: install
         env:
           SPEX_GIT_COMMIT: ${{ github.sha }}
-          NEW_VERSION: ${{ steps.version-bump.outputs.new-version }} 
         run: |
           echo ${{ steps.version-bump.outputs.new-version }} # make install
-          echo $env:NEW_VERSION
 
       # - name: Upload binary artifacts
       #   if: steps.install.outcome == 'success'
