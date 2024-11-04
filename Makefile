@@ -44,7 +44,7 @@ ifeq ($(OS),linux)
 
 else
 	CABAL := cabal
-	ENABLE_STATIC := ""
+	ENABLE_STATIC := 
 endif
 
 all: build-deps build test bump install release
@@ -55,15 +55,7 @@ ifeq ($(OS),linux)
 	mkdir -p $(HOME)/.cache/cabal/packages
 	mkdir -p $(HOME)/.cabal/store
 endif
-	$(CABAL) configure \
-		$(ENABLE_STATIC) \
-		--disable-profiling \
-		--disable-library-for-ghci \
-		--enable-library-stripping \
-		--enable-executable-stripping \
-		--enable-tests \
-		--enable-benchmarks \
-		--disable-documentation
+	$(CABAL) configure $(ENABLE_STATIC) --disable-profiling  --disable-library-for-ghci --enable-library-stripping --enable-executable-stripping --enable-tests --enable-benchmarks --disable-documentation
 	$(CABAL) update
 	# Generate dist-newstyle/cache/plan.json which can be used as cache key.
 	$(CABAL) build all --dry-run
