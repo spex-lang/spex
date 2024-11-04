@@ -105,7 +105,7 @@ release:
 				mv $(SPEX_BIN)/$$dir/$$bin \
 				   $(SPEX_BIN)/$$(basename $$bin)-$(NEW_VERSION)-$$(basename $$dir); \
 				chmod 755 $(SPEX_BIN)/$$(basename $$bin)-$(NEW_VERSION)-$$(basename $$dir); \
-			fi
+			fi \
 		done \
 	done
 	upx -q $(SPEX_BIN)/spex*
