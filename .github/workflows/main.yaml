@@ -121,7 +121,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, macos-15, windows-2022]
+        # os: [ubuntu-24.04, macos-15, windows-2022]
+        os: [ubuntu-24.04]
         ghc-version: ['9.6.6']
         cabal-version: ['3.12.1.0']
     env:
@@ -250,6 +251,7 @@ jobs:
         with:
           name: ${{ env.platform }}
           path: bin/*
+          if-no-files-found: error
 
   release:
     name: Create release

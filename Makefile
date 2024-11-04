@@ -31,7 +31,7 @@ else
 endif
 
 ifeq ($(GITHUB_ACTIONS),true)
-SPEX_BIN := "bin"
+SPEX_BIN := bin
 else
 SPEX_BIN := $(or $(XDG_BIN_HOME),$(HOME)/.local/bin)
 NEW_VERSION = "$(shell awk -F '=' '/^new-version/ \
@@ -45,7 +45,6 @@ ifeq ($(OS),linux)
 			--volume $(PWD):/mnt \
 			--volume $(HOME)/.cache/cabal/packages:/root/.cache/cabal/packages \
 			--volume $(HOME)/.cabal/store:/root/.local/state/cabal/store \
-			--volume $(PWD)/dist-newstyle:/mnt/dist-newstyle \
 			--env SPEX_GIT_COMMIT=$(SPEX_GIT_COMMIT) \
 			ghcr.io/spex-lang/spex-build:latest
 	ENABLE_STATIC := --enable-executable-static
@@ -54,7 +53,6 @@ ifeq ($(OS),linux)
 			--volume $(PWD):/mnt \
 			--volume $(PWD)/.container-cache/cabal/packages:/root/.cache/cabal/packages \
 			--volume $(PWD)/.container-cache/cabal/store:/root/.local/state/cabal/store \
-			--volume $(PWD)/dist-newstyle:/mnt/dist-newstyle \
 			--env SPEX_GIT_COMMIT=$(SPEX_GIT_COMMIT) \
 			ghcr.io/spex-lang/spex-build:latest
 	ENABLE_STATIC := --enable-executable-static
@@ -117,6 +115,9 @@ install:
 	# container, which isn't what we want. Instead find the binary inside
 	# dist-newstyle, which is shared with the host via a volume mount, and
 	# copy it from there to the right place.
+	ls -lh dist-newstyle/build/x86_64-linux/ghc-9.6.6/spex-0.0.0/x/spex/build/spex/spex || true
+	ls -Rlh .
+	find dist-newstyle/ -name 'spex*' -type f -executable -print
 	find dist-newstyle/ -name 'spex*' -type f -executable -exec cp {} $(SPEX_BIN) \;
   else
 	$(CABAL) install all --installdir=$(SPEX_BIN) --install-method=copy --overwrite-policy=always
