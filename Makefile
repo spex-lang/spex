@@ -49,6 +49,7 @@ endif
 
 all: build-deps build test bump install release
 
+# XXX: doesn't configure petstore...
 dist-newstyle/cache/plan.json: cabal.project cabal.project.freeze spex.cabal
 ifeq ($(OS),linux)
 	mkdir -p $(HOME)/.cache/cabal/packages

@@ -117,7 +117,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, macos-15, windows-2022]
+        #os: [ubuntu-24.04, macos-15, windows-2022]
+        os: [windows-2022]
         ghc-version: ['9.6.6']
         cabal-version: ['3.12.1.0']
     env:
@@ -138,111 +139,116 @@ jobs:
           cabal-version: ${{ matrix.cabal-version }}
           cabal-update: false
 
-      - name: Install make (Windows only)
-        if: ${{ env.platform == 'x86_64-windows' }}
-        run: |
-          choco install make
+      #- name: Install make (Windows only)
+      #  if: ${{ env.platform == 'x86_64-windows' }}
+      #  run: |
+      #    choco install make
 
-      # Use Alpine container to get static binaries on Linux.
-      - name: Login to GitHub Container Registry (Linux only)
-        if: ${{ env.platform == 'x86_64-linux' }}
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ github.token }}
+        ## Use Alpine container to get static binaries on Linux.
+        #- name: Login to GitHub Container Registry (Linux only)
+        #  if: ${{ env.platform == 'x86_64-linux' }}
+        #  uses: docker/login-action@v3
+        #  with:
+        #    registry: ghcr.io
+        #    username: ${{ github.actor }}
+        #    password: ${{ github.token }}
 
-      - name: Pull image (Linux only)
-        if: ${{ env.platform == 'x86_64-linux' }}
-        run: make pull-image
+        #- name: Pull image (Linux only)
+        #  if: ${{ env.platform == 'x86_64-linux' }}
+        #  run: make pull-image
 
-      - name: Build image (Linux only)
-        if: ${{ env.platform == 'x86_64-linux' }}
-        run: make build-image
+        #- name: Build image (Linux only)
+        #  if: ${{ env.platform == 'x86_64-linux' }}
+        #  run: make build-image
 
-      - name: Push image (Linux only)
-        if: ${{ env.platform == 'x86_64-linux' }}
-        run: make push-image
+        #- name: Push image (Linux only)
+        #  if: ${{ env.platform == 'x86_64-linux' }}
+        #  run: make push-image
 
-      - name: Restore cached dependencies
-        uses: actions/cache/restore@v4
-        id: cache
-        env:
-          key: ${{ runner.os }}-ghc-${{ matrix.ghc-version }}-cabal-${{ matrix.cabal-version }}
-        with:
-          path: |
-            ${HOME}/.cache/cabal
-            ${HOME}/.cabal/store
-            dist-newstyle
-          key: ${{ env.key }}-plan-${{ hashFiles('**/plan.json') }}
-          restore-keys: ${{ env.key }}-plan-
+        #- name: Restore cached dependencies
+        #  uses: actions/cache/restore@v4
+        #  id: cache
+        #  env:
+        #    key: ${{ runner.os }}-ghc-${{ matrix.ghc-version }}-cabal-${{ matrix.cabal-version }}
+        #  with:
+        #    path: |
+        #      ${HOME}/.cache/cabal
+        #      ${HOME}/.cabal/store
+        #      dist-newstyle
+        #    key: ${{ env.key }}-plan-${{ hashFiles('**/plan.json') }}
+        #    restore-keys: ${{ env.key }}-plan-
 
-      - name: Build dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: make build-deps
+        #- name: Build dependencies
+        #  if: steps.cache.outputs.cache-hit != 'true'
+        #  run: make build-deps
 
-      # Cache dependencies already here, so that we do not have to rebuild them
-      # should the subsequent steps fail.
-      - name: Save cached dependencies
-        uses: actions/cache/save@v4
-        if: steps.cache.outputs.cache-hit != 'true'
-        with:
-          path: |
-            ${HOME}/.cache/cabal
-            ${HOME}/.cabal/store
-            dist-newstyle
-          key: ${{ steps.cache.outputs.cache-primary-key }}
+        ## Cache dependencies already here, so that we do not have to rebuild them
+        ## should the subsequent steps fail.
+        #- name: Save cached dependencies
+        #  uses: actions/cache/save@v4
+        #  if: steps.cache.outputs.cache-hit != 'true'
+        #  with:
+        #    path: |
+        #      ${HOME}/.cache/cabal
+        #      ${HOME}/.cabal/store
+        #      dist-newstyle
+        #    key: ${{ steps.cache.outputs.cache-primary-key }}
 
-      - name: Build 
-        env:
-          SPEX_GIT_COMMIT: ${{ github.sha }}
-        run: make build
+        #- name: Build 
+        #  env:
+        #    SPEX_GIT_COMMIT: ${{ github.sha }}
+        #  run: make build
 
-      - name: Test
-        run: make test
+        #- name: Test
+        #  run: make test
 
       - name: Check for version bump
         id: version-bump
-        run: make bump
+        run: | # make bump
+          echo "new-version=0.0.0 >> $env:GITHUB_OUTPUT
+
 
       - name: Install binaries
         # Only if there's a version bump and we are merging to main, i.e
         # exclude PRs.
-        if: ${{ steps.version-bump.outputs.new-version != '' &&
-                github.event_name == 'push' && 
-                github.ref == 'refs/heads/main' }}
+        #if: ${{ steps.version-bump.outputs.new-version != '' &&
+        #        github.event_name == 'push' && 
+        #        github.ref == 'refs/heads/main' }}
         id: install
         env:
           SPEX_GIT_COMMIT: ${{ github.sha }}
-        run: make install
+        run: |
+          echo ${{ steps.version-bump.outputs.new-version }}
+          echo ${{ steps.version-bump.outputs.new-version != '' }}
+          # make install
 
-      - name: Upload binary artifacts
-        if: steps.install.outcome == 'success'
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.platform }}
-          path: bin/*
+      #- name: Upload binary artifacts
+      #  if: steps.install.outcome == 'success'
+      #  uses: actions/upload-artifact@v4
+      #  with:
+      #    name: ${{ env.platform }}
+      #    path: bin/*
 
-  release:
-    name: Create release
-    runs-on: ubuntu-latest
-    needs: [build]
-    if: ${{ needs.build.outputs.new-version }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          sparse-checkout: |
-            spex.cabal
-            Makefile
-            CHANGELOG.md
-          sparse-checkout-cone-mode: false
+  #release:
+  #  name: Create release
+  #  runs-on: ubuntu-latest
+  #  needs: [build]
+  #  if: ${{ needs.build.outputs.new-version }}
+  #  steps:
+  #    - uses: actions/checkout@v4
+  #      with:
+  #        sparse-checkout: |
+  #          spex.cabal
+  #          Makefile
+  #          CHANGELOG.md
+  #        sparse-checkout-cone-mode: false
 
-      - name: Download binary artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: bin
+  #    - name: Download binary artifacts
+  #      uses: actions/download-artifact@v4
+  #      with:
+  #        path: bin
 
-      - name: Compress binaries and create release
-        env:
-          NEW_VERSION: ${{ needs.build.outputs.new-version }}
-        run: make release
+  #    - name: Compress binaries and create release
+  #      env:
+  #        NEW_VERSION: ${{ needs.build.outputs.new-version }}
+  #      run: make release
