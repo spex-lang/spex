@@ -72,16 +72,18 @@ bump:
 	@echo "CABAL_VERSION=$(CABAL_VERSION)"
 	@echo "RELEASED_VERSION=$(RELEASED_VERSION)"
 	@echo "OS=$(OS)"
+	@echo "SHELL=$(SHELL)"
         ifdef CABAL_VERSION
         ifdef RELEASED_VERSION
         ifneq ($(CABAL_VERSION),$(RELEASED_VERSION))
 		@echo "New version!"
 		# https://github.com/actions/runner/issues/2224
-                ifeq ($(findstring mingw64_nt,$(OS)),mingw64_nt) 
-			echo "new-version=$(CABAL_VERSION)" | Out-File -FilePath $$Env:GITHUB_OUTPUT -Encoding utf8 -Append
-                else
-			echo "new-version=$(CABAL_VERSION)" >> $(GITHUB_OUTPUT)
-                endif
+		# https://stackoverflow.com/questions/74443940/value-not-set-using-github-output
+                #ifeq ($(findstring mingw64_nt,$(OS)),mingw64_nt) 
+		#	echo "new-version=$(CABAL_VERSION)" | Out-File -FilePath $$Env:GITHUB_OUTPUT -Encoding utf8 -Append
+                #else
+		echo "new-version=$(CABAL_VERSION)" >> $(GITHUB_OUTPUT)
+                #endif
         endif
         endif
         endif

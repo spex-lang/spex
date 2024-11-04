@@ -204,9 +204,11 @@ jobs:
 
       - name: Check for version bump
         id: version-bump
+        shell: bash
         run: make bump
 
       - name: Install binaries
+        shell: bash
         # Only if there's a version bump and we are merging to main, i.e
         # exclude PRs.
         if: ${{ steps.version-bump.outputs.new-version &&
