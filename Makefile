@@ -77,7 +77,7 @@ bump:
         ifneq ($(CABAL_VERSION),$(RELEASED_VERSION))
 		@echo "New version!"
 		# https://github.com/actions/runner/issues/2224
-                ifeq ($(findstring msys_nt,$(OS)),msys_nt)
+                ifeq ($(findstring mingw64_nt,$(OS)),mingw64_nt) 
 			echo "new-version=$(CABAL_VERSION)" >> $Env:GITHUB_OUTPUT
                 else
 			echo "new-version=$(CABAL_VERSION)" >> $(GITHUB_OUTPUT)
