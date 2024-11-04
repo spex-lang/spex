@@ -97,7 +97,7 @@ release:
 	ls -R $(SPEX_BIN)
 	for dir in $$(ls $(SPEX_BIN)); do \
 		for bin in $$(ls $(SPEX_BIN)/$$dir); do \
-			if [ $${bin: -4} == ".exe" ]; do \
+			if [ $${bin: -4} == ".exe" ]; then \
 				mv $(SPEX_BIN)/$$dir/$$bin \
 				   $(SPEX_BIN)/$$(basename $$bin .exe)-$(NEW_VERSION)-$$(basename $$dir).exe; \
 				chmod 755 $(SPEX_BIN)/$$(basename $$bin .exe)-$(NEW_VERSION)-$$(basename $$dir).exe; \

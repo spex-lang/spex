@@ -83,5 +83,49 @@
 
 * Other types of specifications, e.g. syntax grammars where testing generates
   random programs? And perhaps find minimal programs that create unique syntax
-  errors? Use grammars as generators?
+  errors? Use grammars as generators? E.g.:
 
+  ```
+    Spec ::= "component" Ident "where" Decl*
+      Decl ::= OpDecl | TypeDecl
+  
+        -- XXX: Allow ModalType in response position? 
+        -- semantics: unique response type will never get reused, and abstract
+        -- response type will always get reused?
+        OpDecl ::= ident ":" Method Path Body? ("->" Type)? 
+  
+          Method ::= "GET" | "POST"
+  
+          Path ::= ("/" PathSegment)* "/"?
+  
+            PathSegment = "{" ident ":" ModalType "}" | path
+  
+          Body ::= "{" ModalType "}"
+  
+        TypeDecl ::= "type" Ident "=" Type
+  
+    ModalType ::= Mode? Type
+  
+    Mode ::= "@" | "!"
+  
+    Type ::= BaseType | RecordDecl | Ident
+  
+    BaseType ::= "Unit" | "Bool" | "Int" | "String"
+  
+    RecordDecl ::= "{" Field ("," Field)* "}"  -- XXX: parser allows empty records?
+      Field ::= ident ":" Type                 -- XXX: Modal type
+  
+  
+    Ident ::= [A-Z][a-zA-Z0-9]*
+    ident ::= [a-z][a-zA-Z0-9]*
+  
+    -- https://datatracker.ietf.org/doc/html/rfc3986#section-3.3
+    path ::= pchar+
+      pchar         = unreserved / pct-encoded / sub-delims / ":" / "@"
+  
+      pct-encoded   = "%" HEXDIG HEXDIG
+  
+      unreserved    = ALPHA / DIGIT / "-" / "." / "_" / "~"
+      sub-delims    = "!" / "$" / "&" / "'" / "(" / ")"
+                    / "*" / "+" / "," / ";" / "="
+  ```

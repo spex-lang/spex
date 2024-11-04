@@ -11,50 +11,6 @@ Here's what I'm currently working on:
   + https://github.com/Gabriella439/grace/blob/main/CODE_OF_CONDUCT.md ?
 - docs: document syntax?
 
-```
-  Spec ::= "component" Ident "where" Decl*
-    Decl ::= OpDecl | TypeDecl
-
-      -- XXX: Allow ModalType in response position? 
-      -- semantics: unique response type will never get reused, and abstract
-      -- response type will always get reused?
-      OpDecl ::= ident ":" Method Path Body? ("->" Type)? 
-
-        Method ::= "GET" | "POST"
-
-        Path ::= ("/" PathSegment)* "/"?
-
-          PathSegment = "{" ident ":" ModalType "}" | path
-
-        Body ::= "{" ModalType "}"
-
-      TypeDecl ::= "type" Ident "=" Type
-
-  ModalType ::= Mode? Type
-
-  Mode ::= "@" | "!"
-
-  Type ::= BaseType | RecordDecl | Ident
-
-  BaseType ::= "Unit" | "Bool" | "Int" | "String"
-
-  RecordDecl ::= "{" Field ("," Field)* "}"  -- XXX: parser allows empty records?
-    Field ::= ident ":" Type                 -- XXX: Modal type
-
-
-  Ident ::= [A-Z][a-zA-Z0-9]*
-  ident ::= [a-z][a-zA-Z0-9]*
-
-  -- https://datatracker.ietf.org/doc/html/rfc3986#section-3.3
-  path ::= pchar+
-    pchar         = unreserved / pct-encoded / sub-delims / ":" / "@"
-
-    pct-encoded   = "%" HEXDIG HEXDIG
-
-    unreserved    = ALPHA / DIGIT / "-" / "." / "_" / "~"
-    sub-delims    = "!" / "$" / "&" / "'" / "(" / ")"
-                  / "*" / "+" / "," / ";" / "="
-```
 - Nice errors
   + Introduce FancyError datatype and display it in LibMain?
   + https://elm-lang.org/news/compiler-errors-for-humans
@@ -64,6 +20,7 @@ Here's what I'm currently working on:
   + https://gleam.run/
 
 - Packaging
+  + smoke test: curl spexup && spex --version | grep "^v..."
   + move petstore to separate repo?
   + caching
     * https://github.com/moby/buildkit/issues/1673 
