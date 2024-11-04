@@ -102,9 +102,9 @@ release:
 			chmod 755 $(SPEX_BIN)/$$(basename $$bin)-$(NEW_VERSION)-$$(basename $$dir); \
 		done \
 	done
-	upx -q $(SPEX_BIN)/spex-*
+	upx -q $(SPEX_BIN)/spex*
 	gh release create --draft --notes-file=CHANGELOG.md \
-		"v$(NEW_VERSION)" $(SPEX_BIN)/spex-*
+		"v$(NEW_VERSION)" $(SPEX_BIN)/spex*
   else
 	@echo Running locally, skipping automatic release...
   endif

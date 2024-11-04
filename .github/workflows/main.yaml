@@ -117,8 +117,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # os: [ubuntu-24.04, macos-15, windows-2022]
-        os: [windows-2022]
+        os: [ubuntu-24.04, macos-15, windows-2022]
         ghc-version: ['9.6.6']
         cabal-version: ['3.12.1.0']
     env:
@@ -204,10 +203,11 @@ jobs:
         uses: actions/cache/save@v4
         if: steps.cache.outputs.cache-hit != 'true'
         with:
-          path: |
-            ${HOME}/.cache/cabal
-            ${HOME}/.cabal/store
-            dist-newstyle
+          path: ${{ steps.setup.outputs.cabal-store }}
+          #path: |
+          #  ${HOME}/.cache/cabal
+          #  ${HOME}/.cabal/store
+          #  dist-newstyle
           key: ${{ steps.cache.outputs.cache-primary-key }}
 
       - name: Build 
