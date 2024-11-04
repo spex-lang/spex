@@ -115,6 +115,7 @@ install:
 	# container, which isn't what we want. Instead find the binary inside
 	# dist-newstyle, which is shared with the host via a volume mount, and
 	# copy it from there to the right place.
+	mkdir -p $(SPEX_BIN)/
 	find dist-newstyle/ -name 'spex*' -type f -executable -exec cp {} $(SPEX_BIN)/ \;
   else
 	$(CABAL) install all --installdir=$(SPEX_BIN) --install-method=copy --overwrite-policy=always
