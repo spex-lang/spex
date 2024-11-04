@@ -11,7 +11,7 @@ SPEX_GIT_COMMIT ?= $(shell git rev-parse HEAD)
 
 
 ifeq ($(findstring mingw64_nt,$(OS)),mingw64_nt) 
-	GITHUB_OUTPUT := $(env:GITHUB_OUTPUT)
+	#GITHUB_OUTPUT := ${env:GITHUB_OUTPUT}
 	SHELL := pwsh.exe
 	.SHELLFLAGS := -Command
 else
@@ -83,17 +83,18 @@ bump:
 	@echo "OS=$(OS)"
 	@echo "SHELL=$(SHELL)"
 	@echo "GITHUB_OUTPUT=$(GITHUB_OUTPUT)"
+	@echo "env:GITHUB_OUTPUT=$(env:GITHUB_OUTPUT)"
         ifdef CABAL_VERSION
         ifdef RELEASED_VERSION
         ifneq ($(CABAL_VERSION),$(RELEASED_VERSION))
 		@echo "New version!"
 		# https://github.com/actions/runner/issues/2224
 		# https://stackoverflow.com/questions/74443940/value-not-set-using-github-output
-                #ifeq ($(findstring mingw64_nt,$(OS)),mingw64_nt) 
-		#	echo "new-version=$(CABAL_VERSION)" >> $
-                #else
-		echo "new-version=$(CABAL_VERSION)" >> $(GITHUB_OUTPUT)
-                #endif
+                ifeq ($(findstring mingw64_nt,$(OS)),mingw64_nt) 
+			echo "new-version=$(CABAL_VERSION)" >> $(env:GITHUB_OUTPUT)
+                else
+			echo "new-version=$(CABAL_VERSION)" >> $(GITHUB_OUTPUT)
+                endif
         endif
         endif
         endif
