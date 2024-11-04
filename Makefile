@@ -15,12 +15,14 @@ SPEX_GIT_COMMIT ?= $(shell git rev-parse HEAD)
 ifeq ($(findstring mingw64_nt,$(OS)),mingw64_nt) 
 	SHELL := pwsh.exe
 	.SHELLFLAGS := -Command
+	SUFFIX := .exe
 else
 	# This default file is used for simulating GitHub actions outputs locally:
 	# https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/passing-information-between-jobs
 	GITHUB_OUTPUT ?= "$(TEMPDIR)/spex_github_output"
 	# Make make fail if the shell commands fail.
 	.SHELLFLAGS = -ec
+	SUFFIX := 
 endif
 
 ifeq ($(GITHUB_ACTIONS),true)
@@ -98,8 +100,8 @@ release:
 	for dir in $$(ls $(SPEX_BIN)); do \
 		for bin in $$(ls $(SPEX_BIN)/$$dir); do \
 			mv $(SPEX_BIN)/$$dir/$$bin \
-			   $(SPEX_BIN)/$$(basename $$bin)-$(NEW_VERSION)-$$(basename $$dir); \
-			chmod 755 $(SPEX_BIN)/$$(basename $$bin)-$(NEW_VERSION)-$$(basename $$dir); \
+			   $(SPEX_BIN)/$$(basename $$bin $(SUFFIX))-$(NEW_VERSION)-$$(basename $$dir)$(SUFFIX); \
+			chmod 755 $(SPEX_BIN)/$$(basename $$bin $(SUFFIX))-$(NEW_VERSION)-$$(basename $$dir)$(SUFFIX); \
 		done \
 	done
 	upx -q $(SPEX_BIN)/spex*
