@@ -14,6 +14,10 @@ permissions:
   contents: write
   packages: write
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   #linux:
   #  name: GHC ${{ matrix.ghc-version }} on ${{ matrix.os }}
@@ -157,6 +161,8 @@ jobs:
         if: ${{ env.platform == 'x86_64-linux' }}
         run: make pull-image
 
+      # XXX: only build if Dockerfile changed? 
+      # git diff --name-only ${{ github.event.after }} ${{ github.event.before }} | grep Dockerfile?
       - name: Build image (Linux only)
         if: ${{ env.platform == 'x86_64-linux' }}
         run: make build-image
@@ -212,6 +218,7 @@ jobs:
           key: ${{ steps.cache.outputs.cache-primary-key }}
 
       - name: Build 
+        # XXX: is env needed?
         env:
           SPEX_GIT_COMMIT: ${{ github.sha }}
         run: make build
@@ -230,7 +237,9 @@ jobs:
                 github.event_name == 'push' && 
                 github.ref == 'refs/heads/main' }}
         id: install
+        # XXX: is shell bash needeD?
         shell: bash
+        # XXX: is env needed?
         env:
           SPEX_GIT_COMMIT: ${{ github.sha }}
         run: make install

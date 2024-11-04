@@ -17,7 +17,8 @@ range of software that can be specified and tested will extended in the
 [future](ROADMAP.md).
 
 > [!CAUTION]
-> Spex is pre-alpha and not suitable for general use yet.
+> Spex is pre-alpha and not suitable for general use yet. Please don't share
+> just yet, I'll announce it properly soon.
 
 ## Features
 

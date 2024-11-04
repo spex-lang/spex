@@ -1,3 +1,8 @@
+# This Makefile is supposed to work on Linux, MacOS and Windows (with WSL and
+# GNU make). On Linux it should build static binaries using an Alpine
+# container. All this should work both on GitHub actions CI and when run
+# locally.
+
 OS := $(shell uname -s | tr '[:upper:]' '[:lower:]')
 PLATFORM := $(shell uname -m)-$(OS)
 CABAL_VERSION := $(shell awk '/^version:/ { print $$2 }' spex.cabal)
@@ -5,6 +10,8 @@ RELEASED_VERSION := $(shell gh release list --limit 1 \
 			--exclude-drafts --exclude-pre-releases \
 			--json tagName \
 			--jq '.[].tagName // "unreleased" | sub("^v"; "") ')
+
+# This variable is set to true on GitHub's CI.
 GITHUB_ACTIONS ?= false
 
 SPEX_GIT_COMMIT ?= $(shell git rev-parse HEAD)
@@ -33,6 +40,7 @@ NEW_VERSION = "$(shell awk -F '=' '/^new-version/ \
 endif
 
 ifeq ($(OS),linux)
+  ifeq ($(GITHUB_ACTIONS),true)
 	CABAL := docker run --rm --entrypoint=cabal \
 			--volume $(PWD):/mnt \
 			--volume $(HOME)/.cache/cabal/packages:/root/.cache/cabal/packages \
@@ -41,7 +49,16 @@ ifeq ($(OS),linux)
 			--env SPEX_GIT_COMMIT=$(SPEX_GIT_COMMIT) \
 			ghcr.io/spex-lang/spex-build:latest
 	ENABLE_STATIC := --enable-executable-static
-
+  else
+	CABAL := docker run --rm --entrypoint=cabal \
+			--volume $(PWD):/mnt \
+			--volume $(PWD)/.container-cache/cabal/packages:/root/.cache/cabal/packages \
+			--volume $(PWD)/.container-cache/cabal/store:/root/.local/state/cabal/store \
+			--volume $(PWD)/dist-newstyle:/mnt/dist-newstyle \
+			--env SPEX_GIT_COMMIT=$(SPEX_GIT_COMMIT) \
+			ghcr.io/spex-lang/spex-build:latest
+	ENABLE_STATIC := --enable-executable-static
+  endif
 else
 	CABAL := cabal
 	ENABLE_STATIC := 
@@ -52,8 +69,15 @@ all: build-deps build test bump install release
 # XXX: doesn't configure petstore...
 dist-newstyle/cache/plan.json: cabal.project cabal.project.freeze spex.cabal
 ifeq ($(OS),linux)
+  ifeq ($(GITHUB_ACTIONS),true)
+	mkdir -p $(PWD)/dist-newstyle
 	mkdir -p $(HOME)/.cache/cabal/packages
 	mkdir -p $(HOME)/.cabal/store
+  else
+	mkdir -p $(PWD)/dist-newstyle
+	mkdir -p $(PWD)/.container-cache/cabal/packages
+	mkdir -p $(PWD)/.container-cache/cabal/store
+  endif
 endif
 	$(CABAL) configure $(ENABLE_STATIC) --disable-profiling  --disable-library-for-ghci --enable-library-stripping --enable-executable-stripping --enable-tests --enable-benchmarks --disable-documentation
 	$(CABAL) update
@@ -64,6 +88,7 @@ build-deps: dist-newstyle/cache/plan.json
 	$(CABAL) build all --only-dependencies
 
 build: 
+	# XXX: shouldn't be needed?
 	$(CABAL) update
 	$(CABAL) build all
 
@@ -87,7 +112,15 @@ bump:
         endif
 
 install:
+  ifeq ($(OS),linux)
+	# Running `cabal install` inside a container will it inside the
+	# container, which isn't what we want. Instead find the binary inside
+	# dist-newstyle, which is shared with the host via a volume mount, and
+	# copy it from there to the right place.
+	find dist-newstyle/ -name 'spex*' -type f -executable -exec cp {} $(SPEX_BIN) \;
+  else
 	$(CABAL) install all --installdir=$(SPEX_BIN) --install-method=copy --overwrite-policy=always
+  endif
 
 release:
 	@echo "NEW_VERSION=$(NEW_VERSION)"
@@ -117,6 +150,8 @@ release:
   endif
 
 clean:
+	rm -rf dist-newstyle
+	rm -rf .container-cache
 
 pull-image:
 	docker pull ghcr.io/spex-lang/spex-build:latest
