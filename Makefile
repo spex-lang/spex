@@ -97,15 +97,16 @@ release:
 	ls -R $(SPEX_BIN)
 	for dir in $$(ls $(SPEX_BIN)); do \
 		for bin in $$(ls $(SPEX_BIN)/$$dir); do \
-			if [ $${bin: -4} == ".exe" ]; then \
+			case $$bin in \
+			  *".exe") \
 				mv $(SPEX_BIN)/$$dir/$$bin \
 				   $(SPEX_BIN)/$$(basename $$bin .exe)-$(NEW_VERSION)-$$(basename $$dir).exe; \
-				chmod 755 $(SPEX_BIN)/$$(basename $$bin .exe)-$(NEW_VERSION)-$$(basename $$dir).exe; \
-			else \
+				chmod 755 $(SPEX_BIN)/$$(basename $$bin .exe)-$(NEW_VERSION)-$$(basename $$dir).exe ;; \
+			  *) \
 				mv $(SPEX_BIN)/$$dir/$$bin \
 				   $(SPEX_BIN)/$$(basename $$bin)-$(NEW_VERSION)-$$(basename $$dir); \
-				chmod 755 $(SPEX_BIN)/$$(basename $$bin)-$(NEW_VERSION)-$$(basename $$dir); \
-			fi \
+				chmod 755 $(SPEX_BIN)/$$(basename $$bin)-$(NEW_VERSION)-$$(basename $$dir);; \
+			esac \
 		done \
 	done
 	upx -q $(SPEX_BIN)/spex*
