@@ -15,6 +15,7 @@ SPEX_GIT_COMMIT ?= $(shell git rev-parse HEAD)
 ifeq ($(findstring mingw64_nt,$(OS)),mingw64_nt) 
 	SHELL := pwsh.exe
 	.SHELLFLAGS := -Command
+        GITHUB_OUTPUT := $$env:GITHUB_OUTPUT
 else
 	# This default file is used for simulating GitHub actions outputs locally:
 	# https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/passing-information-between-jobs
@@ -89,7 +90,7 @@ bump:
         ifdef RELEASED_VERSION
         ifneq ($(CABAL_VERSION),$(RELEASED_VERSION))
 		@echo "New version!"
-		echo "new-version=$(CABAL_VERSION)" >> $$env:GITHUB_OUTPUT
+		echo "new-version=$(CABAL_VERSION)" >> $(GITHUB_OUTPUT)
         endif
         endif
         endif
