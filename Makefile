@@ -95,8 +95,7 @@ bump:
         endif
 
 install:
-	$(CABAL) install all --installdir=$(SPEX_BIN) \
-		--install-method=copy --overwrite-policy=always
+	$(CABAL) install all --installdir=$(SPEX_BIN) --install-method=copy --overwrite-policy=always
 
 release:
 	@echo "NEW_VERSION=$(NEW_VERSION)"
