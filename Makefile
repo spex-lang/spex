@@ -13,10 +13,13 @@ SPEX_GIT_COMMIT ?= $(shell git rev-parse HEAD)
 ifeq ($(findstring mingw64_nt,$(OS)),mingw64_nt) 
 	GITHUB_OUTPUT := $(env:GITHUB_OUTPUT)
 	SHELL := pwsh.exe
+	.SHELLFLAGS := -Command
 else
 	# This default file is used for simulating GitHub actions outputs locally:
 	# https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/passing-information-between-jobs
 	GITHUB_OUTPUT ?= "$(TEMPDIR)/spex_github_output"
+	# Make make fail if the shell commands fail.
+	.SHELLFLAGS = -ec
 endif
 
 ifeq ($(GITHUB_ACTIONS),true)
@@ -131,6 +134,3 @@ push-image:
 	docker push ghcr.io/spex-lang/spex-build:latest
 
 .PHONY: all build-deps build test bump install release clean build-image
-
-# Make make fail if the shell commands fail.
-.SHELLFLAGS = -ec
