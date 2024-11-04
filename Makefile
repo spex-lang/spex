@@ -75,11 +75,12 @@ bump:
         ifdef RELEASED_VERSION
         ifneq ($(CABAL_VERSION),$(RELEASED_VERSION))
 		@echo "New version!"
-                ifeq ($(OS),MSYS_NT-10.0-20348)
-		echo "new-version=$(CABAL_VERSION)" >> $ENV:GITHUB_OUTPUT
-                else
+		# https://github.com/actions/runner/issues/2224
+                # ifeq ($(findstring MSYS_NT,$(OS)),MSYS_NT)
+		#	echo "new-version=$(CABAL_VERSION)" >> $Env:GITHUB_OUTPUT
+                # else
 		echo "new-version=$(CABAL_VERSION)" >> $(GITHUB_OUTPUT)
-                endif
+                # endif
         endif
         endif
         endif
@@ -96,7 +97,9 @@ release:
 	ls -R $(SPEX_BIN)
 	for dir in $$(ls $(SPEX_BIN)); do \
 		for bin in $$(ls $(SPEX_BIN)/$$dir); do \
-			mv $$bin $(SPEX_BIN)/$$(basename $$bin)-$(NEW_VERSION)-$$(basename $$dir); \
+			mv $(SPEX_BIN)/$$dir/$$bin \
+			   $(SPEX_BIN)/$$(basename $$bin)-$(NEW_VERSION)-$$(basename $$dir); \
+			chmod 755 $(SPEX_BIN)/$$(basename $$bin)-$(NEW_VERSION)-$$(basename $$dir); \
 		done \
 	done
 	upx -q $(SPEX_BIN)/spex-*
