@@ -171,8 +171,8 @@ jobs:
         env:
           key: ${{ runner.os }}-ghc-${{ matrix.ghc-version }}-cabal-${{ matrix.cabal-version }}
           paths: ${{ env.platform == 'x86_64-linux' && 
-                     "${HOME}/.cache/cabal ${HOME}/.cabal/store dist-newstyle" ||
-                     ${{ steps.setup.outputs.cabal-store }}
+                     "~/.cache/cabal ~/.cabal/store dist-newstyle" ||
+                     steps.setup.outputs.cabal-store }}
         with:
           path: ${{ env.paths }}
           key: ${{ env.key }}-plan-${{ hashFiles('**/plan.json') }}
@@ -207,8 +207,8 @@ jobs:
         uses: actions/cache/save@v4
         env:
           paths: ${{ env.platform == 'x86_64-linux' && 
-                     "${HOME}/.cache/cabal ${HOME}/.cabal/store dist-newstyle" ||
-                     ${{ steps.setup.outputs.cabal-store }}
+                     "~/.cache/cabal ~/.cabal/store dist-newstyle" ||
+                     steps.setup.outputs.cabal-store }}
         with:
           path: ${{ env.paths }}
           key: ${{ steps.cache.outputs.cache-primary-key }}
