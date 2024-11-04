@@ -172,10 +172,10 @@ jobs:
         env:
           key: ${{ runner.os }}-ghc-${{ matrix.ghc-version }}-cabal-${{ matrix.cabal-version }}
         with:
-          path: |
-            ${HOME}/.cache/cabal
-            ${HOME}/.cabal/store
-            dist-newstyle
+          path: ${{ steps.setup.outputs.cabal-store }}
+          # ${HOME}/.cache/cabal
+          #  ${HOME}/.cabal/store
+          #  dist-newstyle
           key: ${{ env.key }}-plan-${{ hashFiles('**/plan.json') }}
           restore-keys: ${{ env.key }}-plan-
 
@@ -183,20 +183,20 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: make build-deps
 
-      - name: Debug .cache/cabal cache
-        run: |
-          ls -Rlh ${HOME}/.cache/cabal || true
+      #- name: Debug .cache/cabal cache
+      #  run: |
+      #    ls -Rlh ${HOME}/.cache/cabal || true
 
-      - name: Debug .cabal/store cache
-        run: |
-          echo ${{ steps.setup.outputs.cabal-store }}
-          ls -Rlh ${{ steps.setup.outputs.cabal-store }} || true
-          echo "==="
-          ls -Rlh ${HOME}/.cabal/store || true
+      #- name: Debug .cabal/store cache
+      #  run: |
+      #    echo ${{ steps.setup.outputs.cabal-store }}
+      #    ls -Rlh ${{ steps.setup.outputs.cabal-store }} || true
+      #    echo "==="
+      #    ls -Rlh ${HOME}/.cabal/store || true
 
-      - name: Debug dist-newstyle cache
-        run: |
-          ls -Rlh dist-newstyle || true
+      #- name: Debug dist-newstyle cache
+      #  run: |
+      #    ls -Rlh dist-newstyle || true
 
       # Cache dependencies already here, so that we do not have to rebuild them
       # should the subsequent steps fail.
