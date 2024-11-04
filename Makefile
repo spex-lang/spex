@@ -89,7 +89,7 @@ bump:
         ifdef RELEASED_VERSION
         ifneq ($(CABAL_VERSION),$(RELEASED_VERSION))
 		@echo "New version!"
-		echo "new-version=$(CABAL_VERSION)" >> $(GITHUB_OUTPUT)
+		echo "new-version=$(CABAL_VERSION)" >> $$env:GITHUB_OUTPUT
         endif
         endif
         endif
