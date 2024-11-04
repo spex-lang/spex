@@ -115,10 +115,7 @@ install:
 	# container, which isn't what we want. Instead find the binary inside
 	# dist-newstyle, which is shared with the host via a volume mount, and
 	# copy it from there to the right place.
-	ls -lh dist-newstyle/build/x86_64-linux/ghc-9.6.6/spex-0.0.0/x/spex/build/spex/spex || true
-	ls -Rlh .
-	find dist-newstyle/ -name 'spex*' -type f -executable -print
-	find dist-newstyle/ -name 'spex*' -type f -executable -exec cp {} $(SPEX_BIN) \;
+	find dist-newstyle/ -name 'spex*' -type f -executable -exec cp {} $(SPEX_BIN)/ \;
   else
 	$(CABAL) install all --installdir=$(SPEX_BIN) --install-method=copy --overwrite-policy=always
   endif
