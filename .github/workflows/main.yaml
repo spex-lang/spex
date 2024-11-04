@@ -215,9 +215,9 @@ jobs:
       # Cache dependencies already here, so that we do not have to rebuild them
       # should the subsequent steps fail.
       - name: Save cached dependencies (Linux only)
-        if: ${{ env.platform == 'x86_64-linux' }}
+        if: ${{ env.platform == 'x86_64-linux' && 
+                steps.cache.outputs.cache-hit != 'true' }}
         uses: actions/cache/save@v4
-        if: steps.cache.outputs.cache-hit != 'true'
         with:
           path: |
             ${HOME}/.cache/cabal
@@ -226,9 +226,9 @@ jobs:
           key: ${{ steps.cache.outputs.cache-primary-key }}
 
       - name: Save cached dependencies (MacOS and Windows only)
-        if: ${{ env.platform != 'x86_64-linux' }}
+        if: ${{ env.platform != 'x86_64-linux' && 
+                steps.cache.outputs.cache-hit != 'true' }}
         uses: actions/cache/save@v4
-        if: steps.cache.outputs.cache-hit != 'true'
         with:
           path: ${{ steps.setup.outputs.cabal-store }}
           key: ${{ steps.cache.outputs.cache-primary-key }}
