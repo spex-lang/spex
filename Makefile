@@ -91,7 +91,7 @@ bump:
 		# https://github.com/actions/runner/issues/2224
 		# https://stackoverflow.com/questions/74443940/value-not-set-using-github-output
                 ifeq ($(findstring mingw64_nt,$(OS)),mingw64_nt) 
-			echo "new-version=$(CABAL_VERSION)" >> $(env:GITHUB_OUTPUT)
+			echo "new-version=$(CABAL_VERSION)" >> $(GITHUB_OUTPUT)
                 else
 			echo "new-version=$(CABAL_VERSION)" >> $(GITHUB_OUTPUT)
                 endif
