@@ -139,10 +139,10 @@ jobs:
       #    cabal-version: ${{ matrix.cabal-version }}
       #    cabal-update: false
 
-      #- name: Install make (Windows only)
-      #  if: ${{ env.platform == 'x86_64-windows' }}
-      #  run: |
-      #    choco install make
+      - name: Install make (Windows only)
+        if: ${{ env.platform == 'x86_64-windows' }}
+        run: |
+          choco install make
 
         ## Use Alpine container to get static binaries on Linux.
         #- name: Login to GitHub Container Registry (Linux only)
@@ -204,9 +204,7 @@ jobs:
 
       - name: Check for version bump
         id: version-bump
-        run: | # make bump
-          echo "new-version=0.0.0" >> $env:GITHUB_OUTPUT
-
+        run: make bump
 
       - name: Install binaries
         # Only if there's a version bump and we are merging to main, i.e
