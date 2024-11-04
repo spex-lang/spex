@@ -213,9 +213,12 @@ jobs:
         #        github.event_name == 'push' && 
         #        github.ref == 'refs/heads/main' }}
         id: install
+        shell: bash
         env:
           SPEX_GIT_COMMIT: ${{ github.sha }}
+          NEW_VERSION: ${{ steps.version-bump.outputs.new-version }}
         run: |
+          echo $NEW_VERSION
           echo ${{ steps.version-bump.outputs.new-version }}
           echo ${{ steps.version-bump.outputs.new-version != '' }}
           # make install
