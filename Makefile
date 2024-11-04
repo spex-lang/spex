@@ -15,14 +15,12 @@ SPEX_GIT_COMMIT ?= $(shell git rev-parse HEAD)
 ifeq ($(findstring mingw64_nt,$(OS)),mingw64_nt) 
 	SHELL := pwsh.exe
 	.SHELLFLAGS := -Command
-	SUFFIX := .exe
 else
 	# This default file is used for simulating GitHub actions outputs locally:
 	# https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/passing-information-between-jobs
 	GITHUB_OUTPUT ?= "$(TEMPDIR)/spex_github_output"
 	# Make make fail if the shell commands fail.
 	.SHELLFLAGS = -ec
-	SUFFIX := 
 endif
 
 ifeq ($(GITHUB_ACTIONS),true)
@@ -37,7 +35,7 @@ endif
 ifeq ($(OS),linux)
 	CABAL := docker run --rm --entrypoint=cabal \
 			--volume $(PWD):/mnt \
-			--volume $(HOME)/.cache/cabal:/root/.cache/cabal \
+			--volume $(HOME)/.cache/cabal/packages:/root/.cache/cabal/packages \
 			--volume $(HOME)/.cabal/store:/root/.local/state/cabal/store \
 			--volume $(PWD)/dist-newstyle:/mnt/dist-newstyle \
 			--env SPEX_GIT_COMMIT=$(SPEX_GIT_COMMIT) \
@@ -99,9 +97,15 @@ release:
 	ls -R $(SPEX_BIN)
 	for dir in $$(ls $(SPEX_BIN)); do \
 		for bin in $$(ls $(SPEX_BIN)/$$dir); do \
-			mv $(SPEX_BIN)/$$dir/$$bin \
-			   $(SPEX_BIN)/$$(basename $$bin $(SUFFIX))-$(NEW_VERSION)-$$(basename $$dir)$(SUFFIX); \
-			chmod 755 $(SPEX_BIN)/$$(basename $$bin $(SUFFIX))-$(NEW_VERSION)-$$(basename $$dir)$(SUFFIX); \
+			if [ $${bin: -4} == ".exe" ]; do \
+				mv $(SPEX_BIN)/$$dir/$$bin \
+				   $(SPEX_BIN)/$$(basename $$bin .exe)-$(NEW_VERSION)-$$(basename $$dir).exe; \
+				chmod 755 $(SPEX_BIN)/$$(basename $$bin .exe)-$(NEW_VERSION)-$$(basename $$dir).exe; \
+			else \
+				mv $(SPEX_BIN)/$$dir/$$bin \
+				   $(SPEX_BIN)/$$(basename $$bin)-$(NEW_VERSION)-$$(basename $$dir); \
+				chmod 755 $(SPEX_BIN)/$$(basename $$bin)-$(NEW_VERSION)-$$(basename $$dir); \
+			fi
 		done \
 	done
 	upx -q $(SPEX_BIN)/spex*
