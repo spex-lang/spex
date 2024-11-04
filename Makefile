@@ -15,7 +15,6 @@ SPEX_GIT_COMMIT ?= $(shell git rev-parse HEAD)
 ifeq ($(findstring mingw64_nt,$(OS)),mingw64_nt) 
 	SHELL := pwsh.exe
 	.SHELLFLAGS := -Command
-        GITHUB_OUTPUT := $$env:GITHUB_OUTPUT
 else
 	# This default file is used for simulating GitHub actions outputs locally:
 	# https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/passing-information-between-jobs
