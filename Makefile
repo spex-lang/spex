@@ -9,9 +9,15 @@ GITHUB_ACTIONS ?= false
 
 SPEX_GIT_COMMIT ?= $(shell git rev-parse HEAD)
 
-# This default file is used for simulating GitHub actions outputs locally:
-# https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/passing-information-between-jobs
-GITHUB_OUTPUT ?= "$(TEMPDIR)/spex_github_output"
+
+ifeq ($(findstring mingw64_nt,$(OS)),mingw64_nt) 
+	GITHUB_OUTPUT := $(env:GITHUB_OUTPUT)
+	SHELL := pwsh.exe
+else
+	# This default file is used for simulating GitHub actions outputs locally:
+	# https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/passing-information-between-jobs
+	GITHUB_OUTPUT ?= "$(TEMPDIR)/spex_github_output"
+endif
 
 ifeq ($(GITHUB_ACTIONS),true)
 SPEX_BIN := "bin"
@@ -35,10 +41,6 @@ ifeq ($(OS),linux)
 else
 	CABAL := cabal
 	ENABLE_STATIC := ""
-endif
-
-ifeq ($(findstring mingw64_nt,$(OS)),mingw64_nt) 
-	SHELL := bash.exe
 endif
 
 all: build-deps build test bump install release
@@ -77,6 +79,7 @@ bump:
 	@echo "RELEASED_VERSION=$(RELEASED_VERSION)"
 	@echo "OS=$(OS)"
 	@echo "SHELL=$(SHELL)"
+	@echo "GITHUB_OUTPUT=$(GITHUB_OUTPUT)"
         ifdef CABAL_VERSION
         ifdef RELEASED_VERSION
         ifneq ($(CABAL_VERSION),$(RELEASED_VERSION))
@@ -84,7 +87,7 @@ bump:
 		# https://github.com/actions/runner/issues/2224
 		# https://stackoverflow.com/questions/74443940/value-not-set-using-github-output
                 #ifeq ($(findstring mingw64_nt,$(OS)),mingw64_nt) 
-		#	echo "new-version=$(CABAL_VERSION)" | Out-File -FilePath $$Env:GITHUB_OUTPUT -Encoding utf8 -Append
+		#	echo "new-version=$(CABAL_VERSION)" >> $
                 #else
 		echo "new-version=$(CABAL_VERSION)" >> $(GITHUB_OUTPUT)
                 #endif
