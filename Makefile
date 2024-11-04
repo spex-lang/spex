@@ -37,6 +37,10 @@ else
 	ENABLE_STATIC := ""
 endif
 
+ifeq ($(findstring mingw64_nt,$(OS)),mingw64_nt) 
+	SHELL := bash.exe
+endif
+
 all: build-deps build test bump install release
 
 dist-newstyle/cache/plan.json: cabal.project cabal.project.freeze spex.cabal
