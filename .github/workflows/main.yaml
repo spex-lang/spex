@@ -286,11 +286,13 @@ jobs:
         os: [ubuntu-24.04, macos-15, windows-2022]
     steps:
       - name: Download and run spexup
+        shell: bash
         run: | 
           curl --proto '=https' --tlsv1.2 -sSf \
             https://raw.githubusercontent.com/spex-lang/spexup/refs/heads/main/spexup \
           | sh
       - name: Run spex --version
+        shell: bash
         run: |
           spex --version
           spex --version | grep "^v[0-9]\+\.[0-9]\+\.[0-9]\+ [0-9a-f]\{40\}"
