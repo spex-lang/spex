@@ -71,16 +71,17 @@ test:
 bump: 
 	@echo "CABAL_VERSION=$(CABAL_VERSION)"
 	@echo "RELEASED_VERSION=$(RELEASED_VERSION)"
+	@echo "OS=$(OS)"
         ifdef CABAL_VERSION
         ifdef RELEASED_VERSION
         ifneq ($(CABAL_VERSION),$(RELEASED_VERSION))
 		@echo "New version!"
 		# https://github.com/actions/runner/issues/2224
-                # ifeq ($(findstring MSYS_NT,$(OS)),MSYS_NT)
-		#	echo "new-version=$(CABAL_VERSION)" >> $Env:GITHUB_OUTPUT
-                # else
-		echo "new-version=$(CABAL_VERSION)" >> $(GITHUB_OUTPUT)
-                # endif
+                ifeq ($(findstring msys_nt,$(OS)),msys_nt)
+			echo "new-version=$(CABAL_VERSION)" >> $Env:GITHUB_OUTPUT
+                else
+			echo "new-version=$(CABAL_VERSION)" >> $(GITHUB_OUTPUT)
+                endif
         endif
         endif
         endif
