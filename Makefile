@@ -22,7 +22,7 @@ SPEX_GIT_COMMIT ?= $(shell git rev-parse HEAD)
 GITHUB_EVENT_AFTER =? HEAD
 GITHUB_EVENT_BEFORE =? origin/main
 
-DOCKERFILE_CHANGED := $(shell git diff --name-only "$$GITHUB_EVENT_AFTER" "$$GITHUB_EVENT_BEFORE" \
+DOCKERFILE_CHANGED := $(shell git diff --name-only "$(GITHUB_EVENT_AFTER)" "$(GITHUB_EVENT_BEFORE)" \
 			| grep Dockerfile && echo true || echo false)
 
 # This variable is set by GitHub's CI and allows us to pass information between
@@ -175,6 +175,8 @@ spexup:
 	| sh
 
 smoke:
+	ls -l $(HOME)/.local/bin/ || true
+	ls -l /usr/local/bin/ || true
 	export PATH="$$PATH:/usr/local/bin:$$HOME/.local/bin" && \
 	echo $$PATH && \
 	spex --version && \
