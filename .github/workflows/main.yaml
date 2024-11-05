@@ -174,7 +174,7 @@ jobs:
         run: make push-image
 
       - name: Configure and create build plan
-      - run: make dist-newstyle/cache/plan.json
+        run: make dist-newstyle/cache/plan.json
 
       - name: Restore cached dependencies
         uses: actions/cache/restore@v4
