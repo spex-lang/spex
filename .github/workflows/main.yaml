@@ -145,8 +145,7 @@ jobs:
 
       - name: Install make (Windows only)
         if: ${{ env.platform == 'x86_64-windows' }}
-        run: |
-          choco install make
+        run: choco install make
 
       # Use Alpine container to get static binaries on Linux.
       - name: Login to GitHub Container Registry (Linux only)
@@ -248,6 +247,14 @@ jobs:
         env:
           SPEX_GIT_COMMIT: ${{ github.sha }}
         run: make install
+
+      - name: Install upx (Windows only)
+        if: ${{ env.platform == 'x86_64-windows' }}
+        run: choco install upx
+
+      - name: Install upx (MacOS only)
+        if: ${{ env.platform == 'arm64-macos' }}
+        run: brew install upx
 
       - name: Compress binaries 
         run: make compress
