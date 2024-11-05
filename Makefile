@@ -174,14 +174,20 @@ spexup:
 		https://raw.githubusercontent.com/spex-lang/spexup/refs/heads/main/spexup \
 	| sh
 
+ifeq ($(OS),darwin)
+smoke: SHELL := bash
+endif
 smoke:
+	@echo "SHELL=$(SHELL)"
 	ls -l $(HOME)/.local/bin/ || true
 	ls -l /usr/local/bin/ || true
 	export PATH="$$PATH:/usr/local/bin:$$HOME/.local/bin" && \
 	echo $$PATH && \
+	ldd $$(which spex) || true ; \
+	otool -L $$(which spex) || true ; \
 	spex --version && \
 	spex --version | grep "v${CABAL_VERSION} ${SPEX_GIT_COMMIT}"
-#       spex --version | grep "^v[0-9]\+\.[0-9]\+\.[0-9]\+ [0-9a-f]\{40\}"
+	log show --last 10m --debug --predicate 'eventMessage contains "spex"' || true
 
 clean:
 	rm -rf dist-newstyle
