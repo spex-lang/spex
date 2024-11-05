@@ -19,6 +19,10 @@ GITHUB_ACTIONS ?= false
 
 SPEX_GIT_COMMIT ?= $(shell git rev-parse HEAD)
 
+GITHUB_EVENT_AFTER =? HEAD
+GITHUB_EVENT_BEFORE =? origin/main
+
+
 # This variable is set by GitHub's CI and allows us to pass information between
 # jobs, see: 
 #   https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/passing-information-between-jobs
@@ -184,9 +188,13 @@ pull-image:
 	docker pull ghcr.io/spex-lang/spex-build:latest
 
 build-image: Dockerfile
-	docker build --tag ghcr.io/spex-lang/spex-build:latest .
+	if [ git diff --name-only "$$GITHUB_EVENT_AFTER" "$$GITHUB_EVENT_BEFORE" | grep Dockerfile ]; then \
+	  docker build --tag ghcr.io/spex-lang/spex-build:latest . \
+	fi
 
 push-image:
-	docker push ghcr.io/spex-lang/spex-build:latest
+	if [ git diff --name-only "$$GITHUB_EVENT_AFTER" "$$GITHUB_EVENT_BEFORE" | grep Dockerfile ]; then \
+	  docker push ghcr.io/spex-lang/spex-build:latest \
+	fi
 
 .PHONY: all build-deps build test bump install release spexup smoke clean distclean build-image

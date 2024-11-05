@@ -161,10 +161,12 @@ jobs:
         if: ${{ env.platform == 'x86_64-linux' }}
         run: make pull-image
 
-      # XXX: only build if Dockerfile changed? 
-      # git diff --name-only ${{ github.event.after }} ${{ github.event.before }} | grep Dockerfile?
       - name: Build image (Linux only)
         if: ${{ env.platform == 'x86_64-linux' }}
+        env:
+          GITHUB_EVENT_BEFORE: ${{ github.event.before }} 
+          GITHUB_EVENT_AFTER: ${{ github.event.after }}
+
         run: make build-image
 
       - name: Push image (Linux only)
@@ -262,6 +264,7 @@ jobs:
         with:
           sparse-checkout: |
             spex.cabal
+            cabal.project
             Makefile
             CHANGELOG.md
           sparse-checkout-cone-mode: false
@@ -285,6 +288,13 @@ jobs:
       matrix:
         os: [ubuntu-24.04, macos-15, windows-2022]
     steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            spex.cabal
+            cabal.project
+            Makefile
+          sparse-checkout-cone-mode: false
       - name: Download and run spexup
         run: make spexup
 
