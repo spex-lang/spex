@@ -184,7 +184,7 @@ jobs:
                     '/home/runner/.cabal/store' ||
                     steps.setup.outputs.cabal-store }}
           key: ${{ env.key }}-plan-${{ hashFiles('**/plan.json') }}
-          restore-keys: ${{ env.key }}-plan-
+          # restore-keys: ${{ env.key }}-plan-
 
       - name: Build dependencies
         if: steps.cache.outputs.cache-hit != 'true'
