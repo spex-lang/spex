@@ -22,6 +22,8 @@ SPEX_GIT_COMMIT ?= $(shell git rev-parse HEAD)
 GITHUB_EVENT_AFTER =? HEAD
 GITHUB_EVENT_BEFORE =? origin/main
 
+DOCKERFILE_CHANGED := $(shell git diff --name-only "$GITHUB_EVENT_AFTER" "$GITHUB_EVENT_BEFORE" \
+			| grep Dockerfile && echo true || echo false)
 
 # This variable is set by GitHub's CI and allows us to pass information between
 # jobs, see: 
@@ -185,18 +187,18 @@ distclean: clean
 	rm -rf .container-cache
 
 pull-image:
-	if [ ! git diff --name-only "$$GITHUB_EVENT_AFTER" "$$GITHUB_EVENT_BEFORE" | grep Dockerfile ]; then \
-	  docker pull ghcr.io/spex-lang/spex-build:latest; \
-	fi
+  ifeq ($(DOCKERFILE_CHANGED),false)
+	  docker pull ghcr.io/spex-lang/spex-build:latest
+  endif
 
 build-image: Dockerfile
-	if [ git diff --name-only "$$GITHUB_EVENT_AFTER" "$$GITHUB_EVENT_BEFORE" | grep Dockerfile ]; then \
-	  docker build --tag ghcr.io/spex-lang/spex-build:latest .; \
-	fi
+  ifeq ($(DOCKERFILE_CHANGED),true)
+	  docker build --tag ghcr.io/spex-lang/spex-build:latest .
+  endif
 
 push-image:
-	if [ git diff --name-only "$$GITHUB_EVENT_AFTER" "$$GITHUB_EVENT_BEFORE" | grep Dockerfile ]; then \
-	  docker push ghcr.io/spex-lang/spex-build:latest; \
-	fi
+  ifeq ($(DOCKERFILE_CHANGED),true)
+	  docker push ghcr.io/spex-lang/spex-build:latest
+  endif
 
 .PHONY: all build-deps build test bump install release spexup smoke clean distclean build-image
