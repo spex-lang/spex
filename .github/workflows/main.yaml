@@ -173,6 +173,9 @@ jobs:
         if: ${{ env.platform == 'x86_64-linux' }}
         run: make push-image
 
+      - name: Configure and create build plan
+      - run: make dist-newstyle/cache/plan.json
+
       - name: Restore cached dependencies
         uses: actions/cache/restore@v4
         id: cache
@@ -183,8 +186,8 @@ jobs:
           path: ${{ env.platform == 'x86_64-linux' && 
                     '/home/runner/.cabal/store' ||
                     steps.setup.outputs.cabal-store }}
-          key: ${{ env.key }}-plan-${{ hashFiles('**/plan.json') }}
-          # restore-keys: ${{ env.key }}-plan-
+          key: ${{ env.key }}-plan-${{ hashFiles('dist-newstyle/cache/plan.json') }}
+          restore-keys: ${{ env.key }}-plan-
 
       - name: Build dependencies
         if: steps.cache.outputs.cache-hit != 'true'
