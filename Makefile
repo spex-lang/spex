@@ -69,7 +69,7 @@ else
 	ENABLE_STATIC := 
 endif
 
-all: build-deps build test bump install release rmtempdir
+all: build-deps build test bump install compress release rmtempdir
 
 # XXX: doesn't configure petstore...
 dist-newstyle/cache/plan.json: cabal.project cabal.project.freeze spex.cabal
@@ -138,6 +138,10 @@ install:
 	$(CABAL) install all --installdir=$(SPEX_BIN) --install-method=copy --overwrite-policy=always
   endif
 
+compress:
+	upx -q $(SPEX_BIN)/spex*
+
+
 release:
 	@echo "NEW_VERSION=$(NEW_VERSION)"
 	@echo "GITHUB_ACTIONS=$(GITHUB_ACTIONS)"
@@ -158,7 +162,6 @@ release:
 			esac \
 		done \
 	done
-	# upx -q $(SPEX_BIN)/spex*
 	gh release create --draft --notes-file=CHANGELOG.md \
 		"v$(NEW_VERSION)" $(SPEX_BIN)/spex*
   else

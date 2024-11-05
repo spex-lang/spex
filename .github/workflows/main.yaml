@@ -249,6 +249,9 @@ jobs:
           SPEX_GIT_COMMIT: ${{ github.sha }}
         run: make install
 
+      - name: Compress binaries 
+        run: make compress
+
       - name: Upload binary artifacts
         if: steps.install.outcome == 'success'
         uses: actions/upload-artifact@v4
@@ -277,7 +280,7 @@ jobs:
         with:
           path: bin
 
-      - name: Compress binaries and create release
+      - name: Create release
         env:
           NEW_VERSION: ${{ needs.build.outputs.new-version }}
         run: make release

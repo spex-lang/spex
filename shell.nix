@@ -12,6 +12,7 @@ pkgs.mkShell rec {
     stylish-haskell
     zlib.dev
     pkg-config
+    upx
   ];
 
   shellHook = ''
