@@ -166,8 +166,8 @@ spexup:
 	| sh
 
 smoke:
-        export PATH="$PATH:$HOME/.local/bin"
-	spex --version
+	export PATH="$$PATH:$$HOME/.local/bin" && \
+	spex --version && \
 	spex --version | grep "v${CABAL_VERSION} ${SPEX_GIT_COMMIT}"
 #       spex --version | grep "^v[0-9]\+\.[0-9]\+\.[0-9]\+ [0-9a-f]\{40\}"
 
