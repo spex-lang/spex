@@ -299,6 +299,8 @@ jobs:
             Makefile
           sparse-checkout-cone-mode: false
       - name: Download and run spexup
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: make spexup
 
       - name: Smoke test `spex --version`

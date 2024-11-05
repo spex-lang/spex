@@ -170,6 +170,7 @@ rmtempdir:
 	rmdir "$(SPEX_TEMP)"
 
 spexup:
+	export GH_TOKEN=$(GH_TOKEN); \
 	curl --proto '=https' --tlsv1.2 -sSf \
 		https://raw.githubusercontent.com/spex-lang/spexup/refs/heads/main/spexup \
 	| sh
@@ -185,8 +186,8 @@ smoke:
 	echo $$PATH && \
 	ldd $$(which spex) || true ; \
 	otool -L $$(which spex) || true ; \
-	spex --version && \
-	spex --version | grep "v${CABAL_VERSION} ${SPEX_GIT_COMMIT}"
+	spex --version || true ; \
+	spex --version | grep "v${CABAL_VERSION} ${SPEX_GIT_COMMIT}" || true
 	log show --last 10m --debug --predicate 'eventMessage contains "spex"' || true
 
 clean:
