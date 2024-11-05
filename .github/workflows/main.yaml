@@ -252,11 +252,13 @@ jobs:
         if: ${{ env.platform == 'x86_64-windows' }}
         run: choco install upx
 
-      - name: Install upx (MacOS only)
-        if: ${{ env.platform == 'arm64-macos' }}
-        run: brew install upx
+      # upx: CantPackException: macOS is currently not supported
+      # - name: Install upx (MacOS only)
+      #   if: ${{ env.platform == 'arm64-macos' }}
+      #   run: brew install upx
 
-      - name: Compress binaries 
+      - name: Compress binaries (Linux and Windows only)
+        if: ${{ env.platform != 'arm64-macos' }}
         run: make compress
 
       - name: Upload binary artifacts

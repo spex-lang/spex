@@ -138,9 +138,11 @@ install:
 	$(CABAL) install all --installdir=$(SPEX_BIN) --install-method=copy --overwrite-policy=always
   endif
 
+# upx: CantPackException: macOS is currently not supported
 compress:
+  ifneq ($(OS),darwin)
 	upx -q $(SPEX_BIN)/spex*
-
+  endif
 
 release:
 	@echo "NEW_VERSION=$(NEW_VERSION)"
