@@ -16,19 +16,17 @@ GITHUB_ACTIONS ?= false
 
 SPEX_GIT_COMMIT ?= $(shell git rev-parse HEAD)
 
+# This variable is set by GitHub's CI and allows us to pass information between
+# jobs, see: 
+#   https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/passing-information-between-jobs
+# The information we want to pass is if a new version is pushed, see the `bump`
+# target. In order to make this work locally we use a temporary file and
+# effectively simulate the CI behaviour.
+SPEX_TEMP := $(shell mktemp -d)
+GITHUB_OUTPUT ?= "$(SPEX_TEMP)/spex_github_output"
 
-# https://github.com/actions/runner/issues/2224
-# https://stackoverflow.com/questions/74443940/value-not-set-using-github-output
-ifeq ($(findstring mingw64_nt,$(OS)),mingw64_nt) 
-	SHELL := pwsh.exe
-	.SHELLFLAGS := -Command
-else
-	# This default file is used for simulating GitHub actions outputs locally:
-	# https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/passing-information-between-jobs
-	GITHUB_OUTPUT ?= "$(TEMPDIR)/spex_github_output"
-	# Make make fail if the shell commands fail.
-	.SHELLFLAGS = -ec
-endif
+# Make make fail if the shell commands fail.
+.SHELLFLAGS = -ec
 
 ifeq ($(GITHUB_ACTIONS),true)
 SPEX_BIN := bin
@@ -62,7 +60,7 @@ else
 	ENABLE_STATIC := 
 endif
 
-all: build-deps build test bump install release
+all: build-deps build test bump install release rmtempdir
 
 # XXX: doesn't configure petstore...
 dist-newstyle/cache/plan.json: cabal.project cabal.project.freeze spex.cabal
@@ -87,13 +85,23 @@ build-deps: dist-newstyle/cache/plan.json
 
 build: 
 	# XXX: shouldn't be needed?
-	$(CABAL) update
+	# $(CABAL) update
 	$(CABAL) build all
 
 test: 
 	$(CABAL) test all
 	$(CABAL) check
 
+# I had trouble setting output variables on GitHub Actions when using the
+# default shell on Windows runners, see:
+#   https://github.com/actions/runner/issues/2224
+#   https://stackoverflow.com/questions/74443940/value-not-set-using-github-output
+# It seems to work with pwsh though. The layers of WSL on Windows runner, shell
+# on GitHub Actions, and shell in GNU make make things complicated.
+ifeq ($(findstring mingw64_nt,$(OS)),mingw64_nt) 
+bump: SHELL := pwsh.exe
+bump: .SHELLFLAGS := -Command
+endif
 bump: 
 	@echo "CABAL_VERSION=$(CABAL_VERSION)"
 	@echo "RELEASED_VERSION=$(RELEASED_VERSION)"
@@ -148,8 +156,25 @@ release:
 	@echo Running locally, skipping automatic release...
   endif
 
+rmtempdir:
+	rm "$(SPEX_TEMP)/spex_github_output"
+	rmdir "$(SPEX_TEMP)"
+
+spexup:
+	curl --proto '=https' --tlsv1.2 -sSf \
+		https://raw.githubusercontent.com/spex-lang/spexup/refs/heads/main/spexup \
+	| sh
+
+smoke:
+        export PATH="$PATH:$HOME/.local/bin"
+	spex --version
+	spex --version | grep "v${CABAL_VERSION} ${SPEX_GIT_COMMIT}"
+#       spex --version | grep "^v[0-9]\+\.[0-9]\+\.[0-9]\+ [0-9a-f]\{40\}"
+
 clean:
 	rm -rf dist-newstyle
+
+distclean: clean
 	rm -rf .container-cache
 
 pull-image:
@@ -161,4 +186,4 @@ build-image: Dockerfile
 push-image:
 	docker push ghcr.io/spex-lang/spex-build:latest
 
-.PHONY: all build-deps build test bump install release clean build-image
+.PHONY: all build-deps build test bump install release spexup smoke clean distclean build-image
