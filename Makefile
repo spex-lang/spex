@@ -190,8 +190,8 @@ smoke:
 	ldd $$(which spex) || true ; \
 	otool -L $$(which spex) || true ; \
 	spex --version || true ; \
-	spex --version | grep "v${CABAL_VERSION} ${SPEX_GIT_COMMIT}" || true
-	log show --last 10m --debug --predicate 'eventMessage contains "spex"' || true
+	spex --version | grep "v${CABAL_VERSION} ${SPEX_GIT_COMMIT}" 
+	# log show --last 10m --debug --predicate 'eventMessage contains "spex"' || true
 
 clean:
 	rm -rf dist-newstyle
