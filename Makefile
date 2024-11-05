@@ -158,7 +158,7 @@ release:
 			esac \
 		done \
 	done
-	upx -q $(SPEX_BIN)/spex*
+	# upx -q $(SPEX_BIN)/spex*
 	gh release create --draft --notes-file=CHANGELOG.md \
 		"v$(NEW_VERSION)" $(SPEX_BIN)/spex*
   else
