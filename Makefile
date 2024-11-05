@@ -185,16 +185,18 @@ distclean: clean
 	rm -rf .container-cache
 
 pull-image:
-	docker pull ghcr.io/spex-lang/spex-build:latest
+	if [ ! git diff --name-only "$$GITHUB_EVENT_AFTER" "$$GITHUB_EVENT_BEFORE" | grep Dockerfile ]; then \
+	  docker pull ghcr.io/spex-lang/spex-build:latest; \
+	fi
 
 build-image: Dockerfile
 	if [ git diff --name-only "$$GITHUB_EVENT_AFTER" "$$GITHUB_EVENT_BEFORE" | grep Dockerfile ]; then \
-	  docker build --tag ghcr.io/spex-lang/spex-build:latest . \
+	  docker build --tag ghcr.io/spex-lang/spex-build:latest .; \
 	fi
 
 push-image:
 	if [ git diff --name-only "$$GITHUB_EVENT_AFTER" "$$GITHUB_EVENT_BEFORE" | grep Dockerfile ]; then \
-	  docker push ghcr.io/spex-lang/spex-build:latest \
+	  docker push ghcr.io/spex-lang/spex-build:latest; \
 	fi
 
 .PHONY: all build-deps build test bump install release spexup smoke clean distclean build-image
