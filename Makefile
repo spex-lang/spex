@@ -10,6 +10,9 @@ RELEASED_VERSION := $(shell gh release list --limit 1 \
 			--exclude-drafts --exclude-pre-releases \
 			--json tagName \
 			--jq '.[].tagName // "unreleased" | sub("^v"; "") ')
+# cabal update doesn't respect index state in cabal.project, see:
+#   https://github.com/haskell/cabal/issues/9039
+INDEX_STATE := $(shell awk '/index-state:/ { print $$2","$$3 }' cabal.project)
 
 # This variable is set to true on GitHub's CI.
 GITHUB_ACTIONS ?= false
@@ -76,7 +79,7 @@ ifeq ($(OS),linux)
   endif
 endif
 	$(CABAL) configure $(ENABLE_STATIC) --disable-profiling  --disable-library-for-ghci --enable-library-stripping --enable-executable-stripping --enable-tests --enable-benchmarks --disable-documentation
-	$(CABAL) update
+	$(CABAL) update $(INDEX_STATE)
 	# Generate dist-newstyle/cache/plan.json which can be used as cache key.
 	$(CABAL) build all --dry-run
 
@@ -85,7 +88,7 @@ build-deps: dist-newstyle/cache/plan.json
 
 build: 
 	# XXX: shouldn't be needed?
-	# $(CABAL) update
+	$(CABAL) update $(INDEX_STATE)
 	$(CABAL) build all
 
 test: 
