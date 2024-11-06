@@ -169,7 +169,10 @@ jobs:
         run: make build-image
 
       - name: Push image (Linux only)
-        if: ${{ env.platform == 'x86_64-linux' }}
+        # Don't push on PRs.
+        if: ${{ env.platform == 'x86_64-linux' &&
+                github.event_name == 'push' && 
+                github.ref == 'refs/heads/main' }}
         run: make push-image
 
       - name: Configure and create build plan
@@ -266,7 +269,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.platform }}
-          path: bin/*
+          path: dist-newstyle/bin/*
           if-no-files-found: error
 
   release:
@@ -287,7 +290,7 @@ jobs:
       - name: Download binary artifacts
         uses: actions/download-artifact@v4
         with:
-          path: bin
+          path: dist-newstyle/bin/
 
       - name: Create release
         env:
