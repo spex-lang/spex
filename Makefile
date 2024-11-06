@@ -105,13 +105,16 @@ test:
 # inside the container, which isn't what we want. Instead find the
 # binary inside dist-newstyle, which is shared with the host via a
 # volume mount, and copy it from there to the right place.
+#
+ifeq ($(OS),darwin)
+  FIND_EXECUTABLE := -perm +0111
+else
+  FIND_EXECUTABLE := -executable
+endif
+
 install:
-  ifeq ($(OS),linux)
 	find dist-newstyle/ -not -path "$(SPEX_BIN)/*" -name 'spex*' -type f \
-		-executable -exec cp {} $(SPEX_BIN)/ \;
-  else
-	$(CABAL) install all --installdir=$(SPEX_BIN) --install-method=copy --overwrite-policy=always
-  endif
+		$(FIND_EXECUTABLE) -exec cp {} $(SPEX_BIN)/ \;
 
 # upx: CantPackException: macOS is currently not supported
 # https://github.com/upx/upx/issues/777
