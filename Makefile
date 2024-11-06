@@ -59,6 +59,12 @@ dist-newstyle/cache/plan.json: cabal.project cabal.project.freeze spex.cabal
 	# fail.
 	mkdir -p $(CABAL_PACKAGES_CACHE)
 	mkdir -p $(CABAL_STORE)
+	# In case we want to install the binaries into dist-newstyle/bin, then
+	# we better create that directory now, otherwise `$(CABAL)` will create
+	# it and if it runs inside docker then it will create it with root
+	# permissions (which would cause later calls to mkdir to fail due to
+	# permissions).
+	mkdir -p $(SPEX_BIN)
 	$(CABAL) configure $(CABAL_CONFIGURE_FLAGS)
 	$(CABAL) update $(INDEX_STATE)
 	# Generate dist-newstyle/cache/plan.json which can be used as cache key
@@ -69,6 +75,7 @@ build-deps: dist-newstyle/cache/plan.json
 	$(CABAL) build all --only-dependencies
 
 build: 
+	# XXX: why do we need a second update?
 	$(CABAL) update $(INDEX_STATE)
 	$(CABAL) build all
 
@@ -76,14 +83,14 @@ test:
 	$(CABAL) test all
 	$(CABAL) check
 
+# Running `cabal install` inside a container will install the binary
+# inside the container, which isn't what we want. Instead find the
+# binary inside dist-newstyle, which is shared with the host via a
+# volume mount, and copy it from there to the right place.
 install:
   ifeq ($(OS),linux)
-	# Running `cabal install` inside a container will install the binary
-	# inside the container, which isn't what we want. Instead find the
-	# binary inside dist-newstyle, which is shared with the host via a
-	# volume mount, and copy it from there to the right place.
-	mkdir -p $(SPEX_BIN)/
-	find dist-newstyle/ -name 'spex*' -type f -executable -exec cp {} $(SPEX_BIN)/ \;
+	find dist-newstyle/ -not -path "$(SPEX_BIN)/*" -name 'spex*' -type f \
+		-executable -exec cp {} $(SPEX_BIN)/ \;
   else
 	$(CABAL) install all --installdir=$(SPEX_BIN) --install-method=copy --overwrite-policy=always
   endif
