@@ -75,7 +75,8 @@ build-deps: dist-newstyle/cache/plan.json
 	$(CABAL) build all --only-dependencies
 
 build: 
-	# XXX: why do we need a second update?
+	# XXX: why do we need a second update? Maybe because we are not caching
+	# ~/.cabal/packages between calls?
 	$(CABAL) update $(INDEX_STATE)
 	$(CABAL) build all
 
@@ -103,25 +104,28 @@ compress:
   endif
 
 release:
-	@echo "NEW_VERSION=$(NEW_VERSION)"
-	@echo "GITHUB_ACTIONS=$(GITHUB_ACTIONS)"
-	@echo "SPEX_BIN=$(SPEX_BIN)"
-  ifeq ($(GITHUB_ACTIONS),true)
 	ls -R $(SPEX_BIN)
+  # On GitHub CI each OS would build its own binaries and upload them, then
+  # another job would download the binaries and create the release. When the
+  # binaries get downloaded for the different OSes they get put in separate
+  # folders, the following roughly simulates that locally.
+  ifeq ($(GITHUB_ACTIONS),false)
+	mkdir -p $(SPEX_BIN)/$(OS)
+	mv $(SPEX_BIN)/spex* $(SPEX_BIN)/$(OS)
+	ls -R $(SPEX_BIN)
+  endif
 	for dir in $$(ls $(SPEX_BIN)); do \
 		for bin in $$(ls $(SPEX_BIN)/$$dir); do \
+			suffix=""; \
 			case $$bin in \
-			  *".exe") \
-				mv $(SPEX_BIN)/$$dir/$$bin \
-				   $(SPEX_BIN)/$$(basename $$bin .exe)-$(NEW_VERSION)-$$(basename $$dir).exe; \
-				chmod 755 $(SPEX_BIN)/$$(basename $$bin .exe)-$(NEW_VERSION)-$$(basename $$dir).exe ;; \
-			  *) \
-				mv $(SPEX_BIN)/$$dir/$$bin \
-				   $(SPEX_BIN)/$$(basename $$bin)-$(NEW_VERSION)-$$(basename $$dir); \
-				chmod 755 $(SPEX_BIN)/$$(basename $$bin)-$(NEW_VERSION)-$$(basename $$dir);; \
-			esac \
+			  *".exe") suffix=".exe" ;; \
+			  *) ;; \
+			esac; \
+			mv $(SPEX_BIN)/$$dir/$$bin \
+			   $(SPEX_BIN)/$$(basename $$bin $$suffix)-$(NEW_VERSION)-$$(basename $$dir)$$suffix; \
 		done \
 	done
+  ifeq ($(GITHUB_ACTIONS),true)
 	gh release create --draft --notes-file=CHANGELOG.md \
 		"v$(NEW_VERSION)" $(SPEX_BIN)/spex*
   else
@@ -194,28 +198,16 @@ spexup:
 		https://raw.githubusercontent.com/spex-lang/spexup/refs/heads/main/spexup \
 	| sh
 
-# XXX: can be dropped?
-ifeq ($(OS),darwin)
-smoke: SHELL := bash
-endif
 smoke:
-	@echo "SHELL=$(SHELL)"
-	ls -l $(HOME)/.local/bin/ || true
-	ls -l /usr/local/bin/ || true
 	export PATH="$$PATH:/usr/local/bin:$$HOME/.local/bin" && \
-	echo $$PATH && \
-	spex --version || true ; \
 	spex --version | grep "v${CABAL_VERSION} ${SPEX_GIT_COMMIT}" 
 
 # ----------------------------------------------------------------------
 
-.PHONY: clean distclean 
+.PHONY: clean
 
 clean:
 	rm -rf dist-newstyle
-
-distclean: clean
-	rm -rf .container-cache
 
 # ----------------------------------------------------------------------
 # Pull, build and push images
