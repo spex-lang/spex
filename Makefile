@@ -3,15 +3,32 @@
 # container. All this should work both on GitHub actions CI and when run
 # locally.
 
+# In order to do different things on different operating systems (OSes), we
+# first need to find out which OS we are running on. To avoid having to
+# remember the casing of the OS, we lowercase the OS.
 OS := $(shell uname -s | tr '[:upper:]' '[:lower:]')
 
-# This variable is set to true on GitHub's CI.
+# This variable is set to true on GitHub's CI. If it's not set, we default to
+# false. This let's us distinguish between local and CI runs.
 GITHUB_ACTIONS ?= false
 
+# Used for the --version flag to print at which commit the binary was build.
+# This gets passed in from CI, or default to the below in case of local runs.
 SPEX_GIT_COMMIT ?= $(shell git rev-parse HEAD)
 
+# Where binaries will be "installed". This isn't in PATH because we want to
+# compress and upload these, and therefore it's easier if they stay in a
+# separate directory. If we actually wanna install them into PATH, see the
+# `spexup` target.
 SPEX_BIN := dist-newstyle/bin
 
+# This is where `cabal` caches some of its data, it's important mount these
+# directories when building inside an image, otherwise work will need to be
+# redone between the steps. We also want to cache these directories on CI. 
+#
+# The packages cache is massive though as it contains 00-index.tar,
+# 00-index.tar.gz which are two copies of all packages ever published on
+# Hackage... We should try to delete those before caching the directory on CI.
 CABAL_PACKAGES_CACHE := $(HOME)/.cabal/packages
 CABAL_STORE := $(HOME)/.cabal/store
 
