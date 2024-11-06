@@ -143,7 +143,7 @@ release:
 		done \
 	done
   ifeq ($(GITHUB_ACTIONS),true)
-	gh release create --draft --notes-file=CHANGELOG.md \
+	gh release create --prerelease --notes-file=CHANGELOG.md \
 		"v$(NEW_VERSION)" $(SPEX_BIN)/spex*
   else
 	@echo Running locally, skipping automatic release...
