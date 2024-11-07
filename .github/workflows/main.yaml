@@ -102,11 +102,13 @@ jobs:
         run: make build-deps
 
       - name: Debug .cache/cabal cache
+        shell: bash
         #if: ${{ env.platform != 'x86_64-windows' }}
         run: |
           ls -Rlh ${HOME}/.cache/cabal || true
 
       - name: Debug .cabal/store cache
+        shell: bash
         #if: ${{ env.platform != 'x86_64-windows' }}
         run: |
           echo ${{ steps.setup.outputs.cabal-store }}
@@ -115,6 +117,7 @@ jobs:
           ls -Rlh ${HOME}/.cabal/store || true
 
       - name: Debug dist-newstyle cache
+        shell: bash
         #if: ${{ env.platform != 'x86_64-windows' }}
         run: |
           ls -Rlh dist-newstyle || true
@@ -152,7 +155,8 @@ jobs:
         run: make install
 
       - name: Install upx (Windows only)
-        if: ${{ env.platform == 'x86_64-windows' }}
+        if: ${{ env.platform == 'x86_64-windows' &&
+                steps.install.outcome == 'success' }}
         run: choco install upx
 
       # upx: CantPackException: macOS is currently not supported
@@ -161,7 +165,8 @@ jobs:
       #   run: brew install upx
 
       - name: Compress binaries (Linux and Windows only)
-        if: ${{ env.platform != 'arm64-macos' }}
+        if: ${{ env.platform != 'arm64-macos' &&
+                steps.install.outcome == 'success' }}
         run: make compress
 
       - name: Upload binary artifacts
