@@ -82,13 +82,15 @@ jobs:
       - name: Configure and create build plan
         run: make dist-newstyle/cache/plan.json
 
+      # XXX: Use a separate step to create the path, using >> GITHUB_ENV
+      # if the caches are not all in the same directories on all OSes...
+      # '/home/runner/.cache/cabal/packages\n /home/runner/.cabal/store\n dist-newstyle' ||
       - name: Restore cached dependencies
         uses: actions/cache/restore@v4
         id: cache
         env:
           key: ${{ runner.os }}-ghc-${{ matrix.ghc-version }}-cabal-${{ matrix.cabal-version }}
         with:
-                    # '/home/runner/.cache/cabal/packages\n /home/runner/.cabal/store\n dist-newstyle' ||
           path: ${{ env.platform == 'x86_64-linux' && 
                     '/home/runner/.cabal/store' ||
                     steps.setup.outputs.cabal-store }}
@@ -100,12 +102,12 @@ jobs:
         run: make build-deps
 
       - name: Debug .cache/cabal cache
-        if: ${{ env.platform != 'x86_64-windows' }}
+        #if: ${{ env.platform != 'x86_64-windows' }}
         run: |
           ls -Rlh ${HOME}/.cache/cabal || true
 
       - name: Debug .cabal/store cache
-        if: ${{ env.platform != 'x86_64-windows' }}
+        #if: ${{ env.platform != 'x86_64-windows' }}
         run: |
           echo ${{ steps.setup.outputs.cabal-store }}
           ls -Rlh ${{ steps.setup.outputs.cabal-store }} || true
@@ -113,7 +115,7 @@ jobs:
           ls -Rlh ${HOME}/.cabal/store || true
 
       - name: Debug dist-newstyle cache
-        if: ${{ env.platform != 'x86_64-windows' }}
+        #if: ${{ env.platform != 'x86_64-windows' }}
         run: |
           ls -Rlh dist-newstyle || true
 
@@ -129,7 +131,6 @@ jobs:
           key: ${{ steps.cache.outputs.cache-primary-key }}
 
       - name: Build 
-        # XXX: is env needed?
         env:
           SPEX_GIT_COMMIT: ${{ github.sha }}
         run: make build
