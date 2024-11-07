@@ -12,9 +12,16 @@ import System.Environment (lookupEnv)
 tGitHash :: Q Exp
 tGitHash = runIO $ do
   lookupEnv "SPEX_GIT_COMMIT" >>= \case
-    Just v  -> [| fromString v |]
-    Nothing -> getGitInfo "." >>= \case
-                 Right gi -> [| fromString (giHash gi ++ if giDirty gi
-                                                  then "-dirty"
-                                                  else "") |]
-                 Left _e  -> error "tGitHash: can't find git commit"
+    Just v -> [|fromString v|]
+    Nothing ->
+      getGitInfo "." >>= \case
+        Right gi ->
+          [|
+            fromString
+              ( giHash gi
+                  ++ if giDirty gi
+                    then "-dirty"
+                    else ""
+              )
+            |]
+        Left _e -> error "tGitHash: can't find git commit"

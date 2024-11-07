@@ -5,12 +5,12 @@
 module Spex.Parser where
 
 import Data.ByteString (ByteString)
-import qualified Data.ByteString as BS
-import qualified Data.ByteString.Char8 as BS8
+import Data.ByteString qualified as BS
+import Data.ByteString.Char8 qualified as BS8
 import Data.Char (ord)
 import Data.Coerce
 import Data.Either (partitionEithers)
-import qualified Data.Map as Map
+import Data.Map qualified as Map
 import FlatParse.Basic hiding (Parser, char, cut, runParser, string)
 
 import Spex.Lexer
@@ -20,19 +20,28 @@ import Spex.Syntax
 
 type Name = BS.ByteString
 
--- | Parse an identifier. This parser uses `isKeyword` to check that an identifier is not a
---   keyword.
+{- | Parse an identifier. This parser uses `isKeyword` to check that an
+   identifier is not a keyword.
+-}
 ident :: Parser Name
-ident = token $ byteStringOf $
-  withSpan (identStartLowerChar *> skipMany identChar) (\_ span0 -> fails (isKeyword span0))
+ident =
+  token $
+    byteStringOf $
+      withSpan
+        (identStartLowerChar *> skipMany identChar)
+        (\_ span0 -> fails (isKeyword span0))
 
 -- | Parse an identifier, throw a precise error on failure.
 ident' :: Parser Name
 ident' = ident `cut'` Msg "identifier"
 
 bident :: Parser Name
-bident = token $ byteStringOf $
-  withSpan (identStartUpperChar *> skipMany identChar) (\_ span0 -> fails (isKeyword span0))
+bident =
+  token $
+    byteStringOf $
+      withSpan
+        (identStartUpperChar *> skipMany identChar)
+        (\_ span0 -> fails (isKeyword span0))
 
 bident' :: Parser Name
 bident' = bident `cut'` Msg "Identifier"
@@ -42,7 +51,11 @@ digit = (\c -> ord c - ord '0') <$> satisfyAscii isDigit
 
 int :: Parser Int
 int = token $ do
-  (place, n) <- chainr (\n (!place, !acc) -> (place * 10, acc + place * n)) digit (pure (1, 0))
+  (place, n) <-
+    chainr
+      (\n (!place, !acc) -> (place * 10, acc + place * n))
+      digit
+      (pure (1, 0))
   case place of
     1 -> empty
     _ -> pure n
@@ -93,7 +106,7 @@ modalTypeP :: Parser Type
 modalTypeP = abstractTypeP <|> uniqueTypeP <|> typeP
   where
     abstractTypeP = AbstractT <$ $(symbol "@") <*> typeP'
-    uniqueTypeP   = UniqueT   <$ $(symbol "!") <*> typeP'
+    uniqueTypeP = UniqueT <$ $(symbol "!") <*> typeP'
 
 modalTypeP' :: Parser Type
 modalTypeP' = modalTypeP `cut` ["type"]
@@ -101,12 +114,17 @@ modalTypeP' = modalTypeP `cut` ["type"]
 typeP :: Parser Type
 typeP = baseTypeP <|> recordDeclP <|> userTypeP
   where
-    baseTypeP = token $(switch [| case _ of
-      "Unit"   -> pure UnitT
-      "Bool"   -> pure BoolT
-      "Int"    -> pure IntT
-      "String" -> pure StringT
-      |])
+    baseTypeP =
+      token
+        $( switch
+            [|
+              case _ of
+                "Unit" -> pure UnitT
+                "Bool" -> pure BoolT
+                "Int" -> pure IntT
+                "String" -> pure StringT
+              |]
+         )
     userTypeP = UserT <$> annP (TypeId <$> bident)
 
 annP :: Parser a -> Parser (Ann a)
@@ -163,10 +181,15 @@ responseTypeP = nonUnitResponseP <|> unitResponseP
       return UnitT
 
 methodP :: Parser Method
-methodP = token $(switch [| case _ of
-  "GET"  -> pure Get
-  "POST" -> pure Post
-  |])
+methodP =
+  token
+    $( switch
+        [|
+          case _ of
+            "GET" -> pure Get
+            "POST" -> pure Post
+          |]
+     )
 
 methodP' :: Parser Method
 methodP' = methodP `cut` ["method"]
@@ -182,7 +205,7 @@ deploymentP = do
   -- let port = 8080
   -- let health = HealthCheckPath "/health"
   -- let reset = ResetPath "/reset"
-  -- $(symbol' ":")
+  -- \$(symbol' ":")
   -- port <- portP'
   $(symbol' ",")
   $(symbol' "health:")
@@ -200,17 +223,18 @@ urlP :: Parser ByteString
 urlP = do
   $(symbol "\"")
   url <- some $ satisfyAscii $ \c ->
-           isLatinLetter c || isDigit c ||
-           c `elem` (unreserved ++ reserved)
+    isLatinLetter c
+      || isDigit c
+      || c `elem` (unreserved ++ reserved)
   $(symbol' "\"")
   return (BS8.pack url)
   where
     -- https://www.rfc-editor.org/rfc/rfc3986#section-2
     unreserved :: String
-    unreserved  = "-._~"
+    unreserved = "-._~"
 
     reserved :: String
-    reserved  = genDelims ++ subDelims
+    reserved = genDelims ++ subDelims
 
     genDelims = ":/?#[]@"
     subDelims = "!$&'()*+,;="
@@ -218,32 +242,34 @@ urlP = do
 portP' :: Parser Int
 portP' = int `cut` [Lit "port"]
 
-
 ------------------------------------------------------------------------
+
 -- * Utils
 
 sepBy :: Parser a -> Parser sep -> Parser [a]
-{-# INLINABLE sepBy #-}
+{-# INLINEABLE sepBy #-}
 sepBy p sep = sepBy1 p sep <|> return []
 
 sepBy1 :: Parser a -> Parser sep -> Parser [a]
-{-# INLINABLE sepBy1 #-}
+{-# INLINEABLE sepBy1 #-}
 sepBy1 p sep = do
   x <- p
   xs <- many (sep >> p)
   return (x : xs)
 
 sepEndBy1 :: Parser a -> Parser sep -> Parser [a]
-{-# INLINABLE sepEndBy1 #-}
+{-# INLINEABLE sepEndBy1 #-}
 sepEndBy1 p sep = do
   x <- p
-  (do { _ <- sep
-     ; xs <- sepEndBy p sep
-     ; return (x : xs)
-     } <|> return [x])
+  ( do
+      _ <- sep
+      xs <- sepEndBy p sep
+      return (x : xs)
+      <|> return [x]
+    )
 
 sepEndBy :: Parser a -> Parser sep -> Parser [a]
-{-# INLINABLE sepEndBy #-}
+{-# INLINEABLE sepEndBy #-}
 sepEndBy p sep = sepEndBy1 p sep <|> return []
 
 insideBraces :: Parser a -> Parser a
@@ -254,23 +280,25 @@ insideBraces p = do
   return x
 
 --------------------------------------------------------------------------------
+
 -- * Examples
 
 t :: IO ()
 t = testParser specP p1
 
 p1 :: String
-p1 = unlines [
-  "component Foo where",
-  "",
-  "addPet : POST /pet !Pet",
-  "getPet : GET /pet/{petId : @Int} -> Pet",
-  "",
-  "type Pet = { petId : Int, petName : String }"
-  ]
-  -- "deployment {",
-  -- "  url:    \"http://localhost:8080\",",
-  -- "  health: \"/health\",",
-  -- "  reset:  \"/reset\"",
-  -- "}"
+p1 =
+  unlines
+    [ "component Foo where"
+    , ""
+    , "addPet : POST /pet !Pet"
+    , "getPet : GET /pet/{petId : @Int} -> Pet"
+    , ""
+    , "type Pet = { petId : Int, petName : String }"
+    ]
 
+-- "deployment {",
+-- "  url:    \"http://localhost:8080\",",
+-- "  health: \"/health\",",
+-- "  reset:  \"/reset\"",
+-- "}"

@@ -9,7 +9,7 @@ pkgs.mkShell rec {
     haskell.compiler.ghc966
     cabal-install
     haskellPackages.cabal-fmt
-    stylish-haskell
+    haskellPackages.fourmolu
     zlib.dev
     pkg-config
     upx

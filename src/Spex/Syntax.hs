@@ -1,7 +1,7 @@
-module Spex.Syntax
-  ( -- * Re-export all syntax modules
-    module X
-  ) where
+module Spex.Syntax (
+  -- * Re-export all syntax modules
+  module X,
+) where
 
 import Spex.Syntax.Operation as X
 import Spex.Syntax.Position as X

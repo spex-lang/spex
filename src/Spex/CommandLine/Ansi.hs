@@ -21,8 +21,9 @@ red :: String -> String
 red = withSGR [SetColor Foreground Vivid Red]
 
 boldRed :: String -> String
-boldRed = withSGR
-  [SetColor Foreground Vivid Red, SetConsoleIntensity BoldIntensity]
+boldRed =
+  withSGR
+    [SetColor Foreground Vivid Red, SetConsoleIntensity BoldIntensity]
 
 faint :: String -> String
 faint = withSGR [SetConsoleIntensity FaintIntensity]

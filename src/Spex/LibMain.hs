@@ -1,8 +1,8 @@
 module Spex.LibMain where
 
 import Control.Exception
-import qualified Data.ByteString as BS
-import qualified Data.ByteString.Lazy as LBS
+import Data.ByteString qualified as BS
+import Data.ByteString.Lazy qualified as LBS
 import GHC.IO.Encoding (setLocaleEncoding)
 import System.Exit
 import System.IO (utf8)
@@ -26,16 +26,16 @@ libMain = do
   mainWith opts
 
 mainWith :: Options -> IO ()
-mainWith (optsCommand -> Repl   {}) = notSupportedYet
+mainWith (optsCommand -> Repl {}) = notSupportedYet
 mainWith (optsCommand -> Import {}) = notSupportedYet
 mainWith (optsCommand -> Export {}) = notSupportedYet
 mainWith opts = do
   appEnv <- newAppEnv opts
   let (app, specFile) = case opts.optsCommand of
-                          Verify vopts -> (verifyApp vopts, vopts.specFilePath)
-                          Format fopts -> (formatApp fopts, fopts.specFilePath)
-                          Check  copts -> (checkApp  copts, copts.specFilePath)
-                          _ -> error "impossible"
+        Verify vopts -> (verifyApp vopts, vopts.specFilePath)
+        Format fopts -> (formatApp fopts, fopts.specFilePath)
+        Check copts -> (checkApp copts, copts.specFilePath)
+        _ -> error "impossible"
   runApp appEnv app >>= \case
     Left err -> do
       lbs <- LBS.readFile specFile
@@ -50,11 +50,19 @@ notSupportedYet = do
 
 verifyApp :: VerifyOptions -> App ()
 verifyApp opts = do
-  let deploy  = Deployment (HostPort opts.host opts.port)
-                   (HealthCheckPath opts.health) (ResetPath opts.reset)
+  let deploy =
+        Deployment
+          (HostPort opts.host opts.port)
+          (HealthCheckPath opts.health)
+          (ResetPath opts.reset)
   info_ ""
-  info $ "Verifying the deployment:    " <> displayDeployment deploy <> "\n" <>
-         "  against the specification:   " <> opts.specFilePath <> "\n"
+  info $
+    "Verifying the deployment:    "
+      <> displayDeployment deploy
+      <> "\n"
+      <> "  against the specification:   "
+      <> opts.specFilePath
+      <> "\n"
   bs <- liftIO (try (BS.readFile opts.specFilePath)) <?> ReadSpecFileError
   info $ "Checking the specification.\n"
   spec <- pure (runParser specP bs) <?> ParserError
@@ -64,7 +72,8 @@ verifyApp opts = do
   done "Health check passed!\n"
   info $ "Starting to run tests...\n"
   result <- verify opts spec deploy
-  done $ "Done testing, here are the results: \n\n" <> displayResult result
+  done $
+    "Done testing, here are the results: \n\n" <> displayResult result
 
 formatApp :: FormatOptions -> App ()
 formatApp opts = do

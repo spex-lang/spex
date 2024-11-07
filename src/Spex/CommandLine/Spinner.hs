@@ -5,21 +5,23 @@ module Spex.CommandLine.Spinner where
 import Control.Concurrent
 import Data.IORef
 import Data.Text (Text)
-import qualified Data.Text as Text
-import qualified Data.Text.IO as Text
-import GHC.Conc.Sync (ThreadStatus(..), threadStatus)
+import Data.Text qualified as Text
+import Data.Text.IO qualified as Text
+import GHC.Conc.Sync (ThreadStatus (..), threadStatus)
 import System.Console.ANSI
+
 -- import System.Exit
 import System.IO
+
 -- import System.Posix.Signals
 
 ------------------------------------------------------------------------
 
 data Spinner = Spinner
   { threadId :: ThreadId
-  , stop     :: MVar ()
-  , lock     :: MVar ()
-  , nls      :: IORef Int
+  , stop :: MVar ()
+  , lock :: MVar ()
+  , nls :: IORef Int
   }
 
 lineFrames :: Text
@@ -46,30 +48,30 @@ newSpinner msg frames delayMicros = do
         hSetCursorPosition stdout (row - n) col
         hPutStr stdout (replicate (2 + Text.length msg) '\b')
         if b
-        then hPutChar stdout frame
-        else do
-          hSetSGR stdout [SetColor Foreground Vivid Green]
-          hPutChar stdout '✓'
-          hSetSGR stdout [Reset]
+          then hPutChar stdout frame
+          else do
+            hSetSGR stdout [SetColor Foreground Vivid Green]
+            hPutChar stdout '✓'
+            hSetSGR stdout [Reset]
         Text.hPutStr stdout (" " <> msg)
       threadDelay delayMicros
       if b
-      then go (i + 1) row col var lock nls
-      else do
-        hShowCursor stdout
-        putStrLn ""
+        then go (i + 1) row col var lock nls
+        else do
+          hShowCursor stdout
+          putStrLn ""
 
 stopSpinner :: Spinner -> IO ()
 stopSpinner s = do
   putMVar s.stop ()
   waitUntilDead s.threadId
-    where
-      waitUntilDead tid = do
-        status <- threadStatus tid
-        case status of
-          ThreadFinished -> return ()
-          ThreadDied -> return ()
-          _otherwise -> threadDelay 10000 >> waitUntilDead tid
+  where
+    waitUntilDead tid = do
+      status <- threadStatus tid
+      case status of
+        ThreadFinished -> return ()
+        ThreadDied -> return ()
+        _otherwise -> threadDelay 10000 >> waitUntilDead tid
 
 ------------------------------------------------------------------------
 

@@ -2,7 +2,7 @@ module Spex.Syntax.Position where
 
 import Data.ByteString (ByteString)
 import Data.Coerce (coerce)
-import qualified FlatParse.Basic as FP
+import FlatParse.Basic qualified as FP
 
 ------------------------------------------------------------------------
 
@@ -10,7 +10,7 @@ newtype Pos = Pos Int
   deriving (Eq, Ord, Show)
 
 data Ann a = Ann
-  { pos  :: Pos
+  { pos :: Pos
   , item :: a
   }
   deriving (Eq, Ord, Show, Functor, Foldable, Traversable)

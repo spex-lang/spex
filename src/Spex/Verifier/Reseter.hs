@@ -2,7 +2,7 @@
 
 module Spex.Verifier.Reseter where
 
-import qualified Data.ByteString.Char8 as BS8
+import Data.ByteString.Char8 qualified as BS8
 import System.Exit
 import System.Process
 
@@ -25,7 +25,6 @@ reseter client reset = do
         Right (Ok2xx _body) -> return ()
         Right ClientError4xx {} -> throwA ResetFailed
         Right ServerError5xx {} -> throwA ResetFailed
-
     ResetScript fp -> do
       (exitCode, _out, _err) <- liftIO (readProcessWithExitCode fp [] "")
       case exitCode of

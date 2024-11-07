@@ -235,6 +235,9 @@ smoke:
 clean:
 	rm -rf dist-newstyle
 
+distclean: clean
+	rm cabal.project.local*
+
 # ----------------------------------------------------------------------
 # Pull, build and push images
 
@@ -264,3 +267,12 @@ push-image:
   ifeq ($(DOCKERFILE_CHANGED),true)
 	  docker push ghcr.io/spex-lang/spex-build:latest
   endif
+
+# ----------------------------------------------------------------------
+# Formatting
+
+.PHONY: format
+
+format:
+	find src/ -name '*.hs' -type f -exec fourmolu -q -i {} \;
+

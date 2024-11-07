@@ -12,42 +12,42 @@ import Spex.Syntax.Type
 ------------------------------------------------------------------------
 
 data Spec = Spec
-  { component  :: Component
+  { component :: Component
   }
-  deriving Show
+  deriving (Show)
 
 data Component = Component
-  { id        :: ComponentId
+  { id :: ComponentId
   , typeDecls :: [TypeDecl]
-  , opDecls   :: [Ann OpDecl]
+  , opDecls :: [Ann OpDecl]
   }
-  deriving Show
+  deriving (Show)
 
 newtype ComponentId = ComponentId ByteString
   deriving (Show, IsString)
 
-data TypeDecl = TypeDecl { typeId :: TypeId, rhs :: Type }
-  deriving Show
+data TypeDecl = TypeDecl {typeId :: TypeId, rhs :: Type}
+  deriving (Show)
 
 data Deployment = Deployment
   -- { repo        :: ByteString
   -- , hash        :: ByteString
   -- semanticVersion?
   -- ssh?
-  { hostPort    :: HostPort
+  { hostPort :: HostPort
   , healthCheck :: HealthCheck
-  , reset       :: Reset
+  , reset :: Reset
   }
-  deriving Show
+  deriving (Show)
 
 displayDeployment :: Deployment -> String
 displayDeployment d = BS8.unpack d.hostPort.host <> ":" <> show d.hostPort.port
 
-data HostPort = HostPort { host :: ByteString, port :: Int }
-  deriving Show
+data HostPort = HostPort {host :: ByteString, port :: Int}
+  deriving (Show)
 
 data HealthCheck = HealthCheckPath ByteString | HealthCheckScript FilePath
-  deriving Show
+  deriving (Show)
 
 data Reset = ResetPath ByteString | ResetScript FilePath
-  deriving Show
+  deriving (Show)

@@ -1,7 +1,7 @@
 module Spex.Syntax.Value where
 
 import Data.Text (Text)
-import qualified Data.Text as Text
+import Data.Text qualified as Text
 import Data.Vector (Vector)
 
 import Spex.Syntax.Type (Record, displayArray, displayRecord)
@@ -18,9 +18,9 @@ data Value
   deriving (Eq, Ord, Show)
 
 displayValue :: Value -> String
-displayValue UnitV         = "()"
-displayValue (BoolV b)     = show b
-displayValue (IntV i)      = show i
-displayValue (StringV t)   = Text.unpack t
-displayValue (ArrayV vs)   = displayArray displayValue vs
+displayValue UnitV = "()"
+displayValue (BoolV b) = show b
+displayValue (IntV i) = show i
+displayValue (StringV t) = Text.unpack t
+displayValue (ArrayV vs) = displayArray displayValue vs
 displayValue (RecordV fvs) = displayRecord displayValue " = " fvs

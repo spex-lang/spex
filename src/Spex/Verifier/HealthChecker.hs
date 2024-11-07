@@ -5,7 +5,7 @@ module Spex.Verifier.HealthChecker where
 import Control.Concurrent (threadDelay)
 import Control.Monad (when)
 import Data.ByteString (ByteString)
-import qualified Data.ByteString.Char8 as BS8
+import Data.ByteString.Char8 qualified as BS8
 import System.Exit
 import System.Process
 
@@ -26,7 +26,7 @@ healthChecker deployment@(Deployment _hostPort health _reset) = do
   where
     script :: Word -> FilePath -> App ()
     script 0 _fp = info_ "" >> throwA HealthCheckFailed
-    script n  fp = do
+    script n fp = do
       (exitCode, _out, _err) <- liftIO (readProcessWithExitCode fp [] "")
       case exitCode of
         ExitSuccess -> return ()
@@ -36,9 +36,10 @@ healthChecker deployment@(Deployment _hostPort health _reset) = do
 
     http :: Word -> ByteString -> HttpClient -> App ()
     http 0 _path _client = info_ "" >> throwA HealthCheckFailed
-    http n  path  client = do
-      eResp <- tryA $
-                 httpRequest client (Op "health" Get [Path path] Nothing UnitT)
+    http n path client = do
+      eResp <-
+        tryA $
+          httpRequest client (Op "health" Get [Path path] Nothing UnitT)
       case eResp of
         Left _err -> do
           wait n

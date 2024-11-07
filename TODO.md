@@ -12,7 +12,6 @@ Here's what I'm currently working on:
 - don't stop on failure
 - print nicer coverage stats, including unreached ops
 - contributing.md
-  + formatter?
   + https://x.com/mitchellh/status/1852039089547309552
 - release notes
   + focus on infra
