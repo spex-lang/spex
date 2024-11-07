@@ -2,14 +2,34 @@
 
 Here's what I'm currently working on:
 
+- tests for all examples in readme
+- cache packages and remove second cabal update? use >> GITHUB_ENV if needed
+  + caching should affect the need for the second update, are we mounting the right thing?
+- spexup 
+  + confirm with user
+  + remove gh dependency?
+  + cache releases.json?
+- don't stop on failure
+- print nicer coverage stats, including unreached ops
+- contributing.md
+  + formatter?
+  + https://x.com/mitchellh/status/1852039089547309552
+- release notes
+  + focus on infra
+  + bare minimum language and verifier
+  + one example, for more see readme/website?
+- website
+  + why/motivation/comparison?
+  + tutorial
+  + install
+  + community
+  + (docs)
+  + (news/blog)
+
 ### Features
 
 - use duration rather than numTests?
 - print progress while testing
-- docs: contributing.md
-  + https://github.com/rubyberlin/code-of-conduct?tab=readme-ov-file#readme ?
-  + https://github.com/Gabriella439/grace/blob/main/CODE_OF_CONDUCT.md ?
-- docs: document syntax?
 
 - Nice errors
   + Introduce FancyError datatype and display it in LibMain?
@@ -20,15 +40,9 @@ Here's what I'm currently working on:
   + https://gleam.run/
 
 - Packaging
-  + smoke test: curl spexup && spex --version | grep "^v..."
   + move petstore to separate repo?
-  + caching
-    * https://github.com/moby/buildkit/issues/1673 
   + install script?
-    * add windows and macos
-    * confirm with user
     * update spexup itself? 
-    * cache releases.json?
     * check what versions are locally installed already
 
       spexup [update] [spexup|spex] -- install latest version
@@ -66,4 +80,3 @@ Here's what I'm currently working on:
 - remove ExceptT?
 - remove use of String
 - structured logs, returns json object with one error or one test result?
-- use formatter?
