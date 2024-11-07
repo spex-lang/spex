@@ -49,6 +49,7 @@ RUN curl --proto '=https' --tlsv1.2 --silent --show-error --fail \
 
 # Remove a bunch of stuff that we won't need.
 # See https://stackoverflow.com/questions/4858585/why-is-ghc-so-large-big
+# https://stackoverflow.com/questions/48756089/why-is-a-fresh-install-of-haskell-stack-and-ghc-so-large-big
 RUN  rm -r /root/.ghcup/cache \
   && rm -r /root/.ghcup/db \
   && rm -r /root/.ghcup/hls \
