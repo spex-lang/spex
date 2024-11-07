@@ -167,9 +167,10 @@ rmtempdir:
 # In order to automatically create releases we compare the version field in the
 # spex.cabal file with the latest release on GitHub.
 
+# XXX: Add --exclude-pre-releases \ later once we made a proper release...
 CABAL_VERSION := $(shell awk '/^version:/ { print $$2 }' spex.cabal)
 RELEASED_VERSION := $(shell gh release list --limit 1 \
-			--exclude-drafts --exclude-pre-releases \
+			--exclude-drafts \
 			--json tagName \
 			--jq '.[].tagName // "unreleased" | sub("^v"; "") ')
 
