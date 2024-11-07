@@ -59,7 +59,8 @@ CABAL_CONFIGURE_FLAGS ?= $(ENABLE_STATIC) --disable-profiling \
 # However due to `cabal update` not respecting the index state set in
 # cabal.project (see https://github.com/haskell/cabal/issues/9039) we have to
 # manually pass the index-state when calling `cabal update`. In order to be
-# able to do so we first need to extract the index-state.
+# able to do so we first need to extract the index-state. For more see:
+# https://stackoverflow.com/a/48758099 .
 INDEX_STATE := $(shell awk '/index-state:/ { print $$2","$$3 }' cabal.project)
 
 # Make make fail if a shell command fails.
@@ -101,11 +102,16 @@ test:
 	$(CABAL) test all
 	$(CABAL) check
 
-# Running `cabal install` inside a container will install the binary
-# inside the container, which isn't what we want. Instead find the
-# binary inside dist-newstyle, which is shared with the host via a
-# volume mount, and copy it from there to the right place.
+# Avoid using `cabal install`, because:
+# 
+#   1. It doesn't work from within a container (as it will merely install
+#      inside the container);
+#   2. Due to a bug cabal install sometimes recompiles the binary
+#      (https://github.com/haskell/cabal/issues/6919).
 #
+# Instead use `find` to find the binaries inside the dist-newstyle directory.
+# The `find` utility works slightly different on darwin/macOS with regards to
+# how we can filter out executables only.
 ifeq ($(OS),darwin)
   FIND_EXECUTABLE := -perm +0111
 else
