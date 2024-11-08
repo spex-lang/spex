@@ -73,7 +73,7 @@ verifyApp opts = do
   info $ "Starting to run tests...\n"
   result <- verify opts spec deploy
   done $
-    "Done testing, here are the results: \n\n" <> displayResult result
+    "Done testing, here are the results: \n\n" <> displayResult spec result
 
 formatApp :: FormatOptions -> App ()
 formatApp opts = do

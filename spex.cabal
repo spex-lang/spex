@@ -51,6 +51,7 @@ library
     Spex.TypeChecker
     Spex.Verifier
     Spex.Verifier.Codec.Json
+    Spex.Verifier.Coverage
     Spex.Verifier.Generator
     Spex.Verifier.Generator.Env
     Spex.Verifier.HealthChecker

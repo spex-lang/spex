@@ -3,14 +3,13 @@ module Spex.Verifier where
 import Data.ByteString.Char8 qualified as BS8
 import Data.ByteString.Lazy (ByteString)
 import Data.List.NonEmpty qualified as NonEmpty
-import Data.Map.Strict (Map)
-import Data.Map.Strict qualified as Map
 
 import Spex.CommandLine.Option
 import Spex.Monad
 import Spex.Syntax
 import Spex.TypeChecker
 import Spex.Verifier.Codec.Json
+import Spex.Verifier.Coverage
 import Spex.Verifier.Generator
 import Spex.Verifier.Generator.Env
 import Spex.Verifier.HttpClient
@@ -21,12 +20,9 @@ import Spex.Verifier.Shrinker
 
 data Result = Result
   { failingTests :: [FailingTest] -- XXX: Set?
-  , clientErrors :: Word
   , coverage :: Coverage
   }
   deriving (Show)
-
-type Coverage = Map OpId Word
 
 data FailingTest = FailingTest
   { test :: [Op]
@@ -36,12 +32,11 @@ data FailingTest = FailingTest
   }
   deriving (Show)
 
-displayResult :: Result -> String
-displayResult res =
+displayResult :: Spec -> Result -> String
+displayResult spec res =
   unlines
     [ "  failing tests: " <> show res.failingTests
-    , "  client errors: " <> show res.clientErrors
-    , "  coverage:      " <> show res.coverage
+    , "  coverage:\n  " <> displayCoverage spec res.coverage
     ]
 
 ------------------------------------------------------------------------
@@ -51,7 +46,7 @@ verify opts spec deployment = do
   (prng, seed) <- liftIO (newPrng opts.seed)
   client <- newHttpClient deployment
   reseter client deployment.reset
-  go opts.numTests [] seed prng emptyGenEnv client 0 Map.empty
+  go opts.numTests [] seed prng emptyGenEnv client emptyCoverage
   where
     go ::
       Word
@@ -60,26 +55,25 @@ verify opts spec deployment = do
       -> Prng
       -> GenEnv
       -> HttpClient
-      -> Word
       -> Coverage
       -> App Result
-    go 0 _ops _seed _prng _genEnv _client n4xx cov = do
+    go 0 _ops _seed _prng _genEnv _client cov = do
       debug_ ""
-      return (Result [] n4xx cov)
-    go n ops seed prng genEnv client n4xx cov = do
+      return (Result [] cov)
+    go n ops seed prng genEnv client cov = do
       (op, prng', genEnv') <- generate spec prng genEnv
-      let cov' = Map.insertWith (+) op.id 1 cov
       debug (displayOp displayValue op)
       resp <- httpRequest client op
       case resp of
         Ok2xx body -> do
+          let cov' = insertCoverage op.id 200 cov
           val <- pure (decode body) <?> HttpClientDecodeError op body
           debug_ $ "  ↳ 2xx " <> displayValue val
           let ok = typeCheck spec.component.typeDecls val op.responseType
           if ok
             then do
               let genEnv'' = insertValue op.responseType val genEnv'
-              go (n - 1) (op : ops) seed prng' genEnv'' client n4xx cov'
+              go (n - 1) (op : ops) seed prng' genEnv'' client cov'
             else do
               let err =
                     "Typechecking failed, val: "
@@ -89,11 +83,13 @@ verify opts spec deployment = do
               counterExample client (op : ops) err seed
         ClientError4xx code msg -> do
           let ret = "  ↳ " <> show code
+              cov' = insertCoverage op.id code cov
           debug_ ret
           if code == 404
-            then go (n - 1) ops seed prng' genEnv' client (n4xx + 1) cov'
+            then go (n - 1) ops seed prng' genEnv' client cov'
             else counterExample client (op : ops) (ret <> " " <> BS8.unpack msg) seed
-        ServerError5xx code msg ->
+        ServerError5xx code msg -> do
+          let cov' = insertCoverage op.id code cov
           counterExample
             client
             (op : ops)

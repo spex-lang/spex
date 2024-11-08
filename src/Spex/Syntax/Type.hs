@@ -44,7 +44,7 @@ userDefinedTypes = \case
   ArrayT tys -> foldMap userDefinedTypes tys
   RecordT ftys -> foldMap userDefinedTypes ftys
   UserT tid -> Set.singleton tid
-  AbstractT ty -> mempty -- NOTE: Abstract types don't need to be in scope.
+  AbstractT _ty -> mempty -- NOTE: Abstract types don't need to be in scope.
   UniqueT ty -> userDefinedTypes ty
 
 data Method = Get | Post | Put | Delete

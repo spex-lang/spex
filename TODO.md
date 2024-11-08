@@ -2,6 +2,8 @@
 
 Here's what I'm currently working on:
 
+- make linux work without docker locally?
+  + cache files between docker and not should probably not be shared?
 - tests for all examples in readme
 - cache packages and remove second cabal update? use >> GITHUB_ENV if needed
   + caching should affect the need for the second update, are we mounting the right thing?
@@ -50,6 +52,8 @@ Here's what I'm currently working on:
 
   + changelog generator (semantic commit messages)
   + commit hook for conventional commits?
+  + public docker images for spex and spex-petshop
+    * use --target?
 - https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-and-highlighting-code-blocks#syntax-highlighting
 
 ### Bugs

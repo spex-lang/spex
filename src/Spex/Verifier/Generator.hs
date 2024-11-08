@@ -14,7 +14,7 @@ import Data.Text (Text)
 import Data.Vector (Vector)
 import System.Random
 
-import Spex.Monad (App, asks, trace)
+import Spex.Monad
 import Spex.Syntax
 import Spex.Verifier.Generator.Env
 

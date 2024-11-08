@@ -15,7 +15,6 @@ import Data.ByteString (ByteString)
 import Data.ByteString.Char8 qualified as BS8
 import Data.ByteString.Lazy (LazyByteString)
 import Data.ByteString.Lazy qualified as LBS
-import Data.Maybe
 import Network.HTTP.Client (
   HttpException (..),
   HttpExceptionContent (..),
@@ -25,7 +24,6 @@ import Network.HTTP.Client qualified as Http
 import Spex.CommandLine.Ansi
 import Spex.CommandLine.Option
 import Spex.Syntax
-import Spex.Verifier.Generator.Env
 
 ------------------------------------------------------------------------
 
@@ -214,9 +212,9 @@ displayScopeError fp lbs pos tids =
       Ann pos' tid = head tids
 
       ls = linesUtf8 bs
-      (l, c, c') = case posLineCols bs [pos, pos'] of
-        [] -> error "displayScopeError: impossible"
+      (l, _c, c') = case posLineCols bs [pos, pos'] of
         (l0, c0) : (_l1, c1) : _ -> (l0, c0, c1)
+        _ -> error "displayScopeError: impossible"
       line = if l < length ls then ls !! l else ""
       linum = " " ++ show l
       lpad = map (const ' ') linum
