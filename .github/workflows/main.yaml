@@ -25,7 +25,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, macos-15, windows-2022]
+        # os: [ubuntu-24.04, macos-15, windows-2022]
+        os: [ubuntu-24.04]
         ghc-version: ['9.6.6']
         cabal-version: ['3.12.1.0']
     env:
@@ -101,11 +102,11 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: make build-deps
 
-      - name: Debug .cache/cabal cache
+      - name: Debug .cabal cache
         shell: bash
         #if: ${{ env.platform != 'x86_64-windows' }}
         run: |
-          ls -Rlh ${HOME}/.cache/cabal || true
+          ls -Rlh ${HOME}/.cabal || true
 
       - name: Debug .cabal/store cache
         shell: bash
