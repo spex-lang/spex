@@ -2,45 +2,52 @@
 
 Here's what I'm currently working on:
 
-- ARCHITECTURE.md?
-- make linux work without docker locally?
-  + cache files between docker and not should probably not be shared?
+### First release
+
+- don't stop on failure
+- print nicer coverage stats, including unreached ops
 - tests for all examples in readme
-- cache packages and remove second cabal update? use >> GITHUB_ENV if needed
-  + caching should affect the need for the second update, are we mounting the right thing?
 - spexup 
   + confirm with user
   + remove gh dependency?
   + cache releases.json?
-- don't stop on failure
-- print nicer coverage stats, including unreached ops
 - contributing.md
   + https://x.com/mitchellh/status/1852039089547309552
+
 - release notes
   + focus on infra
   + bare minimum language and verifier
   + one example, for more see readme/website?
-- website
-  + why/motivation/comparison?
-    * reachability/coverage
-    * correct json responses
-    * minimal test cases that give rise to non-2xx responses
-  + install
-  + tutorial
-  + (docs)
-  + community
-  + (news/blog)
-  + (faq)
-    * different from prior work
-      - https://github.com/microsoft/restler-fuzzer
-        https://www.code-intelligence.com/blog/stateful-rest-api-fuzzing
-      - https://github.com/Fuzzapi/API-fuzzer
-      - https://github.com/KissPeter/APIFuzzer
-      - https://github.com/TNO-S3/WuppieFuzz
-      - https://endava.github.io/cats/docs/intro
+
+### Documentation
+
+#### Website
+
++ why/motivation/comparison?
+  * reachability/coverage
+  * correct json responses
+  * minimal test cases that give rise to non-2xx responses
++ install
++ tutorial
++ (docs)
++ community
++ (news/blog)
++ (faq)
+  * different from prior work
+    - https://github.com/microsoft/restler-fuzzer
+      https://www.code-intelligence.com/blog/stateful-rest-api-fuzzing
+    - https://github.com/Fuzzapi/API-fuzzer
+    - https://github.com/KissPeter/APIFuzzer
+    - https://github.com/TNO-S3/WuppieFuzz
+    - https://endava.github.io/cats/docs/intro
+
+#### Other
+
+- ARCHITECTURE.md?
 
 ### Features
 
+#### Spex
 - use duration rather than numTests?
 - print progress while testing
 
@@ -52,23 +59,14 @@ Here's what I'm currently working on:
   + https://github.com/charmbracelet/bubbletea
   + https://gleam.run/
 
-- Packaging
-  + -O2 release builds?
-  + enable concurrent RTS on executables?
-  + move petstore to separate repo?
-  + install script?
-    * update spexup itself? 
-    * check what versions are locally installed already
+#### Spexup
 
-      spexup [update] [spexup|spex] -- install latest version
-    * spexup list -- lists available releases
-      spexup install (spexup|spex) <version>
+- check what versions are locally installed already
 
-  + changelog generator (semantic commit messages)
-  + commit hook for conventional commits?
-  + public docker images for spex and spex-petshop
-    * use --target?
-- https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-and-highlighting-code-blocks#syntax-highlighting
+- basic ui:
+  + spexup [update] [spexup|spex] -- install latest version
+  + spexup list -- lists available releases
+  + spexup install (spexup|spex) <version>
 
 ### Bugs
 
@@ -97,3 +95,26 @@ Here's what I'm currently working on:
 - remove ExceptT?
 - remove use of String
 - structured logs, returns json object with one error or one test result?
+
+### CI
+
+- cache packages and remove second cabal update? use >> GITHUB_ENV if needed
+  + caching should affect the need for the second update, are we mounting the right thing?
+
+### Build system
+
+- make linux work without docker locally?
+  + cache files between docker and not should probably not be shared?
+
+- -O2 release builds?
+- enable concurrent RTS on executables?
+- changelog generator (semantic commit messages)
+- commit hook for conventional commits?
+- move petstore to separate repo?
+- public docker images for spex and spex-petshop
+  + use multi-stage build and --target buildx flag to pick a stage?
+
+### Tooling
+
+- Highlighting: https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-and-highlighting-code-blocks#syntax-highlighting
+
