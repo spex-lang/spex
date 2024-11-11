@@ -2,6 +2,7 @@
 
 Here's what I'm currently working on:
 
+- ARCHITECTURE.md?
 - make linux work without docker locally?
   + cache files between docker and not should probably not be shared?
 - tests for all examples in readme
@@ -21,11 +22,22 @@ Here's what I'm currently working on:
   + one example, for more see readme/website?
 - website
   + why/motivation/comparison?
-  + tutorial
+    * reachability/coverage
+    * correct json responses
+    * minimal test cases that give rise to non-2xx responses
   + install
-  + community
+  + tutorial
   + (docs)
+  + community
   + (news/blog)
+  + (faq)
+    * different from prior work
+      - https://github.com/microsoft/restler-fuzzer
+        https://www.code-intelligence.com/blog/stateful-rest-api-fuzzing
+      - https://github.com/Fuzzapi/API-fuzzer
+      - https://github.com/KissPeter/APIFuzzer
+      - https://github.com/TNO-S3/WuppieFuzz
+      - https://endava.github.io/cats/docs/intro
 
 ### Features
 
@@ -41,6 +53,8 @@ Here's what I'm currently working on:
   + https://gleam.run/
 
 - Packaging
+  + -O2 release builds?
+  + enable concurrent RTS on executables?
   + move petstore to separate repo?
   + install script?
     * update spexup itself? 

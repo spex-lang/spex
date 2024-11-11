@@ -122,10 +122,15 @@ install:
 	find dist-newstyle/ -not -path "$(SPEX_BIN)/*" -name 'spex*' -type f \
 		$(FIND_EXECUTABLE) -exec cp {} $(SPEX_BIN)/ \;
 
-# upx: CantPackException: macOS is currently not supported
-# https://github.com/upx/upx/issues/777
+# NOTE: upx doesn't currently work on macOS, the error I get on CI is:
+#   "CantPackException: macOS is currently not supported"
+# There's a bit more information in this closed ticket:
+#   https://github.com/upx/upx/issues/777#issuecomment-1909535310
 compress:
-  ifneq ($(OS),darwin)
+  ifeq ($(OS),darwin)
+	find $(SPEX_BIN) -name 'spex*' -type f \
+		$(FIND_EXECUTABLE) -exec strip {} \;
+  else
 	upx -q $(SPEX_BIN)/spex*
   endif
 
