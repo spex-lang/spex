@@ -15,6 +15,7 @@ import Spex.PrettyPrinter
 import Spex.Syntax
 import Spex.TypeChecker
 import Spex.Verifier
+import Spex.Verifier.Generator
 import Spex.Verifier.HealthChecker
 
 ------------------------------------------------------------------------
@@ -71,9 +72,11 @@ verifyApp opts = do
   healthChecker deploy
   done "Health check passed!\n"
   info $ "Starting to run tests...\n"
-  result <- verify opts spec deploy
+  (prng, seed) <- liftIO (newPrng opts.seed)
+  result <- verify opts spec deploy prng
   done $
-    "Done testing, here are the results: \n\n" <> displayResult spec result
+    "Done testing, here are the results: \n\n"
+      <> displayResult spec result seed
 
 formatApp :: FormatOptions -> App ()
 formatApp opts = do

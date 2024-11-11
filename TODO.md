@@ -4,8 +4,6 @@ Here's what I'm currently working on:
 
 ### First release
 
-- don't stop on failure
-- print nicer coverage stats, including unreached ops
 - tests for all examples in readme
 - spexup 
   + confirm with user
@@ -58,6 +56,9 @@ Here's what I'm currently working on:
   + https://medium.com/designing-atlassian/10-design-principles-for-delightful-clis-522f363bac87
   + https://github.com/charmbracelet/bubbletea
   + https://gleam.run/
+
+- ensure shrinking shrinks to the same status code, i.e. doesn't uncover
+  another error?
 
 #### Spexup
 

@@ -22,7 +22,7 @@ reseter client reset = do
       eResp <- tryA $ httpRequest client op
       case eResp of
         Left _err -> throwA ResetFailed
-        Right (Ok2xx _body) -> return ()
+        Right Ok2xx {} -> return ()
         Right ClientError4xx {} -> throwA ResetFailed
         Right ServerError5xx {} -> throwA ResetFailed
     ResetScript fp -> do

@@ -44,7 +44,7 @@ healthChecker deployment@(Deployment _hostPort health _reset) = do
         Left _err -> do
           wait n
           http (n - 1) path client
-        Right (Ok2xx _body) -> return ()
+        Right Ok2xx {} -> return ()
         Right ClientError4xx {} -> do
           wait n
           http (n - 1) path client

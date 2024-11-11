@@ -154,7 +154,6 @@ data AppError
   | HttpClientUnexpectedStatusCode Int ByteString
   | HealthCheckFailed
   | ResetFailed
-  | TestFailure [Op] Int String Int
 
 throwA :: AppError -> App e
 throwA e = App (ReaderT (const (throwE e)))
@@ -194,15 +193,6 @@ displayAppError spec lbs = \case
     "Health check failed, make sure that the deployment is running."
   ResetFailed ->
     "Reset of the deploymnet failed, make sure that reset returns 2xx or exits with 0."
-  TestFailure ops shrinks err seed ->
-    "Test failure"
-      <> (if shrinks > 0 then " (" <> show shrinks <> " shrinks)" else "")
-      <> ":\n\n"
-      <> displayOps ops
-      <> err
-      <> "\n\nUse --seed "
-      <> show seed
-      <> " to reproduce"
 
 -- XXX: only displays one error at the time?!
 displayScopeError ::

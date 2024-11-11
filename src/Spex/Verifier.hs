@@ -1,7 +1,7 @@
 module Spex.Verifier where
 
+import Data.ByteString (ByteString)
 import Data.ByteString.Char8 qualified as BS8
-import Data.ByteString.Lazy (ByteString)
 import Data.List.NonEmpty qualified as NonEmpty
 
 import Spex.CommandLine.Option
@@ -24,80 +24,133 @@ data Result = Result
   }
   deriving (Show)
 
+instance Semigroup Result where
+  r1 <> r2 =
+    Result
+      { failingTests = r1.failingTests <> r2.failingTests
+      , coverage = r1.coverage <> r2.coverage
+      }
+
+instance Monoid Result where
+  mempty = Result mempty mempty
+  mappend = (<>)
+
 data FailingTest = FailingTest
   { test :: [Op]
-  , code :: Int
+  , failure :: Failure
   , body :: ByteString
-  , seed :: Int
+  , shrinks :: Int
   }
   deriving (Show)
 
-displayResult :: Spec -> Result -> String
-displayResult spec res =
+data Failure
+  = DecodeFailure String
+  | TypeErrorFailure TypeError
+  | StatusCodeFailure HttpStatusCode
+  deriving (Show, Eq)
+
+displayResult :: Spec -> Result -> Int -> String
+displayResult spec res seed =
   unlines
-    [ "  failing tests: " <> show res.failingTests
-    , "  coverage:\n  " <> displayCoverage spec res.coverage
+    [ unlines (map displayFailingTest res.failingTests)
+    , displayCoverage spec res.coverage
+    , ""
+    , "Use --seed " <> show seed <> " to reproduce"
     ]
+
+displayFailingTest :: FailingTest -> String
+displayFailingTest t =
+  "Test failure"
+    <> (if t.shrinks > 0 then " (" <> show t.shrinks <> " shrinks)" else "")
+    <> ":\n\n"
+    <> displayOps t.test
+    <> displayFailure t.failure
+    <> " "
+    <> BS8.unpack t.body
+    <> "\n"
+    <> replicate 72 '-'
+
+displayFailure :: Failure -> String
+displayFailure (DecodeFailure err) = "decode failure: " <> err
+displayFailure (TypeErrorFailure err) = "type error failure: " <> show err
+displayFailure (StatusCodeFailure code) = "  ↳ " <> show code
 
 ------------------------------------------------------------------------
 
-verify :: VerifyOptions -> Spec -> Deployment -> App Result
-verify opts spec deployment = do
-  (prng, seed) <- liftIO (newPrng opts.seed)
+verify :: VerifyOptions -> Spec -> Deployment -> Prng -> App Result
+verify opts spec deployment prng = do
   client <- newHttpClient deployment
   reseter client deployment.reset
-  go opts.numTests [] seed prng emptyGenEnv client emptyCoverage
+  verifyLoop
+    opts
+    spec
+    deployment
+    client
+    opts.numTests
+    []
+    prng
+    emptyGenEnv
+    mempty
+
+verifyLoop ::
+  VerifyOptions
+  -> Spec
+  -> Deployment
+  -> HttpClient
+  -> Word
+  -> [Op]
+  -> Prng
+  -> GenEnv
+  -> Result
+  -> App Result
+verifyLoop opts spec deployment client = go
   where
     go ::
       Word
       -> [Op]
-      -> Int
       -> Prng
       -> GenEnv
-      -> HttpClient
-      -> Coverage
+      -> Result
       -> App Result
-    go 0 _ops _seed _prng _genEnv _client cov = do
+    go 0 _ops _prng _genEnv res = do
       debug_ ""
-      return (Result [] cov)
-    go n ops seed prng genEnv client cov = do
+      return res
+    go n ops prng genEnv res = do
       (op, prng', genEnv') <- generate spec prng genEnv
       debug (displayOp displayValue op)
       resp <- httpRequest client op
-      case resp of
-        Ok2xx body -> do
-          let cov' = insertCoverage op.id 200 cov
-          val <- pure (decode body) <?> HttpClientDecodeError op body
-          debug_ $ "  ↳ 2xx " <> displayValue val
-          let ok = typeCheck spec.component.typeDecls val op.responseType
-          if ok
-            then do
-              let genEnv'' = insertValue op.responseType val genEnv'
-              go (n - 1) (op : ops) seed prng' genEnv'' client cov'
-            else do
-              let err =
-                    "Typechecking failed, val: "
-                      ++ show val
-                      ++ " not of type "
-                      ++ show op.responseType
-              counterExample client (op : ops) err seed
-        ClientError4xx code msg -> do
-          let ret = "  ↳ " <> show code
-              cov' = insertCoverage op.id code cov
-          debug_ ret
-          if code == 404
-            then go (n - 1) ops seed prng' genEnv' client cov'
-            else counterExample client (op : ops) (ret <> " " <> BS8.unpack msg) seed
-        ServerError5xx code msg -> do
-          let cov' = insertCoverage op.id code cov
-          counterExample
-            client
-            (op : ops)
-            ("  ↳ " <> show code <> " " <> BS8.unpack msg)
-            seed
+      debug_ $ "  ↳ " <> show resp.statusCode <> " " <> BS8.unpack resp.body
+      let cov' = insertCoverage op.id resp.statusCode res.coverage
+      let r = case resp of
+            Ok2xx {} -> do
+              case decode resp.body of
+                Left err -> Left (DecodeFailure err)
+                Right val -> case typeCheck' spec.component.typeDecls val op.responseType of
+                  Nothing -> Right val
+                  Just err -> Left (TypeErrorFailure err)
+            _4xxOr5xx -> Left (StatusCodeFailure resp.statusCode)
+      case r of
+        Left failure0
+          | failure0 `elem` map failure res.failingTests ->
+              go (n - 1) [] prng' genEnv' res {coverage = cov'}
+          | otherwise -> do
+              test <-
+                counterExample
+                  (op : ops)
+                  failure0
+                  resp.body
+              let failingTests' = test : res.failingTests
+              go (n - 1) [] prng' genEnv' (Result failingTests' cov')
+        Right val -> do
+          let genEnv'' = insertValue op.responseType val genEnv'
+          go (n - 1) (op : ops) prng' genEnv'' res {coverage = cov'}
 
-    counterExample :: HttpClient -> [Op] -> String -> Int -> App Result
-    counterExample client ops err seed = do
+    counterExample ::
+      [Op]
+      -> Failure
+      -> ByteString
+      -> App FailingTest
+    counterExample ops failure body = do
       ops' <-
         if opts.noShrinking
           then return (NonEmpty.singleton ops)
@@ -106,8 +159,13 @@ verify opts spec deployment = do
               (shrinkProp spec.component.typeDecls client deployment.reset)
               (shrinkList shrinkOp)
               (reverse ops)
-      throwA
-        (TestFailure (NonEmpty.last ops') (NonEmpty.length ops' - 1) err seed)
+      return
+        ( FailingTest
+            (NonEmpty.last ops')
+            failure
+            body
+            (NonEmpty.length ops' - 1)
+        )
 
 shrinkProp :: [TypeDecl] -> HttpClient -> Reset -> [Op] -> App Bool
 shrinkProp ctx client reset ops0 = do
@@ -119,9 +177,9 @@ shrinkProp ctx client reset ops0 = do
       debug (displayOp displayValue op)
       resp <- httpRequest client op
       case resp of
-        Ok2xx body -> do
+        Ok2xx code body -> do
           val <- pure (decode body) <?> HttpClientDecodeError op body
-          debug_ $ "  ↳ 2xx " <> displayValue val
+          debug_ $ "  ↳ " <> show code <> " " <> displayValue val
           let ok = typeCheck ctx val op.responseType
           if ok
             then go ops

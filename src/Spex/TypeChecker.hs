@@ -43,6 +43,14 @@ scopeCheck spec
     userDefined :: Set TypeId
     userDefined = foldMap (Set.singleton . typeId) spec.component.typeDecls
 
+data TypeError = ValueDoesntHaveType Value Type
+  deriving (Show, Eq)
+
+typeCheck' :: [TypeDecl] -> Value -> Type -> Maybe TypeError
+typeCheck' ctx val ty
+  | typeCheck ctx val ty = Nothing
+  | otherwise = Just (ValueDoesntHaveType val ty)
+
 typeCheck :: [TypeDecl] -> Value -> Type -> Bool
 typeCheck _ctx UnitV UnitT = True
 typeCheck _ctx BoolV {} BoolT = True

@@ -206,17 +206,46 @@ range of software that can be specified and tested will extended in the
   failed.
   </details>
 
-- [ ] Coverage statistics per operation and response
+- [x] Coverage statistics per operation and response
   <details>
 
   <summary>Example</summary>
+  ```
+  Coverage:
+    2xx:
+      44% addPet (89)
+      54% getPet (107)
+    404:
+      2% getPet (3)
+    409:
+      0% addPet (1)
+  
+  Total: 200
+  
+  Use --seed 2469868563532480199 to reproduce
+  ```
   </details>
 
-- [ ] Don't stop if a potential problem is found, present all findings at the
+- [x] Don't stop if a potential problem is found, present all findings at the
       end of a test run
   <details>
 
   <summary>Example</summary>
+  ```
+  Test failure:
+
+  1. getPet : GET /pet/923 -> Pet
+    ↳ 404 Not Found
+  ------------------------------------------------------------------------
+  Test failure (8 shrinks):
+  
+  1. addPet : POST /pet {petId = 842, petName = foo}
+  2. addPet : POST /pet {petId = 842, petName = foo}
+    ↳ 409 Conflict: Pet already exists
+
+  Use --seed 2469868563532480199 to reproduce
+  ```
+
   </details>
 
 - [x] Built-in specifications formatter

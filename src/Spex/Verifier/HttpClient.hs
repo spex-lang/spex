@@ -39,9 +39,9 @@ newHttpClient (Deployment (HostPort host port) _health _reset) = do
         }
 
 data Response
-  = Ok2xx ByteString
-  | ClientError4xx Int ByteString
-  | ServerError5xx Int ByteString
+  = Ok2xx {statusCode :: Int, body :: ByteString}
+  | ClientError4xx {statusCode :: Int, body :: ByteString}
+  | ServerError5xx {statusCode :: Int, body :: ByteString}
 
 httpRequest :: HttpClient -> Op -> App Response
 httpRequest client op = do
@@ -63,14 +63,18 @@ httpRequest client op = do
       body = LBS.toStrict (Http.responseBody resp)
   if
     | Http.statusIsSuccessful status -> do
-        return (Ok2xx body)
+        return (Ok2xx status.statusCode body)
     | Http.statusIsClientError status ->
         return
-          ( ClientError4xx status.statusCode (status.statusMessage <> ": " <> body)
+          ( ClientError4xx
+              status.statusCode
+              (status.statusMessage <> if BS8.null body then "" else ": " <> body)
           )
     | Http.statusIsServerError status ->
         return
-          ( ServerError5xx status.statusCode (status.statusMessage <> ": " <> body)
+          ( ServerError5xx
+              status.statusCode
+              (status.statusMessage <> if BS8.null body then "" else ": " <> body)
           )
     | otherwise ->
         throwA
@@ -92,8 +96,7 @@ toHttpPath = BS8.intercalate "/" . map aux
     aux (Hole _x (IntV i)) = BS8.pack (show i)
     aux (Hole _x (StringV txt)) = Text.encodeUtf8 txt
     aux (Hole _x ty) = error ("toHttpPath: " <> show ty)
-
--- \^ XXX: Do other types make sense to turn into paths?
+-- ^ XXX: Do other types make sense to turn into paths?
 
 toHttpBody :: Maybe Value -> Http.RequestBody
 toHttpBody Nothing = Http.RequestBodyBS ""

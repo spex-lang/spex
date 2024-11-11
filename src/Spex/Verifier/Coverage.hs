@@ -21,7 +21,7 @@ type HttpStatusCode = Int
 
 newtype Coverage = Coverage
   {unCoverage :: Map HttpStatusCode (Map OpId Word)}
-  deriving (Show)
+  deriving (Show, Semigroup, Monoid)
 
 emptyCoverage :: Coverage
 emptyCoverage = Coverage Map.empty
@@ -64,7 +64,8 @@ filterOnHttpStatusCode p =
 prettyCoverage :: Spec -> Coverage -> Doc x
 prettyCoverage spec cov =
   vsep $
-    [ indent
+    [ "Coverage:"
+    , indent
         2
         ( vcat
             [ "2xx:"
