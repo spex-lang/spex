@@ -12,11 +12,9 @@ i Starting to run tests...
 
 ✓ Done testing, here are the results: 
 
-Test failure:
+Test failure (2 shrinks):
 
 1. getPet : GET /pet/882 -> Pet
-2. addPet : POST /pet {petId = -147, petName = foo}
-3. addPet : POST /pet {petId = 419, petName = bar}
   ↳ 404 Not Found
 ------------------------------------------------------------------------
 

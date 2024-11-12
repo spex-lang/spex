@@ -151,6 +151,7 @@ verifyLoop opts spec deployment client = go
       -> ByteString
       -> App FailingTest
     counterExample ops failure body = do
+      trace ("Shrinking:\n" <> displayOps ops)
       ops' <-
         if opts.noShrinking
           then return (NonEmpty.singleton ops)
@@ -159,6 +160,7 @@ verifyLoop opts spec deployment client = go
               (shrinkProp spec.component.typeDecls client deployment.reset)
               (shrinkList shrinkOp)
               (reverse ops)
+      trace ("Shrunk to:\n" <> displayOps (NonEmpty.last ops'))
       return
         ( FailingTest
             (NonEmpty.last ops')
@@ -186,9 +188,7 @@ shrinkProp ctx client reset ops0 = do
             else return False
         ClientError4xx code _msg -> do
           debug_ $ "  ↳ " <> show code
-          if code == 404
-            then go ops
-            else return False
+          return False
         ServerError5xx {} -> return False
 
 shrinkOp :: Op -> [Op]
