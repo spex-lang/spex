@@ -14,11 +14,53 @@ should to, but not *how* it does it.
 
 Currently it only supports specifying and testing HTTP API servers, but the
 range of software that can be specified and tested will extended in the
-[future](ROADMAP.md).
+future.
 
 > [!CAUTION]
 > Spex is pre-alpha and not suitable for general use yet. Please don't share
 > just yet, I'll announce it properly soon.
+
+## Motivation
+
+Few people write specifications for their software these days. The reason for
+this clear: there are few benefits from doing so, especially when taking into
+account the risk of the specification and the real system drifting out of sync
+(i.e. either the system or the specification is changed, but we forget to
+update the other).
+
+Spex tries to address this shortcoming of specifications by in addition to
+being a specification language, it's also a verifier that checks if some system
+respects the specification -- thereby always ensuring that the two are in sync.
+
+In the process of testing the real system against the specification is will
+also produce minimal test cases for potential problems it notices along the way:
+
+  - Non-2xx responses;
+  - JSON response decoding and type issues;
+  - Non-reachable APIs.
+
+In the future we'd like to derive more useful functionality from
+specifications, including:
+
+  - Ability to import and export OpenAPI/Swagger, Protobuf, etc. Think of how
+    Pandoc can covert between text formats, perhaps we can do the same between
+    specifications;
+  - Generate a prototype implementation from a specification, so that you can
+    demo your idea or hand of a working server HTTP API to the frontend team
+    before the actual backend is done (without risking that there will be a
+    mismatch in the end, since the real backend is tested against the same
+    specification as the prototype is derived from);
+  - A REPL, which allows you to explore a system using a specification. Tab
+    completion is provided for the API and random payload data is generated on
+    the fly;
+  - A time traveling debugger which enables you to step forwards and backwards
+    through a sequence of API calls, in order to explore how the system evolves
+    over time.
+  - Lua templating (again similar to Pandoc) which enables code generation from
+    specifications or the minimal test cases that the verifer produces;
+  - The ability to refine types, e.g. `{ petId : Int | petId > 0 }` and be able
+    to generate validation logic from these;
+  - Generate diagrams for a better overview of how components are connected.
 
 ## Features
 
@@ -276,9 +318,6 @@ range of software that can be specified and tested will extended in the
 
   </details>
 
-See the [road map](ROADMAP.md) for features that are planned for later
-releases.
-
 ## Installation
 
 ### From precompiled binary
@@ -329,6 +368,11 @@ cabal build all
 cabal install spex spex-demo-petstore
 ```
 
+## Usage
+
+Click the "▶ Example" buttons in the features list to see examples of how to
+invoke `spex`.
+
 ## Contributing
 
 Spex is at an early stage of development and there are many ways to help out,
@@ -341,4 +385,10 @@ here are some examples:
   - [Zulip](https://spex.zulipchat.com/).
 * Contributed to releated projects:
   - [`spexup`](https://github.com/spex-lang/spexup), the installer for the Spex
-    language.
+    language;
+  - [`spex-lang.github.io`](https://github.com/spex-lang/spex-lang.github.io),
+    the Spex language website.
+
+## License
+
+BSD-style (see the file [LICENSE](LICENSE).
