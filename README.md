@@ -210,6 +210,7 @@ range of software that can be specified and tested will extended in the
   <details>
 
   <summary>Example</summary>
+
   ```
   Coverage:
     2xx:
@@ -219,11 +220,12 @@ range of software that can be specified and tested will extended in the
       2% getPet (3)
     409:
       0% addPet (1)
-  
+
   Total: 200
-  
+
   Use --seed 2469868563532480199 to reproduce
   ```
+
   </details>
 
 - [x] Don't stop if a potential problem is found, present all findings at the
@@ -231,6 +233,7 @@ range of software that can be specified and tested will extended in the
   <details>
 
   <summary>Example</summary>
+
   ```
   Test failure:
 

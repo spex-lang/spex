@@ -7,7 +7,6 @@ Here's what I'm currently working on:
 - tests for all examples in readme
 - spexup 
   + confirm with user
-  + remove gh dependency?
   + cache releases.json?
 - contributing.md
   + https://x.com/mitchellh/status/1852039089547309552
@@ -46,6 +45,8 @@ Here's what I'm currently working on:
 ### Features
 
 #### Spex
+
+- allow for control of # of test cases vs test case length
 - use duration rather than numTests?
 - print progress while testing
 
