@@ -62,7 +62,13 @@ specifications, including:
     to generate validation logic from these;
   - Generate diagrams for a better overview of how components are connected.
 
+With this future functionality we hope to get to the point where there's a
+clear benefit to writing specifications!
+
 ## Features
+
+Here are the currently supported features. Click on the "▸ Example" buttons for
+more details about how to use them.
 
 - [x] Concise specification language for HTTP API servers
   <details>
@@ -391,4 +397,4 @@ here are some examples:
 
 ## License
 
-BSD-style (see the file [LICENSE](LICENSE).
+BSD-style (see the file [LICENSE](LICENSE)).
