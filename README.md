@@ -39,6 +39,9 @@ also produce minimal test cases for potential problems it notices along the way:
   - JSON response decoding and type issues;
   - Non-reachable APIs.
 
+(We'll look at examples of how exactly this gets reported in the next section on
+features.)
+
 In the future we'd like to derive more useful functionality from
 specifications, including:
 
