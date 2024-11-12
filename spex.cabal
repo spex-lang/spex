@@ -2,8 +2,8 @@ cabal-version:   3.0
 name:            spex
 version:         0.0.0
 synopsis:        The Spex specification language
-description:     See README at <https://github.com/stevana/spex#readme>
-homepage:        https://github.com/stevana/spex#readme
+description:     See README at <https://github.com/spex-lang/spex#readme>
+homepage:        https://github.com/spex-lang/spex#readme
 license:         BSD-2-Clause
 license-file:    LICENSE
 author:          Stevan A
@@ -117,4 +117,11 @@ test-suite test
   main-is:          Main.hs
   build-depends:
     , base
+    , directory
+    , filepath
+    , petstore
     , spex
+    , tasty
+    , tasty-golden
+    , tasty-hunit
+    , temporary

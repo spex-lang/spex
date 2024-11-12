@@ -1,5 +1,7 @@
 module Spex.CommandLine.Ansi where
 
+import Data.Text (Text)
+import Data.Text qualified as Text
 import System.Console.ANSI
 import System.IO
 
@@ -8,22 +10,22 @@ import System.IO
 hasAnsiSupport :: IO Bool
 hasAnsiSupport = hNowSupportsANSI stdout
 
-withSGR :: [SGR] -> String -> String
-withSGR sgr s = setSGRCode sgr ++ s ++ setSGRCode []
+withSGR :: [SGR] -> Text -> Text
+withSGR sgr s = Text.pack (setSGRCode sgr) <> s <> Text.pack (setSGRCode [])
 
-cyan :: String -> String
+cyan :: Text -> Text
 cyan = withSGR [SetColor Foreground Vivid Cyan]
 
-green :: String -> String
+green :: Text -> Text
 green = withSGR [SetColor Foreground Vivid Green]
 
-red :: String -> String
+red :: Text -> Text
 red = withSGR [SetColor Foreground Vivid Red]
 
-boldRed :: String -> String
+boldRed :: Text -> Text
 boldRed =
   withSGR
     [SetColor Foreground Vivid Red, SetConsoleIntensity BoldIntensity]
 
-faint :: String -> String
+faint :: Text -> Text
 faint = withSGR [SetConsoleIntensity FaintIntensity]

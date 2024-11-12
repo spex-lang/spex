@@ -21,9 +21,11 @@ import Spex.CommandLine.GitHash (tGitHash)
 data Options = Options
   { optsCommand :: Command
   , logging :: Logging
+  , logFile :: Maybe FilePath
   , nonInteractive :: Bool
   }
 
+-- XXX: renmae veryVerbose to trace?
 data Logging = Quiet Bool | Verbose Bool | VeryVerbose Bool
 
 data Command
@@ -142,6 +144,11 @@ parser =
                   )
               )
         )
+    <*> optional
+      ( strOption
+          ( long "log-file" <> metavar "FILE" <> help "File to append log output to"
+          )
+      )
     <*> switch
       ( long "non-interactive"
           <> help "Disable fancy logging"

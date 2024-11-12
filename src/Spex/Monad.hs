@@ -9,17 +9,21 @@ module Spex.Monad (
 
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Except
-import Control.Monad.Trans.Reader hiding (asks)
+import Control.Monad.Trans.Reader (ReaderT (ReaderT), runReaderT)
 import Control.Monad.Trans.Reader qualified as Reader
 import Data.ByteString (ByteString)
 import Data.ByteString.Char8 qualified as BS8
 import Data.ByteString.Lazy (LazyByteString)
 import Data.ByteString.Lazy qualified as LBS
+import Data.Text (Text)
+import Data.Text qualified as Text
+import Data.Text.IO qualified as Text
 import Network.HTTP.Client (
   HttpException (..),
   HttpExceptionContent (..),
  )
 import Network.HTTP.Client qualified as Http
+import System.IO
 
 import Spex.CommandLine.Ansi
 import Spex.CommandLine.Option
@@ -49,12 +53,21 @@ newAppEnv :: Options -> IO AppEnv
 newAppEnv opts = do
   hasAnsi <- hasAnsiSupport
 
+  (printer, flusher, closer) <- case opts.logFile of
+    Nothing -> return (Text.putStrLn, return (), return ())
+    Just fp -> do
+      -- XXX: can fail...
+      h <- openFile fp WriteMode
+      hSetBuffering h LineBuffering
+      return (Text.hPutStrLn h, hFlush h, hClose h)
+
   let logger'
-        | not hasAnsi || opts.nonInteractive = noAnsiLogger
-        | otherwise = ansiLogger
+        | not hasAnsi || opts.nonInteractive =
+            noAnsiLogger printer flusher closer
+        | otherwise = ansiLogger printer flusher closer
       logger'' = case opts.logging of
-        Verbose True -> verboseLogger logger'
-        VeryVerbose True -> veryVerboseLogger logger'
+        Verbose True -> verboseLogger printer logger'
+        VeryVerbose True -> veryVerboseLogger printer logger'
         Quiet True -> quietLogger logger'
         _otherwise -> logger'
 
@@ -64,83 +77,99 @@ newAppEnv opts = do
       }
 
 data Logger = Logger
-  { loggerInfo :: Bool -> String -> IO ()
-  , loggerError :: String -> IO ()
-  , loggerDebug :: String -> IO ()
-  , loggerTrace :: String -> IO ()
+  { loggerInfo :: Bool -> Text -> IO ()
+  , loggerError :: Text -> IO ()
+  , loggerDebug :: Text -> IO ()
+  , loggerTrace :: Text -> IO ()
+  , loggerFlush :: IO ()
+  , loggerClose :: IO ()
   }
 
 -- XXX: Check for unicode support, for checkmark?
-noAnsiLogger :: Logger
-noAnsiLogger =
+noAnsiLogger :: (Text -> IO ()) -> IO () -> IO () -> Logger
+noAnsiLogger printer flusher closer =
   Logger
     { loggerInfo = \b ->
         if b
-          then putStrLn . ("✓ " ++)
-          else putStrLn . ("i " ++)
-    , loggerError = putStrLn . ("Error: " ++)
+          then printer . ("✓ " <>)
+          else printer . ("i " <>)
+    , loggerError = printer . ("Error: " <>)
     , loggerDebug = \_s -> return ()
     , loggerTrace = \_s -> return ()
+    , loggerFlush = flusher
+    , loggerClose = closer
     }
 
-ansiLogger :: Logger
-ansiLogger =
+ansiLogger :: (Text -> IO ()) -> IO () -> IO () -> Logger
+ansiLogger printer flusher closer =
   Logger
     { loggerInfo = \b ->
         if b
-          then putStrLn . (green "✓ " ++)
-          else putStrLn . (cyan "i " ++)
-    , loggerError = putStrLn . ((boldRed "Error" ++ ": ") ++)
+          then printer . (green "✓ " <>)
+          else printer . (cyan "i " <>)
+    , loggerError = printer . ((boldRed "Error" <> ": ") <>)
     , loggerDebug = \_s -> return ()
     , loggerTrace = \_s -> return ()
+    , loggerFlush = flusher
+    , loggerClose = closer
     }
 
 quietLogger :: Logger -> Logger
 quietLogger l = l {loggerInfo = \_ _ -> return ()}
 
-verboseLogger :: Logger -> Logger
-verboseLogger l = l {loggerDebug = putStrLn . (faint "d " ++)}
+verboseLogger :: (Text -> IO ()) -> Logger -> Logger
+verboseLogger printer l = l {loggerDebug = printer . (faint "d " <>)}
 
-veryVerboseLogger :: Logger -> Logger
-veryVerboseLogger l =
-  (verboseLogger l)
-    { loggerTrace = putStrLn . (faint "t " ++)
+veryVerboseLogger :: (Text -> IO ()) -> Logger -> Logger
+veryVerboseLogger printer l =
+  (verboseLogger printer l)
+    { loggerTrace = printer . (faint "t " <>)
     }
 
 info :: String -> App ()
 info s = do
   l <- asks logger
-  liftIO (l.loggerInfo False s)
+  liftIO (l.loggerInfo False (Text.pack s))
 
 info_ :: String -> App ()
 info_ s = do
   l <- asks logger
-  liftIO (l.loggerInfo False ("\b\b  " ++ s))
+  liftIO (l.loggerInfo False (Text.pack ("\b\b  " ++ s)))
 
 logError :: String -> App ()
 logError s = do
   l <- asks logger
-  liftIO (l.loggerError s)
+  liftIO (l.loggerError (Text.pack s))
 
 debug :: String -> App ()
 debug s = do
   l <- asks logger
-  liftIO (l.loggerDebug s)
+  liftIO (l.loggerDebug (Text.pack s))
 
 debug_ :: String -> App ()
 debug_ s = do
   l <- asks logger
-  liftIO (l.loggerDebug ("\b\b  " ++ s))
+  liftIO (l.loggerDebug (Text.pack ("\b\b  " ++ s)))
 
 trace :: String -> App ()
 trace s = do
   l <- asks logger
-  liftIO (l.loggerTrace s)
+  liftIO (l.loggerTrace (Text.pack s))
 
 done :: String -> App ()
 done s = do
   l <- asks logger
-  liftIO (l.loggerInfo True s)
+  liftIO (l.loggerInfo True (Text.pack s))
+
+flushLogger :: App ()
+flushLogger = do
+  l <- asks logger
+  liftIO l.loggerFlush
+
+closeLogger :: App ()
+closeLogger = do
+  l <- asks logger
+  liftIO l.loggerClose
 
 ------------------------------------------------------------------------
 
@@ -235,7 +264,7 @@ displayScopeError fp lbs pos tids =
         lpad
         ++ " │ "
         ++ replicate c' ' '
-        ++ red (replicate (length (displayTypeId tid)) '^')
+        ++ Text.unpack (red (Text.replicate (length (displayTypeId tid)) "^"))
         ++ "\n\n"
         ++ "Either define the type or mark it as abstract, in case it shouldn't be\ngenerated."
 

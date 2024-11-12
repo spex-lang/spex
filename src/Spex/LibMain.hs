@@ -25,6 +25,7 @@ libMain = do
   setLocaleEncoding utf8
   opts <- parseCliOptions
   mainWith opts
+  exitSuccess
 
 mainWith :: Options -> IO ()
 mainWith (optsCommand -> Repl {}) = notSupportedYet
@@ -37,12 +38,12 @@ mainWith opts = do
         Format fopts -> (formatApp fopts, fopts.specFilePath)
         Check copts -> (checkApp copts, copts.specFilePath)
         _ -> error "impossible"
-  runApp appEnv app >>= \case
+  runApp appEnv (app >> flushLogger >> closeLogger) >>= \case
     Left err -> do
       lbs <- LBS.readFile specFile
       Right () <- runApp appEnv (logError (displayAppError specFile lbs err))
       exitFailure
-    Right () -> exitSuccess
+    Right () -> return ()
 
 notSupportedYet :: IO ()
 notSupportedYet = do

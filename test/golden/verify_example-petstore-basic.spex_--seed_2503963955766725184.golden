@@ -1,0 +1,32 @@
+[96mi [m  
+[96mi [mVerifying the deployment:    http://localhost:8080
+  against the specification:   example/petstore-basic.spex
+
+[96mi [mChecking the specification.
+
+[96mi [mWaiting for health check to pass...
+
+[92m✓ [mHealth check passed!
+
+[96mi [mStarting to run tests...
+
+[92m✓ [mDone testing, here are the results: 
+
+Test failure:
+
+1. getPet : GET /pet/882 -> Pet
+2. addPet : POST /pet {petId = -147, petName = foo}
+3. addPet : POST /pet {petId = 419, petName = bar}
+  ↳ 404 Not Found
+------------------------------------------------------------------------
+
+Coverage:
+  2xx:
+    47% addPet (47)
+  404:
+    53% getPet (53)
+
+Total: 100
+
+Use --seed 2503963955766725184 to reproduce
+

@@ -3,4 +3,4 @@ module Main where
 import Petstore
 
 main :: IO ()
-main = libMain
+main = libMain 8080
