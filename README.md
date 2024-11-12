@@ -370,7 +370,7 @@ cabal install spex spex-demo-petstore
 
 ## Usage
 
-Click the "▶ Example" buttons in the features list to see examples of how to
+Click the "▸ Example" buttons in the features list to see examples of how to
 invoke `spex`.
 
 ## Contributing
