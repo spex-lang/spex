@@ -1,16 +1,16 @@
-[96mi [m  
-[96mi [mVerifying the deployment:    http://localhost:8080
+i   
+i Verifying the deployment:    http://localhost:8080
   against the specification:   example/petstore-basic.spex
 
-[96mi [mChecking the specification.
+i Checking the specification.
 
-[96mi [mWaiting for health check to pass...
+i Waiting for health check to pass...
 
-[92m✓ [mHealth check passed!
+✓ Health check passed!
 
-[96mi [mStarting to run tests...
+i Starting to run tests...
 
-[92m✓ [mDone testing, here are the results: 
+✓ Done testing, here are the results: 
 
 Test failure:
 

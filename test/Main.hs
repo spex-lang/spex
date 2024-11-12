@@ -39,7 +39,7 @@ tests tmpDir =
             (\ref new -> ["diff", "-u", ref, new])
             ("test" </> "golden" </> logName <.> "golden")
             logFile
-            (testMain ("--log-file" : logFile : args))
+            (testMain ("--non-interactive" : "--log-file" : logFile : args))
 
     withPetstore :: Int -> TestTree -> TestTree
     withPetstore i tt =
