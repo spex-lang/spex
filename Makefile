@@ -126,6 +126,7 @@ install:
 #   "CantPackException: macOS is currently not supported"
 # There's a bit more information in this closed ticket:
 #   https://github.com/upx/upx/issues/777#issuecomment-1909535310
+# So instead of compressing, we simply strip on macOS.
 compress:
   ifeq ($(OS),darwin)
 	find $(SPEX_BIN) -name 'spex*' -type f \
@@ -273,6 +274,22 @@ push-image:
   ifeq ($(DOCKERFILE_CHANGED),true)
 	  docker push ghcr.io/spex-lang/spex-build:latest
   endif
+
+.PHONY: build-app-image cr-login
+
+build-app-image: Dockerfile.app
+	docker build \
+		--volume $(CABAL_PACKAGES_CACHE):/root/.cache/cabal/packages \
+		--volume $(CABAL_STORE):/root/.local/state/cabal/store \
+                --env=SPEX_GIT_COMMIT=$(SPEX_GIT_COMMIT) \
+		--tag ghcr.io/spex-lang/spex:latest \
+		--file Dockerfile.app
+
+cr-login:
+	# This needs to be a personal access tokens (classic) with "repo,
+	# write:packages" permissions.
+	@echo $(CR_PAT) | \
+		docker login ghcr.io --username spex-lang --password-stdin
 
 # ----------------------------------------------------------------------
 # Formatting
