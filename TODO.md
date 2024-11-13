@@ -4,10 +4,15 @@ Here's what I'm currently working on:
 
 ### First release
 
+- make one example that contains all kinds of "problems" spex can find?
+  * reachability/coverage
+  * correct json responses
+  * minimal test cases that give rise to non-2xx responses
+
 - tests for all examples in readme
-- spexup 
-  + confirm with user
-  + cache releases.json?
+
+- reenable ci for mac and win
+
 - contributing.md
   + https://x.com/mitchellh/status/1852039089547309552
 
@@ -15,6 +20,10 @@ Here's what I'm currently working on:
   + focus on infra
   + bare minimum language and verifier
   + one example, for more see readme/website?
+
+- move todo and roadmap to proper tickets
+
+- website
 
 ### Documentation
 
@@ -63,6 +72,8 @@ Here's what I'm currently working on:
   another error?
 
 #### Spexup
+
+- cache releases.json?
 
 - check what versions are locally installed already
 

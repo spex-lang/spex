@@ -6,8 +6,6 @@ LABEL org.opencontainers.image.licenses=BSD-2-Clause
 
 RUN apk upgrade --no-cache \
   && apk add --no-cache \
-    gcc \
-    musl-dev \
     upx 
 
 COPY spex.cabal cabal.project cabal.project.freeze example/*/*.cabal .
