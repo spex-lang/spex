@@ -2,6 +2,8 @@
 title: Install Spex - Spex
 ---
 
+## Installation
+
 ### From precompiled binary
 
 #### Automatic
