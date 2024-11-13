@@ -37,6 +37,7 @@ Here's what I'm currently working on:
     - https://github.com/KissPeter/APIFuzzer
     - https://github.com/TNO-S3/WuppieFuzz
     - https://endava.github.io/cats/docs/intro
+    - https://smithy.io
 
 #### Other
 
@@ -114,7 +115,10 @@ Here's what I'm currently working on:
 - commit hook for conventional commits?
 - move petstore to separate repo?
 - public docker images for spex and spex-petshop
-  + use multi-stage build and --target buildx flag to pick a stage?
+  + https://github.com/orgs/spex-lang/packages/container/spex/settings (at the bottom)
+  + can we simply have an image that does `FROM scratch; ADD spex
+    spex-demo-petshop /` and build that in the `install` target in the
+    makefile? Thereby not having to rebuild anything?
 
 ### Tooling
 
