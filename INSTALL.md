@@ -2,11 +2,11 @@
 title: Install Spex - Spex
 ---
 
-## Installation
+# Installation
 
-### From precompiled binary
+## From precompiled binary
 
-#### Automatic
+### Automatic
 
 ```bash
  curl --proto '=https' --tlsv1.2 -sSf \
@@ -18,15 +18,15 @@ What does this do? It
 [automates](https://github.com/spex-lang/spexup/blob/main/spexup) the manual
 steps below.
 
-#### Manual
+### Manual
 
 1. Go to [releases](https://github.com/spex-lang/spex/releases);
 2. Click on "Assets" for the latest release;
 3. Download the binaries and put them into your PATH.
 
-### From source
+## From source
 
-#### With Nix
+### With Nix
 
 Install the [Nix](https://nixos.org/download/) package manager and then do:
 
@@ -38,7 +38,7 @@ cabal build all
 cabal install spex spex-demo-petstore
 ```
 
-#### Without Nix
+### Without Nix
 
 Install [`ghcup`](https://www.haskell.org/ghcup/install/), the
 [Haskell](https://www.haskell.org/) installer, and then do:
