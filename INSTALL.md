@@ -4,7 +4,13 @@ title: Install Spex - Spex
 
 # Installation
 
-## From precompiled binary
+There are two main ways of installing Spex, either from pre-compiled binaries
+or by building the binaries yourself from source.
+
+## From pre-compiled binary
+
+The easiest way to get the right pre-compiled binaries for your platform is to
+use the `spexup` installer as follows.
 
 ### Automatic
 
@@ -20,15 +26,22 @@ steps below.
 
 ### Manual
 
+If you don't like to pipe scripts into a shell (fair enough), you can manually
+install the binaries as follows:
+
 1. Go to [releases](https://github.com/spex-lang/spex/releases);
 2. Click on "Assets" for the latest release;
-3. Download the binaries and put them into your PATH.
+3. Download the binaries for your platform and put them into your PATH.
 
 ## From source
 
+When you build from source you'll need the GHC Haskell compiler and the Cabal
+package system.
+
 ### With Nix
 
-Install the [Nix](https://nixos.org/download/) package manager and then do:
+If you got the [Nix](https://nixos.org/download/) package manager installed
+then the `shell.nix` file provides all dependencies, and you can simply type:
 
 ```bash
 git clone https://github.com/spex-lang/spex.git
@@ -40,8 +53,10 @@ cabal install spex spex-demo-petstore
 
 ### Without Nix
 
-Install [`ghcup`](https://www.haskell.org/ghcup/install/), the
-[Haskell](https://www.haskell.org/) installer, and then do:
+If you don't use Nix, then the easiest way to get the right Haskell
+dependencies is to first install
+[`ghcup`](https://www.haskell.org/ghcup/install/), the
+[Haskell](https://www.haskell.org/) installer, and then issue:
 
 ```bash
 git clone https://github.com/spex-lang/spex.git
