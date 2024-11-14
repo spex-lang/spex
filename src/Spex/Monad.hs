@@ -179,7 +179,6 @@ data AppError
   | ScopeError [(Pos, [Ann TypeId])]
   | InvalidDeploymentUrl String
   | HttpClientException Op HttpException
-  | HttpClientDecodeError Op ByteString String
   | HttpClientUnexpectedStatusCode Int ByteString
   | HealthCheckFailed
   | ResetFailed
@@ -210,13 +209,6 @@ displayAppError spec lbs = \case
   ScopeError tids -> uncurry (displayScopeError spec lbs) (head tids)
   InvalidDeploymentUrl url -> "Invalid deployment URL: " <> url
   HttpClientException op e -> displayHttpException op e
-  HttpClientDecodeError op body e ->
-    "Couldn't decode the response of:\n\n    "
-      <> displayOp displayValue op
-      <> "\n\nfrom the body of the request: '"
-      <> BS8.unpack body
-      <> "'\n\nThe error being: "
-      <> e
   HttpClientUnexpectedStatusCode _ _ -> "HTTP client returned 1xx or 3xx"
   HealthCheckFailed ->
     "Health check failed, make sure that the deployment is running."

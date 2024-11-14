@@ -12,11 +12,6 @@ i Starting to run tests...
 
 ✓ Done testing, here are the results: 
 
-Test failure (2 shrinks):
-
-1. getPet : GET /pet/882 -> Pet
-  ↳ 404 Not Found
-------------------------------------------------------------------------
 
 Coverage:
   2xx:

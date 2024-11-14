@@ -43,10 +43,12 @@ filterOk =
     . unCoverage
 
 filter4xx :: Coverage -> [(HttpStatusCode, [(OpId, Word)])]
-filter4xx = filterOnHttpStatusCode (\code -> 400 <= code && code < 500)
+filter4xx =
+  filterOnHttpStatusCode (\code -> 400 <= code && code < 500)
 
 filter5xx :: Coverage -> [(HttpStatusCode, [(OpId, Word)])]
-filter5xx = filterOnHttpStatusCode (\code -> 500 <= code && code < 600)
+filter5xx =
+  filterOnHttpStatusCode (\code -> 500 <= code && code < 600)
 
 filterOnHttpStatusCode ::
   (HttpStatusCode -> Bool)

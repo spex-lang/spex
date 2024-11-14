@@ -1,6 +1,6 @@
 component PetStore where
 
-addPet : POST /pet !Pet
+addPet : POST /pet Pet
 getPet : GET /pet/{petId : @Int} -> Pet
 getBadPet : GET /pet/badJson/{petId : @Int} -> Pet
 neverReached : GET /noThere -> Int

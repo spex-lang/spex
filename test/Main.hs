@@ -28,6 +28,14 @@ tests tmpDir =
                 , "--seed"
                 , "2503963955766725184"
                 ]
+            , test
+                [ "verify"
+                , "example/petstore-modal-faults.spex"
+                , "--tests"
+                , "2000"
+                , "--seed"
+                , "3967796076964233976"
+                ]
             ]
             [0 ..] -- Used to compute the ports used by the tests.
         )
@@ -37,8 +45,8 @@ tests tmpDir =
         ]
     ]
   where
-    test :: [String] -> TestTree
-    test args =
+    test :: [String] -> Int -> TestTree
+    test args i =
       let testName = intercalate " " args
           logName = replace '/' '-' (intercalate "_" args)
           logFile = tmpDir </> logName <.> "log"
@@ -47,7 +55,14 @@ tests tmpDir =
             (\ref new -> ["diff", "-u", ref, new])
             ("test" </> "golden" </> logName <.> "golden")
             logFile
-            (testMain ("--non-interactive" : "--log-file" : logFile : args))
+            ( testMain
+                ( "--non-interactive"
+                    : "--log-file"
+                    : logFile
+                    : args
+                    ++ ["--port", show (8080 + i)]
+                )
+            )
 
     testOutput :: [String] -> TestTree
     testOutput args =
@@ -61,12 +76,12 @@ tests tmpDir =
             outFile
             (testMain ("--non-interactive" : args ++ ["--output", outFile]))
 
-    withPetstore :: TestTree -> Int -> TestTree
+    withPetstore :: (Int -> TestTree) -> Int -> TestTree
     withPetstore tt i =
       withResource
         (forkIO (Petstore.libMain (8080 + i)))
         killThread
-        (const tt)
+        (const (tt i))
 
     replace :: Char -> Char -> String -> String
     replace needle replacement = go

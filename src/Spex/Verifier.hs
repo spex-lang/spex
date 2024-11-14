@@ -130,17 +130,26 @@ verifyLoop opts spec deployment client = go
                   Just err -> Left (TypeErrorFailure err)
             _4xxOr5xx -> Left (StatusCodeFailure resp.statusCode)
       case r of
-        Left failure0
-          | failure0 `elem` map failure res.failingTests ->
-              go (n - 1) [] prng' genEnv' res {coverage = cov'}
-          | otherwise -> do
-              test <-
-                counterExample
-                  (op : ops)
-                  failure0
-                  resp.body
-              let failingTests' = test : res.failingTests
-              go (n - 1) [] prng' genEnv' (Result failingTests' cov')
+        Left failure0 -> do
+          res' <-
+            -- If we've seen a failure already, then don't add it to the test
+            -- cases.
+            if failure0 `elem` map failure res.failingTests
+              then return (res {coverage = cov'})
+              else do
+                test <-
+                  counterExample
+                    (op : ops)
+                    failure0
+                    resp.body
+                -- If the shrunk test case is a singleton operation and it's a
+                -- 404, then don't count that as a failing test case.
+                let failingTests'
+                      | length test.test == 1 && test.failure == StatusCodeFailure 404 =
+                          res.failingTests
+                      | otherwise = test : res.failingTests
+                return (Result failingTests' cov')
+          go (n - 1) [] prng' emptyGenEnv res'
         Right val -> do
           let genEnv'' = insertValue op.responseType val genEnv'
           go (n - 1) (op : ops) prng' genEnv'' res {coverage = cov'}
@@ -180,12 +189,14 @@ shrinkProp ctx client reset ops0 = do
       resp <- httpRequest client op
       case resp of
         Ok2xx code body -> do
-          val <- pure (decode body) <?> HttpClientDecodeError op body
-          debug_ $ "  ↳ " <> show code <> " " <> displayValue val
-          let ok = typeCheck ctx val op.responseType
-          if ok
-            then go ops
-            else return False
+          case decode body of
+            Left _err -> return False
+            Right val -> do
+              debug_ $ "  ↳ " <> show code <> " " <> displayValue val
+              let ok = typeCheck ctx val op.responseType
+              if ok
+                then go ops
+                else return False
         ClientError4xx code _msg -> do
           debug_ $ "  ↳ " <> show code
           return False
