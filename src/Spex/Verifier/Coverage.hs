@@ -83,12 +83,13 @@ prettyCoverage spec cov =
     ]
       ++ ( if not (null notCoveredOps)
             then
-              [ "Not covered"
+              [ "Not covered:"
               , indent 2 (vcat (map prettyBS notCoveredOps))
               ]
             else []
          )
-      ++ [ "Total: " <> pretty total
+      ++ [ ""
+         , "Total operations (ops): " <> pretty total
          ]
   where
     total :: Word
@@ -96,18 +97,26 @@ prettyCoverage spec cov =
 
     prettyOpCov :: (OpId, Word) -> Doc x
     prettyOpCov (oid, n) =
-      pretty (round ((fromIntegral n / fromIntegral total) * 100) :: Int)
+      pretty
+        (round ((fromIntegral n / fromIntegral total :: Double) * 100) :: Int)
         <> "%"
         <+> prettyBS oid
         <+> "("
         <> pretty n
-        <> ")"
+        <> " ops)"
 
     prettyOpCovBad :: (HttpStatusCode, [(OpId, Word)]) -> Doc x
-    prettyOpCovBad (code, ops) = vsep [pretty code <> ":", indent 2 (vcat (map prettyOpCov ops))]
+    prettyOpCovBad (code, ops) =
+      vsep [pretty code <> ":", indent 2 (vcat (map prettyOpCov ops))]
 
     coveredOps :: Set OpId
-    coveredOps = Set.fromList $ concatMap Map.keys $ Map.elems $ unCoverage cov
+    coveredOps =
+      Set.fromList
+        . concatMap Map.keys
+        . Map.elems
+        -- Filter out 404s.
+        . Map.filterWithKey (\code _m -> code /= 404)
+        $ unCoverage cov
 
     declaredOps :: Set OpId
     declaredOps =

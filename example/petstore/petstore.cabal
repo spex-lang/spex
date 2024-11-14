@@ -20,8 +20,10 @@ library
   build-depends:
     , aeson
     , base
+    , bytestring
     , servant
     , servant-server
+    , wai
     , warp
 
   hs-source-dirs:   src

@@ -106,17 +106,31 @@ more details about how to use them.
   i Verifying the deployment:    http://localhost:8080
     against the specification:   example/petstore-basic.spex
   
-  i Parsing the specification.
+  i Checking the specification.
+
+  i Waiting for health check to pass...
+
+  ✓ Health check passed!
+
+  i Starting to run tests...
+
+  ✓ Done testing, here are the results:
+
+  Test failure (3 shrinks):
+
+  1. getPet : GET /pet/-893 -> Pet
+    ↳ 404 Not Found
+  ------------------------------------------------------------------------
+
+  Coverage:
+    2xx:
+      49% addPet (49)
+    404:
+      51% getPet (51)
   
-  i Waiting for health check to pass.
+  Total: 100
   
-  i Starting to run tests.
-  
-  i All tests passed, here are the results:
-  
-    failing tests: []
-    client errors: 53
-    coverage:      fromList [(OpId "addPet",44),(OpId "getPet",56)]
+  Use --seed 4254641856041340251 to reproduce
   $ kill ${PID_PETSTORE}
   [1]+  Terminated              spex-demo-petstore
   ```
