@@ -83,7 +83,7 @@ prettyCoverage spec cov =
     ]
       ++ ( if not (null notCoveredOps)
             then
-              [ "Not covered:"
+              [ "Not covered (no non-404 responses):"
               , indent 2 (vcat (map prettyBS notCoveredOps))
               ]
             else []

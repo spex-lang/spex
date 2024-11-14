@@ -24,7 +24,7 @@ Coverage:
   404:
     53% getPet (53 ops)
 
-Not covered:
+Not covered (no non-404 responses):
   getPet
 
 Total operations (ops): 100
