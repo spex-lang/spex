@@ -5,7 +5,7 @@ import Data.ByteString qualified as BS
 import Data.ByteString.Lazy qualified as LBS
 import GHC.IO.Encoding (setLocaleEncoding)
 import System.Exit
-import System.IO (utf8)
+import System.IO (IOMode (WriteMode), utf8, withFile)
 
 import Spex.CommandLine.Option
 import Spex.Lexer
@@ -83,7 +83,9 @@ formatApp :: FormatOptions -> App ()
 formatApp opts = do
   bs <- liftIO (try (BS.readFile opts.specFilePath)) <?> ReadSpecFileError
   spec <- pure (runParser specP bs) <?> ParserError
-  liftIO (putSpec spec)
+  case opts.output of
+    Nothing -> liftIO (putSpec spec)
+    Just fp -> liftIO $ withFile fp WriteMode $ \h -> hPutSpec h spec
 
 checkApp :: CheckOptions -> App ()
 checkApp opts = do

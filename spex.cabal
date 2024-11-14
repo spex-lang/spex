@@ -123,5 +123,4 @@ test-suite test
     , spex
     , tasty
     , tasty-golden
-    , tasty-hunit
     , temporary

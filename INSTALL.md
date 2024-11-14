@@ -55,8 +55,8 @@ cabal install spex spex-demo-petstore
 
 If you don't use Nix, then the easiest way to get the right Haskell
 dependencies is to first install
-[`ghcup`](https://www.haskell.org/ghcup/install/), the
-[Haskell](https://www.haskell.org/) installer, and then issue:
+[`ghcup`](https://www.haskell.org/ghcup/install/), the Haskell installer, and
+then issue:
 
 ```bash
 git clone https://github.com/spex-lang/spex.git

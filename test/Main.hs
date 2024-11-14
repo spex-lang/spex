@@ -18,15 +18,23 @@ tests :: FilePath -> TestTree
 tests tmpDir =
   testGroup
     "Golden"
-    [ withPetstore
-        0
-        ( test
-            [ "verify"
-            , "example/petstore-basic.spex"
-            , "--seed"
-            , "2503963955766725184"
+    [ testGroup
+        "Verify"
+        ( zipWith
+            withPetstore
+            [ test
+                [ "verify"
+                , "example/petstore-basic.spex"
+                , "--seed"
+                , "2503963955766725184"
+                ]
             ]
+            [0 ..] -- Used to compute the ports used by the tests.
         )
+    , testGroup
+        "Format"
+        [ testOutput ["format", "example/petstore-bad-formatting.spex"]
+        ]
     ]
   where
     test :: [String] -> TestTree
@@ -41,8 +49,20 @@ tests tmpDir =
             logFile
             (testMain ("--non-interactive" : "--log-file" : logFile : args))
 
-    withPetstore :: Int -> TestTree -> TestTree
-    withPetstore i tt =
+    testOutput :: [String] -> TestTree
+    testOutput args =
+      let testName = intercalate " " args
+          outName = replace '/' '-' (intercalate "_" args)
+          outFile = tmpDir </> outName <.> "txt"
+      in  goldenVsFileDiff
+            testName
+            (\ref new -> ["diff", "-u", ref, new])
+            ("test" </> "golden" </> outName <.> "golden")
+            outFile
+            (testMain ("--non-interactive" : args ++ ["--output", outFile]))
+
+    withPetstore :: TestTree -> Int -> TestTree
+    withPetstore tt i =
       withResource
         (forkIO (Petstore.libMain (8080 + i)))
         killThread

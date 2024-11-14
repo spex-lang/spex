@@ -329,7 +329,7 @@ more details about how to use them.
 
 ## Installation
 
-See [`INSTALL.md`](INSTALL.md).
+See [`INSTALL.md`](INSTALL.md) for installation instructions.
 
 ## Usage
 

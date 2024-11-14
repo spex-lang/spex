@@ -25,7 +25,7 @@ data Options = Options
   , nonInteractive :: Bool
   }
 
--- XXX: renmae veryVerbose to trace?
+-- XXX: rename veryVerbose to trace?
 data Logging = Quiet Bool | Verbose Bool | VeryVerbose Bool
 
 data Command
@@ -48,7 +48,10 @@ data VerifyOptions = VerifyOptions
   }
 
 data FormatOptions = FormatOptions
-  {specFilePath :: FilePath}
+  { specFilePath :: FilePath
+  , output :: Maybe FilePath
+  -- , inPlace :: Inplace ; data InPlace = NotInplace | Inplace | InplaceWithBackup Suffix
+  }
 
 data CheckOptions = CheckOptions
   {specFilePath :: FilePath}
@@ -212,7 +215,17 @@ parser =
         )
 
     format :: Parser FormatOptions
-    format = FormatOptions <$> specFile
+    format =
+      FormatOptions
+        <$> specFile
+        <*> optional
+          ( strOption
+              ( long "output"
+                  <> short 'o'
+                  <> metavar "FILE"
+                  <> help "Output file path for the formatted specification"
+              )
+          )
 
     check :: Parser CheckOptions
     check = CheckOptions <$> specFile

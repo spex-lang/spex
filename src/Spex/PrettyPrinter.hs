@@ -9,7 +9,8 @@ import Data.Map (Map)
 import Data.Map qualified as Map
 import Data.String
 import Prettyprinter
-import Prettyprinter.Util
+import Prettyprinter.Render.Text
+import System.IO
 
 import Spex.Syntax
 
@@ -90,4 +91,7 @@ prettyBS :: (Coercible a ByteString) => a -> Doc x
 prettyBS = fromString . BS8.unpack . coerce
 
 putSpec :: Spec -> IO ()
-putSpec = putDocW 72 . prettySpec
+putSpec = hPutSpec stdout
+
+hPutSpec :: Handle -> Spec -> IO ()
+hPutSpec h = hPutDoc h . prettySpec
