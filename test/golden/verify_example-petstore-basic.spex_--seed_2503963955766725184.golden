@@ -20,11 +20,14 @@ Test failure (2 shrinks):
 
 Coverage:
   2xx:
-    47% addPet (47)
+    47% addPet (47 ops)
   404:
-    53% getPet (53)
+    53% getPet (53 ops)
 
-Total: 100
+Not covered:
+  getPet
+
+Total operations (ops): 100
 
 Use --seed 2503963955766725184 to reproduce
 
