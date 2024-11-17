@@ -89,5 +89,4 @@ responseBody resp =
 libMain :: Port -> IO ()
 libMain port = do
   store <- newIORef [Pet 1 "apa"]
-  putStrLn $ "Running petstore on localhost:" <> show port
   run port (app store)

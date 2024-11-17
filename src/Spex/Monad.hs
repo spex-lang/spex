@@ -12,7 +12,6 @@ import Control.Monad.Trans.Except
 import Control.Monad.Trans.Reader (ReaderT (ReaderT), runReaderT)
 import Control.Monad.Trans.Reader qualified as Reader
 import Data.ByteString (ByteString)
-import Data.ByteString.Char8 qualified as BS8
 import Data.ByteString.Lazy (LazyByteString)
 import Data.ByteString.Lazy qualified as LBS
 import Data.Text (Text)
@@ -54,7 +53,7 @@ newAppEnv opts = do
   hasAnsi <- hasAnsiSupport
 
   (printer, flusher, closer) <- case opts.logFile of
-    Nothing -> return (Text.putStrLn, return (), return ())
+    Nothing -> return (Text.hPutStrLn stderr, return (), return ())
     Just fp -> do
       -- XXX: can fail...
       h <- openFile fp WriteMode
