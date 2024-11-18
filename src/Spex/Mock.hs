@@ -59,6 +59,7 @@ matchOp ctx req =
   let ops' = filter (\op -> op.method `methodsMatch` requestMethod req) ctx
       ops'' = filter (\op -> op.path `pathMatch` pathInfo req) ops'
   in  case ops'' of
+        [] -> Nothing
         [op] -> Just (op.responseType)
         _ ->
           --  XXX: we should check for this when checking the spec...
