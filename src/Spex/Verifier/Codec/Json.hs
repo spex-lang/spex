@@ -7,6 +7,7 @@ import Data.ByteString (ByteString)
 import Data.ByteString.Lazy (LazyByteString)
 import Data.Map qualified as Map
 import Data.Text.Encoding qualified as Text
+import Data.Vector qualified as Vector
 
 import Spex.Syntax.Type
 import Spex.Syntax.Value
@@ -31,7 +32,7 @@ encode :: Value -> LazyByteString
 encode = Json.encode . toJson
 
 toJson :: Value -> Json.Value
-toJson UnitV = Json.Null
+toJson UnitV = Json.Array Vector.empty
 toJson (BoolV b) = Json.Bool b
 toJson (IntV i) = Json.Number (fromIntegral i)
 toJson (StringV txt) = Json.String txt

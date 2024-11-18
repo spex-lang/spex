@@ -122,8 +122,15 @@ mockApp opts = do
   bs <- liftIO (try (BS.readFile opts.specFilePath)) <?> ReadSpecFileError
   spec <- pure (runParser specP bs) <?> ParserError
   scopeCheck spec
-  info ("Starting mock server on http://localhost:" <> show (opts.port))
-  liftIO (runMock opts spec)
+  (prng, seed) <- liftIO (newPrng opts.seed)
+  info
+    ( "Starting mock server on http://localhost:"
+        <> show (opts.port)
+        <> "\n  Use --seed "
+        <> show seed
+        <> " to reproduce this mock."
+    )
+  liftIO (runMock opts spec prng)
 
 ------------------------------------------------------------------------
 

@@ -2,7 +2,6 @@
 
 module Spex.Mock (module Spex.Mock) where
 
-import Control.Monad.IO.Class (liftIO)
 import Data.ByteString (ByteString)
 import Data.IORef
 import Data.Text (Text)
@@ -26,16 +25,33 @@ import Spex.Verifier.Generator.Env
 
 ------------------------------------------------------------------------
 
-runMock :: MockOptions -> Spec -> IO ()
-runMock opts spec = do
-  (prng, seed) <- liftIO (newPrng opts.seed)
+runMock :: MockOptions -> Spec -> Prng -> IO ()
+runMock opts spec prng = do
   state <- newIORef (MockState {prng = prng, genEnv = emptyGenEnv})
-  run opts.port (waiApp spec state)
+  run
+    opts.port
+    (addResetEndpoint state prng (addHealthEndpoint (waiApp spec state)))
 
 data MockState = MockState
   { prng :: Prng
   , genEnv :: GenEnv
   }
+
+addHealthEndpoint :: Middleware
+addHealthEndpoint baseApp req respond =
+  case (requestMethod req, pathInfo req) of
+    ("GET", ["health"]) -> respond (responseLBS ok200 [] "OK")
+    _ -> baseApp req respond
+
+addResetEndpoint :: IORef MockState -> Prng -> Middleware
+addResetEndpoint state origPrng baseApp req respond =
+  case (requestMethod req, pathInfo req) of
+    ("DELETE", ["_reset"]) -> do
+      atomicWriteIORef
+        state
+        (MockState {prng = origPrng, genEnv = emptyGenEnv})
+      respond (responseLBS ok200 [] "OK")
+    _ -> baseApp req respond
 
 waiApp :: Spec -> IORef MockState -> Application
 waiApp spec state req respond = do
@@ -46,14 +62,15 @@ waiApp spec state req respond = do
     in  case matchOp opDecls req of
           Nothing -> (s, Left notFound404)
           Just respTy ->
-            ( s {prng = prng''}
-            , Right (runGenM (genValue respTy) ctx s.genEnv prng')
-            )
+            let val = runGenM (genValue respTy) ctx s.genEnv prng'
+            in  ( s {prng = prng'', genEnv = insertValue respTy val s.genEnv}
+                , Right val
+                )
   case res of
     Left err -> respond $ responseLBS err [] ""
     Right val -> respond $ responseLBS ok200 [] (encode val)
 
--- XXX: check body?
+-- XXX: check body and put its fields into the genEnv?
 matchOp :: [OpDecl] -> Request -> Maybe Type
 matchOp ctx req =
   let ops' = filter (\op -> op.method `methodsMatch` requestMethod req) ctx
@@ -73,11 +90,18 @@ pathMatch = go
     go (Path bs : ps) (t : ts) = bs == Text.encodeUtf8 t && go ps ts
     go (Hole _var ty : ps) (t : ts) = case ty of
       StringT -> go ps ts
-      IntT -> case decimal t of
-        Right _ -> go ps ts
+      IntT -> case parseInt t of
+        Right (i, _rest) -> go ps ts -- XXX: put i into genEnv?
         Left _ -> False
+      AbstractT IntT -> case parseInt t of
+        Right (i, _rest) -> go ps ts
+        Left _ -> False
+      AbstractT StringT -> go ps ts
       _ty -> error ("pathMatch: unexpected type in path: " ++ show ty)
     go _ _ = False
+
+    parseInt :: Text -> Either String (Int, Text)
+    parseInt = decimal
 
 methodsMatch :: Method -> ByteString -> Bool
 methodsMatch Get = (== methodGet)
