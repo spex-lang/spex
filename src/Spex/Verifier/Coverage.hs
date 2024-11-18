@@ -70,26 +70,27 @@ prettyCoverage spec cov =
     , indent
         2
         ( vcat
-            [ "2xx:"
-            , indent
-                2
-                ( vcat
-                    (map prettyOpCov (filterOk cov))
-                )
-            , vcat
-                (map prettyOpCovBad (filter4xx cov))
-            , vcat
-                (map prettyOpCovBad (filter5xx cov))
-            ]
+            ( [ "2xx:"
+              , indent
+                  2
+                  ( vcat
+                      (map prettyOpCov (filterOk cov))
+                  )
+              , vcat
+                  (map prettyOpCovBad (filter4xx cov))
+              , vcat
+                  (map prettyOpCovBad (filter5xx cov))
+              ]
+                ++ ( if not (null notCoveredOps)
+                      then
+                        [ "Not covered (no non-404 responses):"
+                        , indent 2 (vcat (map prettyBS notCoveredOps))
+                        ]
+                      else []
+                   )
+            )
         )
     ]
-      ++ ( if not (null notCoveredOps)
-            then
-              [ "Not covered (no non-404 responses):"
-              , indent 2 (vcat (map prettyBS notCoveredOps))
-              ]
-            else []
-         )
       ++ [ ""
          , "Total operations (ops): " <> pretty total
          ]

@@ -1,11 +1,17 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Spex.Verifier where
 
 import Data.ByteString (ByteString)
 import Data.ByteString.Char8 qualified as BS8
 import Data.List.NonEmpty qualified as NonEmpty
+import Prettyprinter
+import Prettyprinter.Render.String
+import Prettyprinter.Render.Text (putDoc)
 
 import Spex.CommandLine.Option
 import Spex.Monad
+import Spex.PrettyPrinter
 import Spex.Syntax
 import Spex.TypeChecker
 import Spex.Verifier.Codec.Json
@@ -49,31 +55,67 @@ data Failure
   | StatusCodeFailure HttpStatusCode
   deriving (Show, Eq)
 
+putResult :: Spec -> Result -> Int -> IO ()
+putResult spec res seed = putDoc (prettyResult spec res seed)
+
 displayResult :: Spec -> Result -> Int -> String
 displayResult spec res seed =
-  unlines
-    [ unlines (map displayFailingTest res.failingTests)
-    , displayCoverage spec res.coverage
-    , ""
-    , "Use --seed " <> show seed <> " to reproduce"
-    ]
+  renderString $
+    layoutPretty defaultLayoutOptions $
+      prettyResult spec res seed
 
-displayFailingTest :: FailingTest -> String
-displayFailingTest t =
-  "Test failure"
-    <> (if t.shrinks > 0 then " (" <> show t.shrinks <> " shrinks)" else "")
-    <> ":\n\n"
-    <> displayOps t.test
-    <> displayFailure t.failure
-    <> " "
-    <> BS8.unpack t.body
-    <> "\n"
-    <> replicate 72 '-'
+prettyResult :: Spec -> Result -> Int -> Doc x
+prettyResult spec res seed =
+  let lenInterestingTests = length res.failingTests
+  in  indent 2 $
+        vcat
+          ( [ ""
+            , "Found"
+                <+> viaShow lenInterestingTests
+                <+> "intereresting test case"
+                <> ( if lenInterestingTests > 1
+                      then "s"
+                      else ""
+                   )
+                <> if lenInterestingTests == 0 then "." else ":" <> line
+            ]
+              ++ ( if null res.failingTests
+                    then [""]
+                    else
+                      [ indent 2 $
+                          vcat (zipWith prettyTest [1 ..] res.failingTests)
+                      ]
+                 )
+              ++ [ prettyCoverage spec res.coverage
+                 , ""
+                 , "Use --seed " <> viaShow seed <> " to reproduce this run."
+                 ]
+          )
 
-displayFailure :: Failure -> String
-displayFailure (DecodeFailure err) = "decode failure: " <> err
-displayFailure (TypeErrorFailure err) = "type error failure: " <> show err
-displayFailure (StatusCodeFailure code) = "  ↳ " <> show code
+prettyTest :: Int -> FailingTest -> Doc x
+prettyTest i t =
+  viaShow i
+    <> ". "
+    <> align
+      ( vcat
+          ( map prettyOp t.test
+              ++ indent 2 (prettyFailure t.failure <+> prettyBS t.body)
+              : if t.shrinks > 0
+                then
+                  [ "("
+                      <> viaShow t.shrinks
+                      <> " shrink"
+                      <> if t.shrinks > 1 then "s" else "" <> ")"
+                  , ""
+                  ]
+                else [""]
+          )
+      )
+
+prettyFailure :: Failure -> Doc x
+prettyFailure (DecodeFailure err) = "↳ JSON decode failure: " <> pretty err
+prettyFailure (TypeErrorFailure err) = "↳ JSON type error failure: " <> viaShow err
+prettyFailure (StatusCodeFailure code) = "↳ " <> viaShow code
 
 ------------------------------------------------------------------------
 
@@ -117,7 +159,7 @@ verifyLoop opts spec deployment client = go
       return res
     go n ops prng genEnv res = do
       (op, prng', genEnv') <- generate spec prng genEnv
-      debug (displayOp displayValue op)
+      debug (displayOp op)
       resp <- httpRequest client op
       debug_ $ "  ↳ " <> show resp.statusCode <> " " <> BS8.unpack resp.body
       let cov' = insertCoverage op.id resp.statusCode res.coverage
@@ -185,7 +227,7 @@ shrinkProp ctx client reset ops0 = do
   where
     go [] = debug_ "" >> return True
     go (op : ops) = do
-      debug (displayOp displayValue op)
+      debug (displayOp op)
       resp <- httpRequest client op
       case resp of
         Ok2xx code body -> do

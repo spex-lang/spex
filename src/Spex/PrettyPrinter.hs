@@ -9,6 +9,7 @@ import Data.Map (Map)
 import Data.Map qualified as Map
 import Data.String
 import Prettyprinter
+import Prettyprinter.Render.String
 import Prettyprinter.Render.Text
 import System.IO
 
@@ -33,20 +34,35 @@ prettyTypeDecl :: TypeDecl -> Doc x
 prettyTypeDecl tyDecl =
   "type" <+> prettyBS tyDecl.typeId <+> "=" <+> prettyType tyDecl.rhs
 
-prettyOpDecl :: OpDecl -> Doc x
-prettyOpDecl opDecl =
+prettyOpF :: (a -> Doc x) -> (a -> Doc x) -> OpF a -> Doc x
+prettyOpF pp pb op =
   hsep $
-    [ prettyBS opDecl.id
+    [ prettyBS op.id
     , ":"
-    , prettyMethod opDecl.method
-    , prettyPath opDecl.path
+    , prettyMethod op.method
+    , prettyPathF pp op.path
     ]
-      ++ ( case opDecl.body of
+      ++ ( case op.body of
             Nothing -> []
-            Just ty -> [prettyType ty]
+            Just x -> [pb x]
          )
-      ++ [ prettyResponseType opDecl.responseType
+      ++ [ prettyResponseType op.responseType
          ]
+
+displayOp :: Op -> String
+displayOp = renderString . layoutPretty defaultLayoutOptions . prettyOp
+
+displayOps :: [Op] -> String
+displayOps = renderString . layoutPretty defaultLayoutOptions . prettyOps
+
+prettyOps :: [Op] -> Doc x
+prettyOps = vcat . map prettyOp
+
+prettyOp :: Op -> Doc x
+prettyOp = prettyOpF (\val -> "=" <+> prettyValue val) prettyValue
+
+prettyOpDecl :: OpDecl -> Doc x
+prettyOpDecl = prettyOpF (\ty -> ":" <+> prettyType ty) prettyType
 
 prettyMethod :: Method -> Doc x
 prettyMethod Get = "GET"
@@ -54,11 +70,11 @@ prettyMethod Post = "POST"
 prettyMethod Put = "PUT"
 prettyMethod Delete = "DELETE"
 
-prettyPath :: [PathSegment Type] -> Doc x
-prettyPath = align . hcat . zipWith (<>) (repeat "/") . map aux
+prettyPathF :: (a -> Doc x) -> [PathSegment a] -> Doc x
+prettyPathF pp = align . hcat . zipWith (<>) (repeat "/") . map aux
   where
     aux (Path bs) = prettyBS bs
-    aux (Hole p ty) = "{" <> prettyBS p <+> ":" <+> prettyType ty <> "}"
+    aux (Hole p x) = "{" <> prettyBS p <+> pp x <> "}"
 
 prettyType :: Type -> Doc x
 prettyType UnitT = "Unit"
@@ -66,7 +82,7 @@ prettyType BoolT = "Bool"
 prettyType StringT = "String"
 prettyType IntT = "Int"
 prettyType (ArrayT tys) = error "prettyType: not implemented yet!"
-prettyType (RecordT r) = prettyRecord prettyType r
+prettyType (RecordT r) = prettyRecord (\ty -> ":" <+> prettyType ty) r
 prettyType (UserT tid) = prettyBS tid.item
 prettyType (AbstractT ty) = "@" <> prettyType ty
 prettyType (UniqueT ty) = "!" <> prettyType ty
@@ -85,10 +101,22 @@ prettyRecord p =
     . prettyFields p
 
 prettyFields :: (a -> Doc x) -> Map Field a -> [Doc x]
-prettyFields p = map (\(f, x) -> prettyBS f <+> ":" <+> p x) . Map.toList
+prettyFields p = map (\(f, x) -> prettyBS f <+> p x) . Map.toList
 
 prettyBS :: (Coercible a ByteString) => a -> Doc x
 prettyBS = fromString . BS8.unpack . coerce
+
+------------------------------------------------------------------------
+
+prettyValue :: Value -> Doc x
+prettyValue UnitV = "()"
+prettyValue (BoolV b) = viaShow b
+prettyValue (IntV i) = viaShow i
+prettyValue (StringV t) = pretty t
+prettyValue (ArrayV vs) = undefined
+prettyValue (RecordV fvs) = prettyRecord (\val -> "=" <+> prettyValue val) fvs
+
+------------------------------------------------------------------------
 
 putSpec :: Spec -> IO ()
 putSpec = hPutSpec stdout

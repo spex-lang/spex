@@ -24,17 +24,26 @@ libMain :: IO ()
 libMain = do
   setLocaleEncoding utf8
   opts <- parseCliOptions
-  mainWith opts
+  mainWith opts notTesting
   exitSuccess
 
-mainWith :: Options -> IO ()
-mainWith (optsCommand -> Repl {}) = notSupportedYet
-mainWith (optsCommand -> Import {}) = notSupportedYet
-mainWith (optsCommand -> Export {}) = notSupportedYet
-mainWith opts = do
+type Testing = Bool
+
+notTesting :: Testing
+notTesting = False
+
+mainWith :: Options -> Testing -> IO ()
+mainWith (optsCommand -> Repl {}) _testing = notSupportedYet
+mainWith (optsCommand -> Import {}) _testing = notSupportedYet
+mainWith (optsCommand -> Export {}) _testing = notSupportedYet
+mainWith opts testing = do
   appEnv <- newAppEnv opts
   let (app, specFile) = case opts.optsCommand of
-        Verify vopts -> (verifyApp vopts, vopts.specFilePath)
+        Verify vopts
+          -- During testing, redirect the printing of the result to the logs,
+          -- so it's easier to test the complete output using one golden test.
+          | testing -> (verifyAppLog vopts, vopts.specFilePath)
+          | otherwise -> (verifyAppStdout vopts, vopts.specFilePath)
         Format fopts -> (formatApp fopts, fopts.specFilePath)
         Check copts -> (checkApp copts, copts.specFilePath)
         _ -> error "impossible"
@@ -50,8 +59,21 @@ notSupportedYet = do
   putStrLn "Not supported yet!"
   exitFailure
 
-verifyApp :: VerifyOptions -> App ()
-verifyApp opts = do
+verifyAppStdout :: VerifyOptions -> App ()
+verifyAppStdout opts =
+  verifyApp
+    opts
+    (\spec result seed -> liftIO (putResult spec result seed))
+
+verifyAppLog :: VerifyOptions -> App ()
+verifyAppLog opts =
+  verifyApp
+    opts
+    (\spec result seed -> info_ (displayResult spec result seed))
+
+verifyApp ::
+  VerifyOptions -> (Spec -> Result -> Int -> App ()) -> App ()
+verifyApp opts handleResult = do
   let deploy =
         Deployment
           (HostPort opts.host opts.port)
@@ -75,9 +97,8 @@ verifyApp opts = do
   info $ "Starting to run tests...\n"
   (prng, seed) <- liftIO (newPrng opts.seed)
   result <- verify opts spec deploy prng
-  done $
-    "Done testing, here are the results: \n\n"
-      <> displayResult spec result seed
+  done $ "Done testing!"
+  handleResult spec result seed
 
 formatApp :: FormatOptions -> App ()
 formatApp opts = do
@@ -99,4 +120,4 @@ checkApp opts = do
 testMain :: [String] -> IO ()
 testMain args = do
   opts <- parseCliOptions_ args
-  mainWith opts
+  mainWith opts True

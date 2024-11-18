@@ -10,19 +10,19 @@ i Waiting for health check to pass...
 
 i Starting to run tests...
 
-✓ Done testing, here are the results: 
+✓ Done testing!
+i     
+  Found 0 intereresting test case.
 
+  Coverage:
+    2xx:
+      47% addPet (47 ops)
+    404:
+      53% getPet (53 ops)
 
-Coverage:
-  2xx:
-    47% addPet (47 ops)
-  404:
-    53% getPet (53 ops)
+    Not covered (no non-404 responses):
+      getPet
 
-Not covered (no non-404 responses):
-  getPet
+  Total operations (ops): 100
 
-Total operations (ops): 100
-
-Use --seed 2503963955766725184 to reproduce
-
+  Use --seed 2503963955766725184 to reproduce this run.

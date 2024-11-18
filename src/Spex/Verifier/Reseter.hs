@@ -7,6 +7,7 @@ import System.Exit
 import System.Process
 
 import Spex.Monad
+import Spex.PrettyPrinter
 import Spex.Syntax
 import Spex.Verifier.HttpClient
 
@@ -18,7 +19,7 @@ reseter client reset = do
     ResetPath path -> do
       let path' = BS8.dropWhile (== '/') path
       let op = Op "reset" Delete [Path path'] Nothing UnitT
-      debug (displayOp displayValue op)
+      debug (displayOp op)
       eResp <- tryA $ httpRequest client op
       case eResp of
         Left _err -> throwA ResetFailed

@@ -26,6 +26,7 @@ import System.IO
 
 import Spex.CommandLine.Ansi
 import Spex.CommandLine.Option
+import Spex.PrettyPrinter
 import Spex.Syntax
 
 ------------------------------------------------------------------------
@@ -263,7 +264,7 @@ displayHttpException :: Op -> HttpException -> String
 displayHttpException op (HttpExceptionRequest _req content) = case content of
   ConnectionFailure _someException -> "Couldn't connect to host."
   StatusCodeException resp _ ->
-    displayOp displayValue op <> "\n" <> show (Http.responseStatus resp)
+    show (prettyOp op) <> "\n" <> show (Http.responseStatus resp)
   err -> show err
 displayHttpException _op InvalidUrlException {} =
   error "impossible: already handled by InvalidDeploymentUrl"
