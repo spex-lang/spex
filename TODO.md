@@ -127,11 +127,9 @@ Here's what I'm currently working on:
 - move petstore to separate repo?
 - public docker images for spex and spex-petshop
   + https://github.com/orgs/spex-lang/packages/container/spex/settings (at the bottom)
-  + can we simply have an image that does `FROM scratch; ADD spex
-    spex-demo-petshop /` and build that in the `install` target in the
-    makefile? Thereby not having to rebuild anything?
+  + add smoke test for docker image
 
 ### Tooling
 
+- https://pandoc.org/chunkedhtml-demo/13-syntax-highlighting.html
 - Highlighting: https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-and-highlighting-code-blocks#syntax-highlighting
-

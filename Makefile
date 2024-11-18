@@ -142,8 +142,8 @@ release:
   # binaries get downloaded for the different OSes they get put in separate
   # folders, the following roughly simulates that locally.
   ifeq ($(GITHUB_ACTIONS),false)
-	mkdir -p $(SPEX_BIN)/$(OS)
-	mv $(SPEX_BIN)/spex* $(SPEX_BIN)/$(OS)
+	mkdir -p $(SPEX_BIN)/$(shell uname -m)-$(OS)
+	mv $(SPEX_BIN)/spex* $(SPEX_BIN)/$(shell uname -m)-$(OS)
 	ls -R $(SPEX_BIN)
   endif
 	for dir in $$(ls $(SPEX_BIN)); do \
@@ -157,9 +157,17 @@ release:
 			   $(SPEX_BIN)/$$(basename $$bin $$suffix)-$(NEW_VERSION)-$$(basename $$dir)$$suffix; \
 		done \
 	done
+	docker build \
+		--volume $(CABAL_PACKAGES_CACHE):/root/.cache/cabal/packages \
+		--volume $(CABAL_STORE):/root/.local/state/cabal/store \
+                --build-arg=SPEX_BIN=$(SPEX_BIN) \
+                --build-arg=NEW_VERSION=$(NEW_VERSION) \
+		--tag ghcr.io/spex-lang/spex:$(NEW_VERSION) \
+		--file Dockerfile.app
   ifeq ($(GITHUB_ACTIONS),true)
 	gh release create --prerelease --notes-file=CHANGELOG.md \
 		"v$(NEW_VERSION)" $(SPEX_BIN)/spex*
+	docker push ghcr.io/spex-lang/spex:$(NEW_VERSION)
   else
 	@echo Running locally, skipping automatic release...
   endif
