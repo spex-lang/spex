@@ -22,9 +22,6 @@ data OpF a = Op
 newtype OpId = OpId ByteString
   deriving (Eq, Ord, Show, IsString)
 
-displayOpId :: OpId -> String
-displayOpId (OpId bs) = BS8.unpack bs
-
 type Op = OpF Value
 
 type OpDecl = OpF Type

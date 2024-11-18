@@ -32,6 +32,7 @@ data Command
   = Verify VerifyOptions
   | Format FormatOptions
   | Check CheckOptions
+  | Mock MockOptions
   | Repl ReplOptions
   | Import ImportOptions
   | Export ExportOptions
@@ -55,6 +56,12 @@ data FormatOptions = FormatOptions
 
 data CheckOptions = CheckOptions
   {specFilePath :: FilePath}
+
+data MockOptions = MockOptions
+  { specFilePath :: FilePath
+  , port :: Int
+  , seed :: Maybe Int
+  }
 
 data ReplOptions = ReplOptions
 data ImportOptions = ImportOptions
@@ -101,6 +108,12 @@ parser =
             ( info
                 (Check <$> check)
                 (progDesc "Check a Spex specification for internal consistency")
+            )
+          <> command
+            "mock"
+            ( info
+                (Mock <$> mock)
+                (progDesc "Mock a Spex specification")
             )
           <> command
             "repl"
@@ -229,6 +242,27 @@ parser =
 
     check :: Parser CheckOptions
     check = CheckOptions <$> specFile
+
+    mock :: Parser MockOptions
+    mock =
+      MockOptions
+        <$> specFile
+        <*> option
+          auto
+          ( long "port"
+              <> short 'p'
+              <> metavar "PORT"
+              <> help "Port"
+              <> value 8080
+          )
+        <*> optional
+          ( option
+              auto
+              ( long "seed"
+                  <> help "Seed for pseudo-random number generator"
+                  <> metavar "INT"
+              )
+          )
 
     repl :: Parser ReplOptions
     repl = pure ReplOptions

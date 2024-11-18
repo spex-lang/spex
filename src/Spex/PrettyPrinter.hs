@@ -116,6 +116,12 @@ prettyValue (StringV t) = pretty t
 prettyValue (ArrayV vs) = undefined
 prettyValue (RecordV fvs) = prettyRecord (\val -> "=" <+> prettyValue val) fvs
 
+displayValue :: Value -> String
+displayValue =
+  renderString
+    . layoutPretty defaultLayoutOptions
+    . prettyValue
+
 ------------------------------------------------------------------------
 
 putSpec :: Spec -> IO ()

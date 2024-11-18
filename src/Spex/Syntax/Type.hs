@@ -44,41 +44,11 @@ userDefinedTypes = \case
   ArrayT tys -> foldMap userDefinedTypes tys
   RecordT ftys -> foldMap userDefinedTypes ftys
   UserT tid -> Set.singleton tid
-  AbstractT _ty -> mempty -- NOTE: Abstract types don't need to be in scope.
+  AbstractT ty -> mempty -- NOTE: Abstract types don't need to be in scope.
   UniqueT ty -> userDefinedTypes ty
 
 data Method = Get | Post | Put | Delete
   deriving (Show)
 
-displayMethod :: Method -> String
-displayMethod Get = "GET"
-displayMethod Post = "POST"
-displayMethod Put = "PUT"
-displayMethod Delete = "DELETE"
-
-displayType :: Type -> String
-displayType UnitT = "Unit"
-displayType BoolT = "Bool"
-displayType StringT = "String"
-displayType IntT = "Int"
-displayType (ArrayT a) = displayArray displayType a
-displayType (RecordT ftys) = displayRecord displayType " : " ftys
-displayType (UserT tid) = displayTypeId tid.item
-displayType (AbstractT ty) = "@" <> displayType ty
-displayType (UniqueT ty) = "!" <> displayType ty
-
 displayTypeId :: TypeId -> String
 displayTypeId (TypeId bs) = BS8.unpack bs
-
-displayArray :: (a -> String) -> Vector a -> String
-displayArray d xs =
-  "[" <> concat (intersperse ", " (Vector.toList (fmap d xs))) <> "]"
-
-displayRecord :: (a -> String) -> String -> Record a -> String
-displayRecord d sep r =
-  "{" <> concat (intersperse ", " (map go (Map.toList r))) <> "}"
-  where
-    go (f, x) = displayField f <> sep <> d x
-
-displayField :: Field -> String
-displayField (Field bs) = BS8.unpack bs

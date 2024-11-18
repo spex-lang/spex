@@ -39,6 +39,7 @@ library
     Spex.CommandLine.Spinner
     Spex.Lexer
     Spex.LibMain
+    Spex.Mock
     Spex.Monad
     Spex.Parser
     Spex.PrettyPrinter
@@ -82,6 +83,8 @@ library
     , template-haskell
     , utf8-string
     , vector
+    , wai
+    , warp
 
   -- GHC boot library dependencies:
   -- (https://gitlab.haskell.org/ghc/ghc/-/blob/master/packages)

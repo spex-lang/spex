@@ -9,6 +9,7 @@ import System.IO (IOMode (WriteMode), utf8, withFile)
 
 import Spex.CommandLine.Option
 import Spex.Lexer
+import Spex.Mock
 import Spex.Monad
 import Spex.Parser
 import Spex.PrettyPrinter
@@ -45,6 +46,7 @@ mainWith opts testing = do
           | testing -> (verifyAppLog vopts, vopts.specFilePath)
           | otherwise -> (verifyAppStdout vopts, vopts.specFilePath)
         Format fopts -> (formatApp fopts, fopts.specFilePath)
+        Mock mopts -> (mockApp mopts, mopts.specFilePath)
         Check copts -> (checkApp copts, copts.specFilePath)
         _ -> error "impossible"
   runApp appEnv (app >> flushLogger >> closeLogger) >>= \case
@@ -114,6 +116,14 @@ checkApp opts = do
   spec <- pure (runParser specP bs) <?> ParserError
   scopeCheck spec
   done "Specification is well-formed!"
+
+mockApp :: MockOptions -> App ()
+mockApp opts = do
+  bs <- liftIO (try (BS.readFile opts.specFilePath)) <?> ReadSpecFileError
+  spec <- pure (runParser specP bs) <?> ParserError
+  scopeCheck spec
+  info ("Starting mock server on http://localhost:" <> show (opts.port))
+  liftIO (runMock opts spec)
 
 ------------------------------------------------------------------------
 
