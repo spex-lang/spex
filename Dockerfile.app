@@ -7,7 +7,9 @@ LABEL org.opencontainers.image.licenses=BSD-2-Clause
 ARG SPEX_BIN
 ARG NEW_VERSION
 
-COPY $SPEX_BIN/spex-$NEW_VERSION-x86_64-linux /spex
-COPY $SPEX_BIN/spex-demo-petstore-$NEW_VERSION-x86_64-linux /spex-demo-petstore
+COPY --chmod 755 $SPEX_BIN/spex-$NEW_VERSION-x86_64-linux /spex
+COPY --chmod 755 $SPEX_BIN/spex-demo-petstore-$NEW_VERSION-x86_64-linux /spex-demo-petstore
+
+ENV PATH="/:$PATH"
 
 ENTRYPOINT [ "/spex" ]
