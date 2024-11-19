@@ -158,8 +158,6 @@ release:
 		done \
 	done
 	docker build \
-		--volume $(CABAL_PACKAGES_CACHE):/root/.cache/cabal/packages \
-		--volume $(CABAL_STORE):/root/.local/state/cabal/store \
                 --build-arg=SPEX_BIN=$(SPEX_BIN) \
                 --build-arg=NEW_VERSION=$(NEW_VERSION) \
 		--tag ghcr.io/spex-lang/spex:$(NEW_VERSION) \
