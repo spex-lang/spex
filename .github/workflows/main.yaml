@@ -61,10 +61,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ github.token }}
 
-      - name: Pull image (Linux only)
-        if: ${{ env.platform == 'x86_64-linux' }}
-        run: make pull-image
-
       - name: Build image (Linux only)
         if: ${{ env.platform == 'x86_64-linux' }}
         env:

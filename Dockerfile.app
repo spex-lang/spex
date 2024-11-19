@@ -1,7 +1,7 @@
 FROM scratch
 
 LABEL org.opencontainers.image.source=https://github.com/spex-lang/spex
-LABEL org.opencontainers.image.description="The Spex specification language and verifer"
+LABEL org.opencontainers.image.description="The Spex specification language and toolkit"
 LABEL org.opencontainers.image.licenses=BSD-2-Clause
 
 ARG SPEX_BIN
