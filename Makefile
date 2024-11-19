@@ -163,9 +163,9 @@ release:
 		--tag ghcr.io/spex-lang/spex:$(NEW_VERSION) \
 		--file Dockerfile.app .
   ifeq ($(GITHUB_ACTIONS),true)
+	docker push ghcr.io/spex-lang/spex:$(NEW_VERSION)
 	gh release create --prerelease --notes-file=CHANGELOG.md \
 		"v$(NEW_VERSION)" $(SPEX_BIN)/spex*
-	docker push ghcr.io/spex-lang/spex:$(NEW_VERSION)
   else
 	@echo Running locally, skipping automatic release...
   endif
