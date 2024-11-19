@@ -199,6 +199,7 @@ jobs:
             cabal.project
             Makefile
             CHANGELOG.md
+            Dockerfile.app
           sparse-checkout-cone-mode: false
 
       # This is needed in order to push the new image.
