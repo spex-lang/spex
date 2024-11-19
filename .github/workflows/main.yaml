@@ -196,6 +196,14 @@ jobs:
             CHANGELOG.md
           sparse-checkout-cone-mode: false
 
+      # This is needed in order to push the new image.
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
       - name: Download binary artifacts
         uses: actions/download-artifact@v4
         with:
@@ -229,3 +237,13 @@ jobs:
 
       - name: Smoke test `spex --version`
         run: make smoke
+
+  smoke-test-image:
+    name: Smoke test container image
+    needs: [build, release]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Smoke test containerised `spex --version`
+        env:
+          NEW_VERSION: ${{ needs.build.outputs.new-version }}
+        run: make smoke-image

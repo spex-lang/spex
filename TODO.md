@@ -4,11 +4,6 @@ Here's what I'm currently working on:
 
 ### First release
 
-- make one example that contains all kinds of "problems" spex can find?
-  * reachability/coverage
-  * correct json responses
-  * minimal test cases that give rise to non-2xx responses
-
 - tests for all examples in readme
 
 - reenable ci for mac and win
@@ -127,7 +122,6 @@ Here's what I'm currently working on:
 - move petstore to separate repo?
 - public docker images for spex and spex-petshop
   + https://github.com/orgs/spex-lang/packages/container/spex/settings (at the bottom)
-  + add smoke test for docker image
 
 ### Tooling
 

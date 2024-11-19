@@ -243,9 +243,13 @@ smoke:
 	export PATH="$$PATH:/usr/local/bin:$$HOME/.local/bin" && \
 	spex --version | grep "v${CABAL_VERSION} ${SPEX_GIT_COMMIT}" 
 
+smoke-image:
+	docker run ghcr.io/spex-lang/spex:$(NEW_VERSION) --version \
+		| grep "v${CABAL_VERSION} ${SPEX_GIT_COMMIT}" 
+
 # ----------------------------------------------------------------------
 
-.PHONY: clean
+.PHONY: clean distclean
 
 clean:
 	rm -rf dist-newstyle
@@ -283,15 +287,7 @@ push-image:
 	  docker push ghcr.io/spex-lang/spex-build:latest
   endif
 
-.PHONY: build-app-image cr-login
-
-build-app-image: Dockerfile.app
-	docker build \
-		--volume $(CABAL_PACKAGES_CACHE):/root/.cache/cabal/packages \
-		--volume $(CABAL_STORE):/root/.local/state/cabal/store \
-                --env=SPEX_GIT_COMMIT=$(SPEX_GIT_COMMIT) \
-		--tag ghcr.io/spex-lang/spex:latest \
-		--file Dockerfile.app
+.PHONY: cr-login
 
 cr-login:
 	# This needs to be a personal access tokens (classic) with "repo,
