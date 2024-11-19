@@ -7,8 +7,7 @@ ARG GHC_VERSION
 ARG CABAL_VERSION
 
 LABEL org.opencontainers.image.source=https://github.com/spex-lang/spex
-LABEL org.opencontainers.image.description=
-        "The Spex specification language and toolkit static build image"
+LABEL org.opencontainers.image.description="The Spex specification language and toolkit static build image"
 LABEL org.opencontainers.image.licenses=BSD-2-Clause
 
 # Install system dependencies needed for ghcup.
