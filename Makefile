@@ -263,11 +263,11 @@ distclean: clean
 # These references will be passed in by GitHub CI and are used to check if the
 # Dockerfile has changed. When run locally we default back on checking if the
 # Dockerfile has changed between HEAD and origin/main.
-GITHUB_EVENT_AFTER  ?= HEAD
 GITHUB_EVENT_BEFORE ?= origin/main
+GITHUB_EVENT_AFTER  ?= HEAD
 
 DOCKERFILE_CHANGED := $(shell \
-	git diff --name-only "$(GITHUB_EVENT_AFTER)" "$(GITHUB_EVENT_BEFORE)" \
+	git diff --name-only "$(GITHUB_EVENT_BEFORE)" "$(GITHUB_EVENT_AFTER)" \
 	| grep --quiet "^Dockerfile$$" && echo true || echo false)
 
 .PHONY: pull-image build-image push-image

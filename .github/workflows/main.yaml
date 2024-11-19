@@ -38,6 +38,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with: 
+          # NOTE: This is how many commits to checkout, the default is 1, but
+          # since in the "Build image" step we need to determine if the
+          # Dockerfile changed, so we need to fetch more than the last commit.
+          # Setting it to 0 will fetch all commits. We should monitor this to
+          # see if it gets slow over time.
+          fetch-depth: 0
 
       - name: Set up GHC ${{ matrix.ghc-version }} (MacOS and Windows only)
         if: ${{ env.platform != 'x86_64-linux' }}
