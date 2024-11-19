@@ -4,17 +4,12 @@ Here's what I'm currently working on:
 
 ### First release
 
-- tests for all examples in readme
+- use white bg in logo
 
-- reenable ci for mac and win
+- move examples from readme into tutorial
 
 - contributing.md
   + https://x.com/mitchellh/status/1852039089547309552
-
-- release notes
-  + focus on infra
-  + bare minimum language and verifier
-  + one example, for more see readme/website?
 
 - move todo and roadmap to proper tickets
 
@@ -24,24 +19,26 @@ Here's what I'm currently working on:
 
 #### Website
 
-+ why/motivation/comparison?
-  * reachability/coverage
-  * correct json responses
-  * minimal test cases that give rise to non-2xx responses
-+ install
-+ tutorial
-+ (docs)
++ index
++ docs
+  - why/motivation/comparison?
+    * reachability/coverage
+    * correct json responses
+    * minimal test cases that give rise to non-2xx responses
+  - tutorial
+  - install
+  - (faq)
+    * different from prior work
+      - https://github.com/microsoft/restler-fuzzer
+        https://www.code-intelligence.com/blog/stateful-rest-api-fuzzing
+      - https://github.com/Fuzzapi/API-fuzzer
+      - https://github.com/KissPeter/APIFuzzer
+      - https://github.com/TNO-S3/WuppieFuzz
+      - https://endava.github.io/cats/docs/intro
+      - https://smithy.io
+      - [Testing RESTful APIs: A Survey](https://dl.acm.org/doi/10.1145/3617175)
 + community
 + (news/blog)
-+ (faq)
-  * different from prior work
-    - https://github.com/microsoft/restler-fuzzer
-      https://www.code-intelligence.com/blog/stateful-rest-api-fuzzing
-    - https://github.com/Fuzzapi/API-fuzzer
-    - https://github.com/KissPeter/APIFuzzer
-    - https://github.com/TNO-S3/WuppieFuzz
-    - https://endava.github.io/cats/docs/intro
-    - https://smithy.io
 
 #### Other
 
@@ -65,6 +62,10 @@ Here's what I'm currently working on:
 
 - ensure shrinking shrinks to the same status code, i.e. doesn't uncover
   another error?
+
+- check for and forbid overlapping ops (same method and path)
+
+- diff two specs
 
 #### Spexup
 
