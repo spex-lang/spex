@@ -248,6 +248,12 @@ jobs:
     needs: [build, release]
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            Makefile
+          sparse-checkout-cone-mode: false
+
       - name: Smoke test containerised `spex --version`
         env:
           NEW_VERSION: ${{ needs.build.outputs.new-version }}
