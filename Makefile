@@ -161,7 +161,7 @@ release:
                 --build-arg=SPEX_BIN=$(SPEX_BIN) \
                 --build-arg=NEW_VERSION=$(NEW_VERSION) \
 		--tag ghcr.io/spex-lang/spex:$(NEW_VERSION) \
-		--file Dockerfile.app
+		--file Dockerfile.app .
   ifeq ($(GITHUB_ACTIONS),true)
 	gh release create --prerelease --notes-file=CHANGELOG.md \
 		"v$(NEW_VERSION)" $(SPEX_BIN)/spex*
