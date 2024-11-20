@@ -52,7 +52,7 @@ repo to get access to the examples:
 git clone https://github.com/spex-lang/spex.git
 cd spex
 spex-demo-petstore & # Start the demo HTTP API server in the background.
-PETSTORE_PID=$!
+PETSTORE_PID=$! # Save the pid of the demo server, so we can kill it later.
 spex verify example/petstore-modal-faults.spex --tests 2000
 kill $PETSTORE_PID # Stop the demo server.
 ```

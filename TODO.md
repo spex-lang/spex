@@ -4,9 +4,9 @@ Here's what I'm currently working on:
 
 ### First release
 
-- use white bg in logo
-
 - write tutorial
+
+- write motivation
 
 - move todo and roadmap to proper tickets
 
@@ -16,15 +16,7 @@ Here's what I'm currently working on:
 
 #### Website
 
-+ index
-+ docs
-  - why/motivation/comparison?
-    * reachability/coverage
-    * correct json responses
-    * minimal test cases that give rise to non-2xx responses
-  - tutorial
-  - install
-  - (faq)
+- faq
     * different from prior work
       - https://github.com/microsoft/restler-fuzzer
         https://www.code-intelligence.com/blog/stateful-rest-api-fuzzing
@@ -39,8 +31,7 @@ Here's what I'm currently working on:
       - [A Survey of Protocol Fuzzing](https://arxiv.org/abs/2401.01568)
       - https://github.com/schemathesis/schemathesis
       - https://github.com/mockoon/mockoon
-+ community
-+ (news/blog)
+- news/blog
 
 #### Other
 
@@ -117,6 +108,7 @@ Here's what I'm currently working on:
 
 ### Build system
 
+- fix broken app image and ci smoke test
 - make linux work without docker locally?
   + cache files between docker and not should probably not be shared?
 
@@ -125,8 +117,6 @@ Here's what I'm currently working on:
 - changelog generator (semantic commit messages)
 - commit hook for conventional commits?
 - move petstore to separate repo?
-- public docker images for spex and spex-petshop
-  + https://github.com/orgs/spex-lang/packages/container/spex/settings (at the bottom)
 
 ### Tooling
 
