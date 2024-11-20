@@ -42,9 +42,26 @@ following [link](https://spex-lang.org/motivation.html).
 
 See [`INSTALL.md`](INSTALL.md) for installation instructions.
 
-## Usage
+## Getting started
 
-The easiest way to get started is to follow the
+The easiest way to get started is to follow the installation instructions above
+to obtain the `spex` and `spex-demo-petstore` binaries, and then clone this
+repo to get access to the examples:
+
+```bash
+git clone https://github.com/spex-lang/spex.git
+cd spex
+spex-demo-petstore & # Start the demo HTTP API server in the background.
+PETSTORE_PID=$!
+spex verify example/petstore-modal-faults.spex --tests 2000
+kill $PETSTORE_PID # Stop the demo server.
+```
+
+(You can also open the demo server in a separate terminal and avoid starting it
+in the background and killing it.)
+
+For a longer introduction, including what's happening behind the scenes when
+you run e.g. `spex verify`, see the
 [tutorial](https://spex-lang.org/tutorial.html).
 
 ## Community
