@@ -105,7 +105,8 @@ prettyTest i t =
                   [ "("
                       <> viaShow t.shrinks
                       <> " shrink"
-                      <> if t.shrinks > 1 then "s" else "" <> ")"
+                      <> (if t.shrinks > 1 then "s" else "")
+                      <> ")"
                   , ""
                   ]
                 else [""]
