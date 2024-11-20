@@ -6,14 +6,11 @@ Here's what I'm currently working on:
 
 - use white bg in logo
 
-- move examples from readme into tutorial
-
-- contributing.md
-  + https://x.com/mitchellh/status/1852039089547309552
+- write tutorial
 
 - move todo and roadmap to proper tickets
 
-- website
+- website on mobile?
 
 ### Documentation
 
@@ -36,13 +33,20 @@ Here's what I'm currently working on:
       - https://github.com/TNO-S3/WuppieFuzz
       - https://endava.github.io/cats/docs/intro
       - https://smithy.io
+      - TypeSpec
+      - https://www.oxlip-lang.org/doc/overview.html
       - [Testing RESTful APIs: A Survey](https://dl.acm.org/doi/10.1145/3617175)
+      - [A Survey of Protocol Fuzzing](https://arxiv.org/abs/2401.01568)
+      - https://github.com/schemathesis/schemathesis
+      - https://github.com/mockoon/mockoon
 + community
 + (news/blog)
 
 #### Other
 
 - ARCHITECTURE.md?
+- contributing.md
+  + https://x.com/mitchellh/status/1852039089547309552
 
 ### Features
 

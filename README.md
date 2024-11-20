@@ -11,43 +11,29 @@ For more information see the [website](https://spex-lang.org).
 
 ## Why Spex?
 
-* OpenAPI [specifications](https://www.openapis.org/), the most common way of
-  specifying HTTP JSON APIs today, are written in JSON or YAML, both verbose and
-  error-prone. *Spex* aims to provide a concise specification language which is a
-  pleasure to read and write, as well as nice error messages that make it easy
-  to fix mistakes;
+* The *Spex* specification language strives to provide a concise way of
+  specifying HTTP JSON APIs with Elm-style error messages;
 
-* The OpenAPI [tooling](https://tools.openapis.org/) is extensive, and
-  includes:
-
-    - Generation of API clients, server stubs and documentation;
-    - Testing / fuzzing;
-    - Mocking;
-    - Linting.
-
-  *Spex*, despite still being young, already has support for fuzzing and
-  mocking, as well as plans to add code generation, linting and some other
-  tooling that doesn't have OpenAPI analogues:
-
-    - REPL;
-    - Debugger.
-
-  Finally, one will also be able to import and export OpenAPI specifications,
-  thereby having access to that ecosystem of tools as well.
-
-  By coevolving the language and the tooling, we can add features that will be
-  hard to replicate in OpenAPI, e.g.:
-
-    - Refinement types -- validation logic;
-    - Model definitions -- fakes rather than mocks and better fuzzing.
-
-* Specifications of the HTTP JSON APIs of components in a system captures how
-  the components may be called, but they don't say how the components are
-  related to each other. Longer term *Spex* aims to allow for a wider range of
-  specifications, e.g. async message passing, as well as means to compose them
-  into bigger system specifications, this opens up for other kinds of tooling:
-
-  - diagrams
+* The *Spex* toolkit consists of various tools for working with specifications:
+  - [x] A verifer: that checks a specfication against a server, using fuzzing and
+    generative testing techniques, and reports back:
+    + minimised test cases that lead to non-2xx responses, or;
+    + JSON response decode or type errors, as well as;
+    + any non-reachable APIs.
+  - [x] A mock server: which takes a specification and creates a server which
+    generates responses according to the specification;
+  - [ ] Code generator: which takes a specification and a template and generates
+    code, e.g. API clients, server stubs or documentation (this is not
+    implemented yet).
+  - [ ] A REPL: takes a specification and an URL and gives you a REPL which can be
+    used to explore the server behind the URL, which tab completion generating
+    random payload data for the different possible API calls (not implemented
+    yet);
+  - [ ] A debugger: which takes a test case and lets you step forwards and
+    backwards one API call at the time and gives you a REPL to explore the
+    system under test in between the steps (not implemented yet);
+  - [ ] A import and exporter: which allows for conversion to and from other
+    specification formats, e.g. OpenAPI (not implemented yet).
 
 For a more elaborate explaination of the motivation behind *Spex*, see the
 following [link](https://spex-lang.org/motivation.html).
