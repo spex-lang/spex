@@ -53,7 +53,7 @@ git clone https://github.com/spex-lang/spex.git
 cd spex
 spex-demo-petstore & # Start the demo HTTP API server in the background.
 spex verify example/petstore-modal-faults.spex --tests 2000
-kill $! # Stop the demo server.
+kill $! # Stop the demo server ($! contains the pid of the last child process).
 ```
 
 (You can also open the demo server in a separate terminal and avoid starting it
