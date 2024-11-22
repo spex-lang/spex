@@ -12,6 +12,7 @@ import Spex.Syntax.Value
 --
 data OpF a = Op
   { id :: OpId
+  , headers :: [HeaderF a]
   , method :: Method
   , path :: [PathSegment a]
   , body :: Maybe a
@@ -21,6 +22,16 @@ data OpF a = Op
 
 newtype OpId = OpId ByteString
   deriving (Eq, Ord, Show, IsString)
+
+data HeaderF a = Header ByteString (Maybe a)
+  deriving (Show, Functor, Foldable, Traversable)
+
+
+type Header = HeaderF Value
+type HeaderDecl = HeaderF Type
+
+noHeaders :: [HeaderF a]
+noHeaders = []
 
 type Op = OpF Value
 

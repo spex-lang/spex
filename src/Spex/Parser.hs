@@ -95,12 +95,25 @@ opDeclP :: Parser OpDecl
 opDeclP = do
   x <- OpId <$> ident
   $(symbol' ":")
+  hs <- headersP <|> pure []
   m <- methodP'
   p <- pathSegmentsP'
   ws
   b <- bodyDeclP
   respTy <- responseTypeP
-  return (Op x m p b respTy)
+  return (Op x hs m p b respTy)
+
+headersP :: Parser [HeaderDecl]
+headersP = insideBrackets $
+  headerP `sepEndBy` $(symbol ",") 
+
+headerP :: Parser HeaderDecl
+headerP = do
+  name <- bident'
+  $(symbol' ":")
+  val <- bident <|> ident'
+  mty <- optional modalTypeP
+  return (Header (name <> ": " <> val) mty)
 
 modalTypeP :: Parser Type
 modalTypeP = abstractTypeP <|> uniqueTypeP <|> typeP
@@ -279,6 +292,13 @@ insideBraces p = do
   $(symbol' "}")
   return x
 
+insideBrackets :: Parser a -> Parser a
+insideBrackets p = do
+  $(symbol "[")
+  x <- p
+  $(symbol' "]")
+  return x
+
 --------------------------------------------------------------------------------
 
 -- * Examples
@@ -291,10 +311,11 @@ p1 =
   unlines
     [ "component Foo where"
     , ""
-    , "addPet : POST /pet !Pet"
-    , "getPet : GET /pet/{petId : @Int} -> Pet"
+    , "addPet : [Authorization: Bearer @Token, ContentType: json] POST /pet !Pet"
+    , "getPet : [Authorization: Bearer @Token] GET /pet/{petId : @Int} -> Pet"
     , ""
     , "type Pet = { petId : Int, petName : String }"
+    , "type Token = String"
     ]
 
 -- "deployment {",

@@ -28,6 +28,9 @@ newPrng Nothing = do
   return (Prng (mkStdGen seed), seed)
 newPrng (Just seed) = return (Prng (mkStdGen seed), seed)
 
+mkPrng :: Int -> Prng
+mkPrng seed = Prng (mkStdGen seed)
+
 splitPrng :: Prng -> (Prng, Prng)
 splitPrng (Prng g) = (Prng g', Prng g'')
   where
@@ -134,12 +137,14 @@ removeRecordType ty = [ty]
 genOp :: [OpDecl] -> GenM (OpDecl, Op)
 genOp opdecls = do
   opdecl <- lift (elements opdecls)
+  hs <- genHeaders opdecl.headers
   p <- genPath opdecl.path
   b <- genBody opdecl.body
   return
     ( opdecl
     , Op
         { id = opdecl.id
+        , headers = hs
         , method = opdecl.method
         , path = p
         , body = b
@@ -182,6 +187,9 @@ genValue' (UniqueT ty) _mode = error ""
 
 genBody :: Maybe Type -> GenM (Maybe Value)
 genBody = traverse genValue
+
+genHeaders :: [HeaderF Type] -> GenM [HeaderF Value]
+genHeaders = traverse (traverse genValue)
 
 genPath :: [PathSegment Type] -> GenM [PathSegment Value]
 genPath = traverse (traverse genValue)

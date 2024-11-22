@@ -16,6 +16,7 @@ Here's what I'm currently working on:
 
 #### Website
 
+- language reference?
 - faq
     * different from prior work
       - https://github.com/microsoft/restler-fuzzer
@@ -31,6 +32,7 @@ Here's what I'm currently working on:
       - [A Survey of Protocol Fuzzing](https://arxiv.org/abs/2401.01568)
       - https://github.com/schemathesis/schemathesis
       - https://github.com/mockoon/mockoon
+      - https://github.com/usebruno/bruno
 - news/blog
 
 #### Other

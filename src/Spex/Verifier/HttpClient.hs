@@ -7,6 +7,7 @@ import Data.ByteString (ByteString)
 import Data.ByteString.Char8 qualified as BS8
 import Data.ByteString.Lazy qualified as LBS
 import Data.ByteString.Lazy.Char8 qualified as LBS8
+import Data.String (fromString)
 import Data.Text.Encoding qualified as Text
 import Network.HTTP.Client qualified as Http
 import Network.HTTP.Types qualified as Http
@@ -34,7 +35,7 @@ newHttpClient (Deployment (HostPort host port) _health _reset) = do
       req
         { Http.requestHeaders =
             [ ("Accept", "application/json")
-            , ("Content-type", "application/json")
+            , ("Content-Type", "application/json")
             ]
         }
 
@@ -48,6 +49,8 @@ httpRequest client op = do
   let req =
         client.baseRequest
           { Http.method = toHttpMethod op.method
+          , Http.requestHeaders =
+              Http.requestHeaders client.baseRequest ++ map toHeader op.headers
           , Http.path = toHttpPath op.path
           , Http.requestBody = toHttpBody op.body
           }
@@ -88,6 +91,16 @@ toHttpMethod Get = Http.methodGet
 toHttpMethod Post = Http.methodPost
 toHttpMethod Put = Http.methodPut
 toHttpMethod Delete = Http.methodDelete
+
+toHeader :: Header -> Http.Header
+toHeader (Header name mVal) = case BS8.split ':' name of
+  [name', val] ->
+    ( fromString (BS8.unpack name')
+    , val <> case mVal of
+        Nothing -> ""
+        Just val' -> LBS.toStrict (encode val')
+    )
+  _otherwise -> error "toHeader: impossible"
 
 toHttpPath :: [PathSegment Value] -> ByteString
 toHttpPath = BS8.intercalate "/" . map aux

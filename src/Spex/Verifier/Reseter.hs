@@ -18,7 +18,7 @@ reseter client reset = do
   case reset of
     ResetPath path -> do
       let path' = BS8.dropWhile (== '/') path
-      let op = Op "reset" Delete [Path path'] Nothing UnitT
+      let op = Op "reset" noHeaders Delete [Path path'] Nothing UnitT
       debug (displayOp op)
       eResp <- tryA $ httpRequest client op
       case eResp of
