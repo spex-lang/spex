@@ -1,4 +1,13 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Spex.Grammar (module Spex.Grammar) where
+
+import Control.Applicative hiding (many, some)
+import Control.Monad
+import Data.List (intersect)
+import Data.String
+
+import Spex.Verifier.Generator
 
 -- https://www.cse.chalmers.se/~coquand/AUTOMATA/w6.html
 -- https://en.wikipedia.org/wiki/Augmented_Backus%E2%80%93Naur_form
@@ -10,6 +19,7 @@ module Spex.Grammar (module Spex.Grammar) where
 
 --
 -- https://www.cse.chalmers.se/~coquand/AUTOMATA/w3.html
+-- https://hackage.haskell.org/package/regex-applicative-0.3.4/docs/src/Text.Regex.Applicative.Types.html#RE
 
 data Reg a
   = Empty
@@ -20,6 +30,46 @@ data Reg a
   | Star (Reg a)
   | Inter (Reg a) (Reg a)
   | Compl (Reg a)
+
+instance Semigroup (Reg a) where
+  (<>) = Concat
+
+instance Monoid (Reg a) where
+  mempty = Epsilon
+  mappend = (<>)
+
+instance (char ~ Char) => IsString (Reg char) where
+  fromString = string
+
+string :: [a] -> Reg a
+string = mconcat . map Atom
+
+instance Functor Reg where
+  fmap f re = case re of
+    Empty -> Empty
+    Epsilon -> Epsilon
+    Atom x -> Atom (f x)
+    Plus e1 e2 -> Plus (fmap f e1) (fmap f e2)
+    Concat e1 e2 -> Concat (fmap f e1) (fmap f e2)
+    Star e -> Star (fmap f e)
+    Inter e1 e2 -> Inter (fmap f e1) (fmap f e2)
+    Compl e -> Compl (fmap f e)
+
+instance Applicative Reg where
+  pure = Atom
+  f <*> x = undefined
+
+instance Alternative Reg where
+  empty = Empty
+  (<|>) = Plus
+
+-- some re = undefined -- re <> many re
+
+some :: Reg a -> Reg a
+some re = re <> many re
+
+many :: Reg a -> Reg a
+many = Star
 
 isEmpty :: Reg a -> Bool
 isEmpty Empty = True
@@ -65,9 +115,94 @@ isIn :: (Eq a) => [a] -> Reg a -> Bool
 isIn [] e = hasEpsilon e
 isIn (a : as) e = isIn as (der a e)
 
-gen :: Reg a -> [a]
-gen Empty = []
-gen Epsilon = undefined
-gen (Atom x) = [x]
-gen (Plus e1 e2) = undefined
-gen (Concat e1 e2) = gen e1 ++ gen e2
+gen :: (Eq a) => Reg a -> Gen [a]
+gen re | notEmpty re = case re of
+  Empty -> error "empty"
+  Epsilon -> return []
+  Atom x -> return [x]
+  Plus e1 e2 -> do
+    b <- genBounded
+    if b then gen e1 else gen e2
+  Concat e1 e2 ->
+    (++) <$> gen e1 <*> gen e2
+  Star e -> do
+    n <- choose (0, 10)
+    fmap concat (replicateM n (gen e))
+  Compl e -> undefined
+  Inter e1 e2 -> intersect <$> gen e1 <*> gen e2
+
+prop_gen :: (Monoid a, Eq a) => Int -> Reg a -> Bool
+prop_gen seed re = runGen (gen re) (mkPrng seed) `isIn` re
+
+testRe :: Reg Char
+testRe = "ab" <|> "c" <|> many "*" <|> some "+"
+
+-- Aka ?
+possibly :: Reg a -> Reg a
+possibly re = re <|> mempty
+
+exactly :: Reg a -> Int -> Reg a
+exactly re n = mconcat (replicate n re)
+
+atleast :: Reg a -> Int -> Reg a
+atleast re 0 = many re
+atleast re n = re <> atleast re (n - 1)
+
+atmost :: Reg a -> Int -> Reg a
+atmost _re 0 = mempty
+atmost re n = (re <> atmost re (n - 1)) <|> mempty
+
+between :: Reg a -> Int -> Int -> Reg a
+between re lo0 hi0 = go lo0 hi0
+  where
+    go 0 hi = atmost re (hi - lo0)
+    go lo hi = re <> go (lo - 1) hi
+
+-- range 'a' 'z' = [a-z]
+range :: (Enum a) => a -> a -> Reg a
+range from to = asum (map Atom [from .. to])
+
+testReColour :: Reg Char
+testReColour = between ("colo" <> possibly "u" <> "r") 1 3
+
+-- XXX: this is biased, because of the nested Plus... Introduce separate Asum
+-- constructor?
+wildcard :: Reg Char
+wildcard = range 'a' 'z' -- minBound .. maxBound?
+
+testRe2 :: Reg Char
+testRe2 = Atom 'a' <> wildcard <> Atom 'c'
+
+test :: Prng -> String
+test prng = runGen (gen testReColour) prng
+
+t :: IO ()
+t = do
+  replicateM_ 10 $ do
+    (prng, _seed) <- newPrng Nothing
+    putStrLn (test prng)
+
+------------------------------------------------------------------------
+
+-- * BNF
+
+newtype Syntax = Syntax [Rule]
+
+-- <name> ::= e_1 | ... | e_n
+data Rule = Or RuleName [Expr]
+
+type Text = String
+
+newtype RuleName = RuleName Text
+
+-- <name>
+-- "lit"
+-- <name_1> "lit_1" <name_2>
+-- "lit_2"*
+-- ("lit_3" <name_1>)*
+data Expr = Term Term | And [Expr] | StarB Expr
+
+data Term = Literal Text | Rule RuleName
+
+plusB :: Expr -> Expr
+plusB e = And [e, StarB e]
