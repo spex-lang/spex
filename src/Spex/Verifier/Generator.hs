@@ -137,9 +137,9 @@ removeRecordType ty = [ty]
 genOp :: [OpDecl] -> GenM (OpDecl, Op)
 genOp opdecls = do
   opdecl <- lift (elements opdecls)
-  hs <- genHeaders opdecl.headers
   p <- genPath opdecl.path
   b <- genBody opdecl.body
+  hs <- genHeaders opdecl.headers
   return
     ( opdecl
     , Op
