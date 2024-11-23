@@ -27,13 +27,15 @@ import Spex.Verifier.Generator.Env
 
 runMock :: MockOptions -> Spec -> Prng -> IO ()
 runMock opts spec prng = do
-  state <- newIORef (MockState {prng = prng, genEnv = emptyGenEnv})
+  state <-
+    newIORef (MockState {prng = prng, size = 0, genEnv = emptyGenEnv})
   run
     opts.port
     (addResetEndpoint state prng (addHealthEndpoint (waiApp spec state)))
 
 data MockState = MockState
   { prng :: Prng
+  , size :: Size
   , genEnv :: GenEnv
   }
 
@@ -49,23 +51,22 @@ addResetEndpoint state origPrng baseApp req respond =
     ("DELETE", ["_reset"]) -> do
       atomicWriteIORef
         state
-        (MockState {prng = origPrng, genEnv = emptyGenEnv})
+        (MockState {prng = origPrng, size = 0, genEnv = emptyGenEnv})
       respond (responseLBS ok200 [] "OK")
     _ -> baseApp req respond
 
 waiApp :: Spec -> IORef MockState -> Application
-waiApp spec state req respond = do
+waiApp spec ref req respond = do
   let ctx = spec.component.typeDecls
   let opDecls = map item (spec.component.opDecls)
-  res <- atomicModifyIORef' state $ \s ->
-    let (prng', prng'') = splitPrng s.prng
-    in  case matchOp opDecls req of
-          Nothing -> (s, Left notFound404)
-          Just respTy ->
-            let val = runGenM (genValue respTy) ctx s.genEnv prng'
-            in  ( s {prng = prng'', genEnv = insertValue respTy val s.genEnv}
-                , Right val
-                )
+  res <- atomicModifyIORef' ref $ \state ->
+    case matchOp opDecls req of
+      Nothing -> (state, Left notFound404)
+      Just respTy ->
+        let (prng', val) = runGenM (genValue respTy) ctx state.genEnv state.prng state.size
+        in  ( state {prng = prng', genEnv = insertValue respTy val state.genEnv}
+            , Right val
+            )
   case res of
     Left err -> respond $ responseLBS err [] ""
     Right val -> respond $ responseLBS ok200 [] (encode val)

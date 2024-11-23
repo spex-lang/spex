@@ -1,0 +1,42 @@
+i   
+i Verifying the deployment:    http://localhost:8080
+  against the specification:   example/petstore-modal-faults.spex
+
+i Checking the specification.
+
+i Waiting for health check to pass...
+
+✓ Health check passed!
+
+i Starting to run tests...
+
+✓ Done testing!
+i     
+  Found 2 intereresting test cases:
+
+    1. getBadPet : GET /pet/badJson/{petId = 0} -> Pet
+         ↳ JSON decode failure: Error in $: endOfInput "petId":0,"petName":"foo"}
+       (2 shrinks)
+
+    2. getPet : GET /pet/{petId = 0} -> Pet
+         ↳ 409 Conflict: Pet already exists
+       (2 shrinks)
+
+  Coverage:
+    2xx:
+      16% addPet (16 ops)
+      15% getBadPet (15 ops)
+      12% getPet (12 ops)
+    404:
+      12% getBadPet (12 ops)
+      12% getPet (12 ops)
+      21% neverReached (21 ops)
+    409:
+      12% addPet (12 ops)
+
+    Not covered (no non-404 responses):
+      neverReached
+
+  Total operations (ops): 100
+
+  Use --seed 8800299288541500217 to reproduce this run.

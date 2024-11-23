@@ -46,8 +46,13 @@ Here's what I'm currently working on:
 #### Spex
 
 - allow for control of # of test cases vs test case length
+- change size over time
+  + verify
+  + mock
+- add max size?
 - use duration rather than numTests?
 - print progress while testing
+- test database with migration when generators change
 
 - Nice errors
   + Introduce FancyError datatype and display it in LibMain?

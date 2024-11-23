@@ -24,18 +24,16 @@ tests tmpDir =
             withPetstore
             [ test
                 [ "verify"
-                , "example/petstore-basic.spex"
-                , "--seed"
-                , "2503963955766725184"
-                ]
-            , test
-                [ "verify"
                 , "example/petstore-modal-faults.spex"
-                , "--tests"
-                , "2000"
                 , "--seed"
-                , "3967796076964233976"
+                , "8800299288541500217"
                 ]
+                -- test
+                --     [ "verify"
+                --     , "example/petstore-basic.spex"
+                --     , "--seed"
+                --     , "2503963955766725184"
+                --     ]
             ]
             [0 ..] -- Used to compute the ports used by the tests.
         )

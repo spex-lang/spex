@@ -132,6 +132,7 @@ verify opts spec deployment prng = do
     opts.numTests
     []
     prng
+    0
     emptyGenEnv
     mempty
 
@@ -143,6 +144,7 @@ verifyLoop ::
   -> Word
   -> [Op]
   -> Prng
+  -> Size
   -> GenEnv
   -> Result
   -> App Result
@@ -152,14 +154,15 @@ verifyLoop opts spec deployment client = go
       Word
       -> [Op]
       -> Prng
+      -> Size
       -> GenEnv
       -> Result
       -> App Result
-    go 0 _ops _prng _genEnv res = do
+    go 0 _ops _prng _size _genEnv res = do
       debug_ ""
       return res
-    go n ops prng genEnv res = do
-      (op, prng', genEnv') <- generate spec prng genEnv
+    go n ops prng size genEnv res = do
+      (op, prng', genEnv') <- generate spec prng size genEnv
       debug (displayOp op)
       resp <- httpRequest client op
       debug_ $ "  ↳ " <> show resp.statusCode <> " " <> BS8.unpack resp.body
@@ -192,10 +195,12 @@ verifyLoop opts spec deployment client = go
                           res.failingTests
                       | otherwise = test : res.failingTests
                 return (Result failingTests' cov')
-          go (n - 1) [] prng' emptyGenEnv res'
+          let size' = (size * 3) `div` 2
+          go (n - 1) [] prng' size' emptyGenEnv res'
         Right val -> do
-          let genEnv'' = insertValue op.responseType val genEnv'
-          go (n - 1) (op : ops) prng' genEnv'' res {coverage = cov'}
+          let size' = (size * 3) `div` 2
+              genEnv'' = insertValue op.responseType val genEnv'
+          go (n - 1) (op : ops) prng' size' genEnv'' res {coverage = cov'}
 
     counterExample ::
       [Op]
