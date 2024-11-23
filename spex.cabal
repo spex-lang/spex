@@ -58,6 +58,7 @@ library
     Spex.Verifier.HealthChecker
     Spex.Verifier.HttpClient
     Spex.Verifier.Reseter
+    Spex.Verifier.Result
     Spex.Verifier.Shrinker
 
   autogen-modules:    Paths_spex

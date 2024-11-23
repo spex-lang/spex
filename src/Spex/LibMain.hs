@@ -4,6 +4,7 @@ import Control.Exception
 import Data.ByteString qualified as BS
 import Data.ByteString.Lazy qualified as LBS
 import GHC.IO.Encoding (setLocaleEncoding)
+import Spex.Verifier.Result
 import System.Exit
 import System.IO (IOMode (WriteMode), utf8, withFile)
 
