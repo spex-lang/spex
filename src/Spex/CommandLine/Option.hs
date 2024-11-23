@@ -25,8 +25,7 @@ data Options = Options
   , nonInteractive :: Bool
   }
 
--- XXX: rename veryVerbose to trace?
-data Logging = Quiet Bool | Verbose Bool | VeryVerbose Bool
+data Logging = Quiet Bool | Verbose Bool | Trace Bool
 
 data Command
   = Verify VerifyOptions
@@ -146,9 +145,9 @@ parser =
                 )
             )
             <|> fmap
-              VeryVerbose
+              Trace
               ( switch
-                  ( long "very-verbose"
+                  ( long "trace"
                       <> help "Enable even more verbose logging"
                   )
               )

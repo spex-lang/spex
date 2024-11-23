@@ -1,8 +1,6 @@
 module Spex.Syntax.Operation where
 
 import Data.ByteString (ByteString)
-import Data.ByteString.Char8 qualified as BS8
-import Data.List (foldl', intersperse)
 import Data.String (IsString)
 
 import Spex.Syntax.Type
@@ -25,7 +23,6 @@ newtype OpId = OpId ByteString
 
 data HeaderF a = Header ByteString (Maybe a)
   deriving (Show, Functor, Foldable, Traversable)
-
 
 type Header = HeaderF Value
 type HeaderDecl = HeaderF Type

@@ -4,7 +4,6 @@ import Data.Text (Text)
 import Data.Text qualified as Text
 
 import Spex.Generator.Combinator
-import Spex.Generator.Prng
 
 ------------------------------------------------------------------------
 

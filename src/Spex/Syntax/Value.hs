@@ -1,7 +1,6 @@
 module Spex.Syntax.Value where
 
 import Data.Text (Text)
-import Data.Text qualified as Text
 import Data.Vector (Vector)
 
 import Spex.Syntax.Type (Record)

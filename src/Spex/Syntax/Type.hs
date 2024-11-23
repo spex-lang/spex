@@ -2,14 +2,11 @@ module Spex.Syntax.Type where
 
 import Data.ByteString (ByteString)
 import Data.ByteString.Char8 qualified as BS8
-import Data.List (intersperse)
 import Data.Map (Map)
-import Data.Map qualified as Map
 import Data.Set (Set)
 import Data.Set qualified as Set
 import Data.String (IsString)
 import Data.Vector (Vector)
-import Data.Vector qualified as Vector
 
 import Spex.Syntax.Position
 

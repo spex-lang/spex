@@ -7,7 +7,7 @@ module Spex.Monad (
   liftIO,
 ) where
 
-import Control.Monad.IO.Class
+import Control.Monad.IO.Class (MonadIO, liftIO)
 import Control.Monad.Trans.Except
 import Control.Monad.Trans.Reader (ReaderT (ReaderT), runReaderT)
 import Control.Monad.Trans.Reader qualified as Reader
@@ -67,7 +67,7 @@ newAppEnv opts = do
         | otherwise = ansiLogger printer flusher closer
       logger'' = case opts.logging of
         Verbose True -> verboseLogger printer logger'
-        VeryVerbose True -> veryVerboseLogger printer logger'
+        Trace True -> traceLogger printer logger'
         Quiet True -> quietLogger logger'
         _otherwise -> logger'
 
@@ -120,8 +120,8 @@ quietLogger l = l {loggerInfo = \_ _ -> return ()}
 verboseLogger :: (Text -> IO ()) -> Logger -> Logger
 verboseLogger printer l = l {loggerDebug = printer . (faint "d " <>)}
 
-veryVerboseLogger :: (Text -> IO ()) -> Logger -> Logger
-veryVerboseLogger printer l =
+traceLogger :: (Text -> IO ()) -> Logger -> Logger
+traceLogger printer l =
   (verboseLogger printer l)
     { loggerTrace = printer . (faint "t " <>)
     }
