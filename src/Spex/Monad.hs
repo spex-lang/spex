@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module Spex.Monad (
   module Spex.Monad,
 
@@ -14,7 +12,6 @@ import Control.Monad.Trans.Reader qualified as Reader
 import Data.ByteString (ByteString)
 import Data.ByteString.Lazy (LazyByteString)
 import Data.ByteString.Lazy qualified as LBS
-import Data.Text (Text)
 import Data.Text qualified as Text
 import Data.Text.IO qualified as Text
 import Network.HTTP.Client (
@@ -26,6 +23,7 @@ import System.IO
 
 import Spex.CommandLine.Ansi
 import Spex.CommandLine.Option
+import Spex.Logger
 import Spex.PrettyPrinter
 import Spex.Syntax
 
@@ -76,55 +74,7 @@ newAppEnv opts = do
       { logger = logger''
       }
 
-data Logger = Logger
-  { loggerInfo :: Bool -> Text -> IO ()
-  , loggerError :: Text -> IO ()
-  , loggerDebug :: Text -> IO ()
-  , loggerTrace :: Text -> IO ()
-  , loggerFlush :: IO ()
-  , loggerClose :: IO ()
-  }
-
--- XXX: Check for unicode support, for checkmark?
-noAnsiLogger :: (Text -> IO ()) -> IO () -> IO () -> Logger
-noAnsiLogger printer flusher closer =
-  Logger
-    { loggerInfo = \b ->
-        if b
-          then printer . ("✓ " <>)
-          else printer . ("i " <>)
-    , loggerError = printer . ("Error: " <>)
-    , loggerDebug = \_s -> return ()
-    , loggerTrace = \_s -> return ()
-    , loggerFlush = flusher
-    , loggerClose = closer
-    }
-
-ansiLogger :: (Text -> IO ()) -> IO () -> IO () -> Logger
-ansiLogger printer flusher closer =
-  Logger
-    { loggerInfo = \b ->
-        if b
-          then printer . (green "✓ " <>)
-          else printer . (cyan "i " <>)
-    , loggerError = printer . ((boldRed "Error" <> ": ") <>)
-    , loggerDebug = \_s -> return ()
-    , loggerTrace = \_s -> return ()
-    , loggerFlush = flusher
-    , loggerClose = closer
-    }
-
-quietLogger :: Logger -> Logger
-quietLogger l = l {loggerInfo = \_ _ -> return ()}
-
-verboseLogger :: (Text -> IO ()) -> Logger -> Logger
-verboseLogger printer l = l {loggerDebug = printer . (faint "d " <>)}
-
-traceLogger :: (Text -> IO ()) -> Logger -> Logger
-traceLogger printer l =
-  (verboseLogger printer l)
-    { loggerTrace = printer . (faint "t " <>)
-    }
+------------------------------------------------------------------------
 
 info :: String -> App ()
 info s = do
@@ -256,7 +206,8 @@ displayScopeError fp lbs pos tids =
         lpad
         ++ " │ "
         ++ replicate c' ' '
-        ++ Text.unpack (red (Text.replicate (length (displayTypeId tid)) "^"))
+        ++ Text.unpack
+          (red (Text.replicate (length (displayTypeId tid)) (Text.pack "^")))
         ++ "\n\n"
         ++ "Either define the type or mark it as abstract, in case it shouldn't be\ngenerated."
 

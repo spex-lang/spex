@@ -42,6 +42,7 @@ library
     Spex.Generator.Prng
     Spex.Lexer
     Spex.LibMain
+    Spex.Logger
     Spex.Mock
     Spex.Monad
     Spex.Parser
