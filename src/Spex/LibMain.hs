@@ -9,6 +9,7 @@ import System.Exit
 import System.IO (IOMode (WriteMode), utf8, withFile)
 
 import Spex.CommandLine.Option
+import Spex.Generator.Prng
 import Spex.Lexer
 import Spex.Mock
 import Spex.Monad
@@ -17,7 +18,6 @@ import Spex.PrettyPrinter
 import Spex.Syntax
 import Spex.TypeChecker
 import Spex.Verifier
-import Spex.Verifier.Generator
 import Spex.Verifier.HealthChecker
 
 ------------------------------------------------------------------------

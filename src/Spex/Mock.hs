@@ -18,6 +18,8 @@ import Network.Wai
 import Network.Wai.Handler.Warp
 
 import Spex.CommandLine.Option (MockOptions (..))
+import Spex.Generator.Combinator
+import Spex.Generator.Prng
 import Spex.Syntax
 import Spex.Verifier.Codec.Json
 import Spex.Verifier.Generator

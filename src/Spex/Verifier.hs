@@ -7,6 +7,8 @@ import Data.ByteString.Char8 qualified as BS8
 import Data.List.NonEmpty qualified as NonEmpty
 
 import Spex.CommandLine.Option
+import Spex.Generator.Combinator
+import Spex.Generator.Prng
 import Spex.Monad
 import Spex.PrettyPrinter
 import Spex.Syntax

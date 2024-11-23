@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Spex.Verifier.Result (module Spex.Verifier.Result) where
 
 import Data.ByteString (ByteString)
