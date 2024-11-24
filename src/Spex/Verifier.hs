@@ -3,8 +3,9 @@
 module Spex.Verifier where
 
 import Data.ByteString (ByteString)
-import Data.ByteString.Char8 qualified as BS8
 import Data.List.NonEmpty qualified as NonEmpty
+import Data.Text qualified as Text
+import Data.Text.Encoding qualified as Text
 
 import Spex.CommandLine.Option
 import Spex.Generator.Combinator
@@ -69,7 +70,11 @@ verifyLoop opts spec deployment client = go
       (op, prng', genEnv') <- generate spec prng size genEnv
       debug (displayOp op)
       resp <- httpRequest client op
-      debug_ $ "  ↳ " <> show resp.statusCode <> " " <> BS8.unpack resp.body
+      debug_ $
+        "  ↳ "
+          <> Text.pack (show resp.statusCode)
+          <> " "
+          <> Text.decodeUtf8Lenient resp.body
       let cov' = insertCoverage op.id resp.statusCode res.coverage
       let r = case resp of
             Ok2xx {} -> do
@@ -144,13 +149,13 @@ shrinkProp ctx client reset ops0 = do
           case decode body of
             Left _err -> return False
             Right val -> do
-              debug_ $ "  ↳ " <> show code <> " " <> displayValue val
+              debug_ $ "  ↳ " <> Text.pack (show code) <> " " <> displayValue val
               let ok = typeCheck ctx val op.responseType
               if ok
                 then go ops
                 else return False
         ClientError4xx code _msg -> do
-          debug_ $ "  ↳ " <> show code
+          debug_ $ "  ↳ " <> Text.pack (show code)
           return False
         ServerError5xx {} -> return False
 

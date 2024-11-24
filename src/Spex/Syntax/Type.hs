@@ -1,7 +1,6 @@
 module Spex.Syntax.Type where
 
 import Data.ByteString (ByteString)
-import Data.ByteString.Char8 qualified as BS8
 import Data.Map (Map)
 import Data.Set (Set)
 import Data.Set qualified as Set
@@ -46,6 +45,3 @@ userDefinedTypes = \case
 
 data Method = Get | Post | Put | Delete
   deriving (Show)
-
-displayTypeId :: TypeId -> String
-displayTypeId (TypeId bs) = BS8.unpack bs

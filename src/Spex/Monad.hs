@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Spex.Monad (
   module Spex.Monad,
 
@@ -12,6 +14,7 @@ import Control.Monad.Trans.Reader qualified as Reader
 import Data.ByteString (ByteString)
 import Data.ByteString.Lazy (LazyByteString)
 import Data.ByteString.Lazy qualified as LBS
+import Data.Text (Text)
 import Data.Text qualified as Text
 import Data.Text.IO qualified as Text
 import Network.HTTP.Client (
@@ -76,40 +79,40 @@ newAppEnv opts = do
 
 ------------------------------------------------------------------------
 
-info :: String -> App ()
-info s = do
+info :: Text -> App ()
+info t = do
   l <- asks logger
-  liftIO (l.loggerInfo False (Text.pack s))
+  liftIO (l.loggerInfo False t)
 
-info_ :: String -> App ()
-info_ s = do
+info_ :: Text -> App ()
+info_ t = do
   l <- asks logger
-  liftIO (l.loggerInfo False (Text.pack ("\b\b  " ++ s)))
+  liftIO (l.loggerInfo False ("\b\b  " <> t))
 
-logError :: String -> App ()
-logError s = do
+logError :: Text -> App ()
+logError t = do
   l <- asks logger
-  liftIO (l.loggerError (Text.pack s))
+  liftIO (l.loggerError t)
 
-debug :: String -> App ()
-debug s = do
+debug :: Text -> App ()
+debug t = do
   l <- asks logger
-  liftIO (l.loggerDebug (Text.pack s))
+  liftIO (l.loggerDebug t)
 
-debug_ :: String -> App ()
-debug_ s = do
+debug_ :: Text -> App ()
+debug_ t = do
   l <- asks logger
-  liftIO (l.loggerDebug (Text.pack ("\b\b  " ++ s)))
+  liftIO (l.loggerDebug ("\b\b  " <> t))
 
-trace :: String -> App ()
-trace s = do
+trace :: Text -> App ()
+trace t = do
   l <- asks logger
-  liftIO (l.loggerTrace (Text.pack s))
+  liftIO (l.loggerTrace t)
 
-done :: String -> App ()
-done s = do
+done :: Text -> App ()
+done t = do
   l <- asks logger
-  liftIO (l.loggerInfo True (Text.pack s))
+  liftIO (l.loggerInfo True t)
 
 flushLogger :: App ()
 flushLogger = do
@@ -152,12 +155,12 @@ m ?> err =
     Nothing -> throwA err
     Just x -> return x
 
-displayAppError :: FilePath -> LazyByteString -> AppError -> String
+displayAppError :: FilePath -> LazyByteString -> AppError -> Text
 displayAppError spec lbs = \case
-  ReadSpecFileError _e -> "Couldn't open specification file: " <> spec
-  ParserError e -> "Parse error: " <> e
+  ReadSpecFileError _e -> "Couldn't open specification file: " <> Text.pack spec
+  ParserError e -> "Parse error: " <> Text.pack e
   ScopeError tids -> uncurry (displayScopeError spec lbs) (head tids)
-  InvalidDeploymentUrl url -> "Invalid deployment URL: " <> url
+  InvalidDeploymentUrl url -> "Invalid deployment URL: " <> Text.pack url
   HttpClientException op e -> displayHttpException op e
   HttpClientUnexpectedStatusCode _ _ -> "HTTP client returned 1xx or 3xx"
   HealthCheckFailed ->
@@ -167,7 +170,7 @@ displayAppError spec lbs = \case
 
 -- XXX: only displays one error at the time?!
 displayScopeError ::
-  FilePath -> LazyByteString -> Pos -> [Ann TypeId] -> String
+  FilePath -> LazyByteString -> Pos -> [Ann TypeId] -> Text
 displayScopeError fp lbs pos tids =
   let bs = LBS.toStrict lbs
       Ann pos' tid = head tids
@@ -176,46 +179,47 @@ displayScopeError fp lbs pos tids =
       (l, _c, c') = case posLineCols bs [pos, pos'] of
         (l0, c0) : (_l1, c1) : _ -> (l0, c0, c1)
         _ -> error "displayScopeError: impossible"
-      line = if l < length ls then ls !! l else ""
-      linum = " " ++ show l
-      lpad = map (const ' ') linum
+      line = if l < length ls then Text.pack (ls !! l) else ""
+      linum = " " <> Text.pack (show l)
+      lpad = Text.replicate (Text.length linum) " "
 
-      prevLine = if l - 1 >= 0 then ls !! (l - 1) else ""
+      prevLine = if l - 1 >= 0 then Text.pack (ls !! (l - 1)) else ""
   in  -- XXX: check $LANG for UTF8 support? otherwise use ascii box drawing?
       "Scope error, the type "
-        ++ displayTypeId tid
-        ++ " isn't defined.\n\n"
-        ++ lpad
-        ++ " ┌── "
-        ++ fp
-        ++ ":"
-        ++ show l
-        ++ ":"
-        ++ show c'
-        ++ "\n"
-        ++ lpad
-        ++ " │\n"
-        ++ (if null prevLine then "" else lpad ++ " | " ++ prevLine ++ "\n")
-        ++ linum
-        ++ " │ "
-        ++ line
-        ++ "\n"
-        ++
+        <> displayTypeId tid
+        <> " isn't defined.\n\n"
+        <> lpad
+        <> " ┌── "
+        <> Text.pack fp
+        <> ":"
+        <> Text.pack (show l)
+        <> ":"
+        <> Text.pack (show c')
+        <> "\n"
+        <> lpad
+        <> " │\n"
+        <> (if Text.null prevLine then "" else lpad <> " | " <> prevLine <> "\n")
+        <> linum
+        <> " │ "
+        <> line
+        <> "\n"
+        <>
         -- XXX: We should avoid ANSI here, maybe introduce a "FancyError" type
         -- and let LibMain display it?
         lpad
-        ++ " │ "
-        ++ replicate c' ' '
-        ++ Text.unpack
-          (red (Text.replicate (length (displayTypeId tid)) (Text.pack "^")))
-        ++ "\n\n"
-        ++ "Either define the type or mark it as abstract, in case it shouldn't be\ngenerated."
+        <> " │ "
+        <> Text.replicate c' " "
+        <> red (Text.replicate (Text.length (displayTypeId tid)) "^")
+        <> "\n\n"
+        <> "Either define the type or mark it as abstract, in case it shouldn't be\ngenerated."
 
-displayHttpException :: Op -> HttpException -> String
+displayHttpException :: Op -> HttpException -> Text
 displayHttpException op (HttpExceptionRequest _req content) = case content of
   ConnectionFailure _someException -> "Couldn't connect to host."
   StatusCodeException resp _ ->
-    show (prettyOp op) <> "\n" <> show (Http.responseStatus resp)
-  err -> show err
+    displayOp op
+      <> "\n"
+      <> Text.pack (show (Http.responseStatus resp))
+  err -> Text.pack (show err)
 displayHttpException _op InvalidUrlException {} =
   error "impossible: already handled by InvalidDeploymentUrl"

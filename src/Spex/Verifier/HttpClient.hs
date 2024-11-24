@@ -8,6 +8,7 @@ import Data.ByteString.Char8 qualified as BS8
 import Data.ByteString.Lazy qualified as LBS
 import Data.ByteString.Lazy.Char8 qualified as LBS8
 import Data.String (fromString)
+import Data.Text qualified as Text
 import Data.Text.Encoding qualified as Text
 import Network.HTTP.Client qualified as Http
 import Network.HTTP.Types qualified as Http
@@ -54,14 +55,17 @@ httpRequest client op = do
           , Http.path = toHttpPath op.path
           , Http.requestBody = toHttpBody op.body
           }
-  trace $ "httpRequest, req: " <> show req
+  trace $ "httpRequest, req: " <> Text.pack (show req)
   case op.body of
     Nothing -> return ()
-    Just body -> trace $ "httpRequest, body: " <> LBS8.unpack (encode body)
+    Just body ->
+      trace $
+        "httpRequest, body: "
+          <> Text.decodeUtf8Lenient (LBS8.toStrict (encode body))
   resp <-
     liftIO (try (Http.httpLbs req client.manager))
       <?> HttpClientException op
-  trace $ "httpRequest, resp: " <> show resp
+  trace $ "httpRequest, resp: " <> Text.pack (show resp)
   let status = Http.responseStatus resp
       body = LBS.toStrict (Http.responseBody resp)
   if

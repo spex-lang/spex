@@ -7,6 +7,7 @@ import Data.Foldable (toList)
 import Data.List (find)
 import Data.Map qualified as Map
 import Data.Set qualified as Set
+import Data.Text qualified as Text
 import Data.Vector (Vector)
 
 import Spex.Generator.Arbitrary
@@ -37,7 +38,7 @@ generate spec prng size env = do
       (prng', (decl, op)) =
         runGenM (genOp (map item spec.component.opDecls)) ctx env prng size
       env' = newValues ctx env decl op
-  trace $ "generate, new values: " <> show env'
+  trace $ "generate, new values: " <> Text.pack (show env')
   return (op, prng', env')
 
 newValues :: GenCtx -> GenEnv -> OpDecl -> Op -> GenEnv

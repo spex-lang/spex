@@ -8,8 +8,10 @@ import Data.Coerce
 import Data.Map (Map)
 import Data.Map qualified as Map
 import Data.String
+import Data.Text (Text)
+import Data.Text qualified as Text
+import Data.Text.Encoding qualified as Text
 import Prettyprinter
-import Prettyprinter.Render.String
 import Prettyprinter.Render.Text
 import System.IO
 
@@ -34,6 +36,15 @@ prettyTypeDecl :: TypeDecl -> Doc x
 prettyTypeDecl tyDecl =
   "type" <+> prettyBS tyDecl.typeId <+> "=" <+> prettyType tyDecl.rhs
 
+displayDeployment :: Deployment -> Text
+displayDeployment d =
+  Text.decodeUtf8Lenient d.hostPort.host
+    <> ":"
+    <> Text.pack (show d.hostPort.port)
+
+displayTypeId :: TypeId -> Text
+displayTypeId (TypeId bs) = Text.decodeUtf8Lenient bs
+
 prettyOpF :: (a -> Doc x) -> (a -> Doc x) -> OpF a -> Doc x
 prettyOpF pp pb op =
   hsep $
@@ -49,11 +60,11 @@ prettyOpF pp pb op =
       ++ [ prettyResponseType op.responseType
          ]
 
-displayOp :: Op -> String
-displayOp = renderString . layoutPretty defaultLayoutOptions . prettyOp
+displayOp :: Op -> Text
+displayOp = renderStrict . layoutPretty defaultLayoutOptions . prettyOp
 
-displayOps :: [Op] -> String
-displayOps = renderString . layoutPretty defaultLayoutOptions . prettyOps
+displayOps :: [Op] -> Text
+displayOps = renderStrict . layoutPretty defaultLayoutOptions . prettyOps
 
 prettyOps :: [Op] -> Doc x
 prettyOps = vcat . map prettyOp
@@ -116,9 +127,9 @@ prettyValue (StringV t) = pretty t
 prettyValue (ArrayV vs) = undefined
 prettyValue (RecordV fvs) = prettyRecord (\val -> "=" <+> prettyValue val) fvs
 
-displayValue :: Value -> String
+displayValue :: Value -> Text
 displayValue =
-  renderString
+  renderStrict
     . layoutPretty defaultLayoutOptions
     . prettyValue
 

@@ -40,9 +40,6 @@ data Deployment = Deployment
   }
   deriving (Show)
 
-displayDeployment :: Deployment -> String
-displayDeployment d = BS8.unpack d.hostPort.host <> ":" <> show d.hostPort.port
-
 data HostPort = HostPort {host :: ByteString, port :: Int}
   deriving (Show)
 

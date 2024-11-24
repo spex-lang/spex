@@ -105,7 +105,6 @@ Here's what I'm currently working on:
 ### Refactor
 
 - remove ExceptT?
-- remove use of String
 - structured logs, returns json object with one error or one test result?
 
 ### CI

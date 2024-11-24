@@ -3,9 +3,9 @@
 module Spex.Verifier.Result (module Spex.Verifier.Result) where
 
 import Data.ByteString (ByteString)
+import Data.Text (Text)
 import Prettyprinter
-import Prettyprinter.Render.String
-import Prettyprinter.Render.Text (putDoc)
+import Prettyprinter.Render.Text (putDoc, renderStrict)
 
 import Spex.PrettyPrinter
 import Spex.Syntax
@@ -48,9 +48,9 @@ data Failure
 putResult :: Spec -> Result -> Int -> IO ()
 putResult spec res seed = putDoc (prettyResult spec res seed)
 
-displayResult :: Spec -> Result -> Int -> String
+displayResult :: Spec -> Result -> Int -> Text
 displayResult spec res seed =
-  renderString $
+  renderStrict $
     layoutPretty defaultLayoutOptions $
       prettyResult spec res seed
 

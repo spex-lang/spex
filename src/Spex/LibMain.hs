@@ -3,6 +3,7 @@ module Spex.LibMain where
 import Control.Exception
 import Data.ByteString qualified as BS
 import Data.ByteString.Lazy qualified as LBS
+import Data.Text qualified as Text
 import GHC.IO.Encoding (setLocaleEncoding)
 import Spex.Verifier.Result
 import System.Exit
@@ -88,7 +89,7 @@ verifyApp opts handleResult = do
       <> displayDeployment deploy
       <> "\n"
       <> "  against the specification:   "
-      <> opts.specFilePath
+      <> Text.pack opts.specFilePath
       <> "\n"
   bs <- liftIO (try (BS.readFile opts.specFilePath)) <?> ReadSpecFileError
   info $ "Checking the specification.\n"
@@ -126,9 +127,9 @@ mockApp opts = do
   (prng, seed) <- liftIO (newPrng opts.seed)
   info
     ( "Starting mock server on http://localhost:"
-        <> show (opts.port)
+        <> Text.pack (show (opts.port))
         <> "\n  Use --seed "
-        <> show seed
+        <> Text.pack (show seed)
         <> " to reproduce this mock."
     )
   liftIO (runMock opts spec prng)
