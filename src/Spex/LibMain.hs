@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Spex.LibMain where
 
 import Control.Exception

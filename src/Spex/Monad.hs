@@ -41,9 +41,6 @@ runApp appEnv = runExceptT . flip runReaderT appEnv . unApp
 asks :: (AppEnv -> a) -> App a
 asks f = App (Reader.asks f)
 
-local :: (AppEnv -> AppEnv) -> App a -> App a
-local f (App m) = App (Reader.local f m)
-
 ------------------------------------------------------------------------
 
 data AppEnv = AppEnv

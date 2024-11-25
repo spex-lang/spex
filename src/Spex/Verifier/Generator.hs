@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Spex.Verifier.Generator where
 
 import Control.Monad.Trans.Class
