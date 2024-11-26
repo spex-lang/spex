@@ -45,6 +45,37 @@ Here's what I'm currently working on:
 
 #### Spex
 
+- literate spex
+  + literate markdown -> markdown with code blocks annotated with outputs
+    e.g. example.spex.md:
+      ```spex export openapi
+      foo : GET /bar -> String
+      ```
+      Should translate into:
+      ```yaml
+      paths:
+        bar:
+          method: GET
+          op: foo
+      ```
+
+      But one should also be able to write something like:
+      ```spex export openapi
+      foo : GET /bar -> String
+      >>> ```yaml
+      paths:
+        bar:
+          method: GET
+          op: foo
+      ```
+      where >>> lets us include the output in the source, in that case spex
+      should ensure that the output is correct.
+
+  + hide (setup) code from the output
+  + comments in the source code that doesn't show up in the output
+- more types
+  + path: string, int, float, path (string + /), uuid
+
 - allow for control of # of test cases vs test case length
 - change size over time
   + verify
@@ -53,6 +84,7 @@ Here's what I'm currently working on:
 - use duration rather than numTests?
 - print progress while testing
 - test database with migration when generators change
+- coverage-driven generation
 
 - Nice errors
   + Introduce FancyError datatype and display it in LibMain?
@@ -68,6 +100,8 @@ Here's what I'm currently working on:
 - check for and forbid overlapping ops (same method and path)
 
 - diff two specs
+
+- [Linking Unit Tests and Properties](https://research.chalmers.se/publication/230886)
 
 #### Spexup
 
@@ -104,7 +138,6 @@ Here's what I'm currently working on:
 
 ### Refactor
 
-- remove ExceptT?
 - structured logs, returns json object with one error or one test result?
 
 ### CI

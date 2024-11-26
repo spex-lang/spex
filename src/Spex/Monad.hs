@@ -7,8 +7,8 @@ module Spex.Monad (
   liftIO,
 ) where
 
+import Control.Exception
 import Control.Monad.IO.Class (MonadIO, liftIO)
-import Control.Monad.Trans.Except
 import Control.Monad.Trans.Reader (ReaderT (ReaderT), runReaderT)
 import Control.Monad.Trans.Reader qualified as Reader
 import Data.ByteString (ByteString)
@@ -32,14 +32,17 @@ import Spex.Syntax
 
 ------------------------------------------------------------------------
 
-newtype App a = App {unApp :: ReaderT AppEnv (ExceptT AppError IO) a}
+newtype App a = App {unApp :: ReaderT AppEnv IO a}
   deriving (Functor, Applicative, Monad, MonadIO)
 
 runApp :: AppEnv -> App a -> IO (Either AppError a)
-runApp appEnv = runExceptT . flip runReaderT appEnv . unApp
+runApp appEnv = try . flip runReaderT appEnv . unApp
 
 asks :: (AppEnv -> a) -> App a
 asks f = App (Reader.asks f)
+
+tryApp :: App a -> App (Either AppError a)
+tryApp (App m) = App (ReaderT (try . runReaderT m))
 
 ------------------------------------------------------------------------
 
@@ -132,24 +135,21 @@ data AppError
   | HttpClientUnexpectedStatusCode Int ByteString
   | HealthCheckFailed
   | ResetFailed
+  deriving (Show)
 
-throwA :: AppError -> App e
-throwA e = App (ReaderT (const (throwE e)))
-
-tryA :: App a -> App (Either AppError a)
-tryA (App m) = App (ReaderT (tryE . runReaderT m))
+instance Exception AppError
 
 infixl 8 <?>
 (<?>) :: App (Either e a) -> (e -> AppError) -> App a
 m <?> f =
   m >>= \case
-    Left err -> throwA (f err)
+    Left err -> throw (f err)
     Right x -> return x
 
 (?>) :: App (Maybe a) -> AppError -> App a
 m ?> err =
   m >>= \case
-    Nothing -> throwA err
+    Nothing -> throw err
     Just x -> return x
 
 displayAppError :: FilePath -> LazyByteString -> AppError -> Text

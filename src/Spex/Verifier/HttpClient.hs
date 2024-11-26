@@ -84,7 +84,7 @@ httpRequest client op = do
               (status.statusMessage <> if BS8.null body then "" else ": " <> body)
           )
     | otherwise ->
-        throwA
+        throw
           ( HttpClientUnexpectedStatusCode
               status.statusCode
               status.statusMessage

@@ -1,5 +1,6 @@
 module Spex.TypeChecker where
 
+import Control.Exception (throw)
 import Data.Foldable (toList)
 import Data.List (find)
 import Data.Map qualified as Map
@@ -16,7 +17,7 @@ scopeCheck :: Spec -> App ()
 scopeCheck spec
   | freeTypes_ `Set.isSubsetOf` userDefined = return ()
   | otherwise =
-      throwA . ScopeError . map (fmap Set.toList) $
+      throw . ScopeError . map (fmap Set.toList) $
         -- Set.filter (\ty -> ty.item `Set.member` missing) freeTypes
         filter
           (\(pos, tys) -> any (\ty -> ty.item `Set.member` missing) tys)
