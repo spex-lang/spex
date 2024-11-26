@@ -10,7 +10,6 @@ import Data.Map qualified as Map
 import Data.String
 import Data.Text (Text)
 import Data.Text qualified as Text
-import Data.Text.Encoding qualified as Text
 import Prettyprinter
 import Prettyprinter.Render.Text
 import System.IO
@@ -25,7 +24,7 @@ prettySpec spec = prettyComponent spec.component
 prettyComponent :: Component -> Doc x
 prettyComponent comp =
   "component"
-    <+> prettyBS comp.id
+    <+> prettyId comp.id
     <+> "where"
     <> line
     <> line
@@ -34,21 +33,24 @@ prettyComponent comp =
 
 prettyTypeDecl :: TypeDecl -> Doc x
 prettyTypeDecl tyDecl =
-  "type" <+> prettyBS tyDecl.typeId <+> "=" <+> prettyType tyDecl.rhs
+  "type" <+> prettyId tyDecl.typeId <+> "=" <+> prettyType tyDecl.rhs
 
 displayDeployment :: Deployment -> Text
 displayDeployment d =
-  Text.decodeUtf8Lenient d.hostPort.host
+  d.hostPort.host
     <> ":"
     <> Text.pack (show d.hostPort.port)
 
 displayTypeId :: TypeId -> Text
-displayTypeId (TypeId bs) = Text.decodeUtf8Lenient bs
+displayTypeId (TypeId tid) = tid
+
+prettyOpId :: OpId -> Doc x
+prettyOpId (OpId oid) = pretty oid
 
 prettyOpF :: (a -> Doc x) -> (a -> Doc x) -> OpF a -> Doc x
 prettyOpF pp pb op =
   hsep $
-    [ prettyBS op.id
+    [ prettyOpId op.id
     , ":"
     , prettyMethod op.method
     , prettyPathF pp op.path
@@ -84,8 +86,8 @@ prettyMethod Delete = "DELETE"
 prettyPathF :: (a -> Doc x) -> [PathSegment a] -> Doc x
 prettyPathF pp = align . hcat . zipWith (<>) (repeat "/") . map aux
   where
-    aux (Path bs) = prettyBS bs
-    aux (Hole p x) = "{" <> prettyBS p <+> pp x <> "}"
+    aux (Path t) = pretty t
+    aux (Hole p x) = "{" <> pretty p <+> pp x <> "}"
 
 prettyType :: Type -> Doc x
 prettyType UnitT = "Unit"
@@ -94,7 +96,7 @@ prettyType StringT = "String"
 prettyType IntT = "Int"
 prettyType (ArrayT tys) = error "prettyType: not implemented yet!"
 prettyType (RecordT r) = prettyRecord (\ty -> ":" <+> prettyType ty) r
-prettyType (UserT tid) = prettyBS tid.item
+prettyType (UserT tid) = prettyId tid.item
 prettyType (AbstractT ty) = "@" <> prettyType ty
 prettyType (UniqueT ty) = "!" <> prettyType ty
 
@@ -112,10 +114,13 @@ prettyRecord p =
     . prettyFields p
 
 prettyFields :: (a -> Doc x) -> Map Field a -> [Doc x]
-prettyFields p = map (\(f, x) -> prettyBS f <+> p x) . Map.toList
+prettyFields p = map (\(Field f, x) -> pretty f <+> p x) . Map.toList
 
 prettyBS :: (Coercible a ByteString) => a -> Doc x
 prettyBS = fromString . BS8.unpack . coerce
+
+prettyId :: (Coercible a Text) => a -> Doc x
+prettyId = fromString . Text.unpack . coerce
 
 ------------------------------------------------------------------------
 

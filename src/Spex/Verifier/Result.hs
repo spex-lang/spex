@@ -1,9 +1,12 @@
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Spex.Verifier.Result (module Spex.Verifier.Result) where
 
-import Data.ByteString (ByteString)
+import Data.Aeson (ToJSON)
 import Data.Text (Text)
+import GHC.Generics (Generic)
 import Prettyprinter
 import Prettyprinter.Render.Text (putDoc, renderStrict)
 
@@ -18,7 +21,8 @@ data Result = Result
   { failingTests :: [FailingTest] -- XXX: Set?
   , coverage :: Coverage
   }
-  deriving (Show)
+  deriving stock (Show, Generic)
+  deriving anyclass (ToJSON)
 
 instance Semigroup Result where
   r1 <> r2 =
@@ -34,16 +38,18 @@ instance Monoid Result where
 data FailingTest = FailingTest
   { test :: [Op]
   , failure :: Failure
-  , body :: ByteString
+  , body :: Text
   , shrinks :: Int
   }
-  deriving (Show)
+  deriving stock (Show, Generic)
+  deriving anyclass (ToJSON)
 
 data Failure
   = DecodeFailure String
   | TypeErrorFailure TypeError
   | StatusCodeFailure HttpStatusCode
-  deriving (Show, Eq)
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON)
 
 putResult :: Spec -> Result -> Int -> IO ()
 putResult spec res seed = putDoc (prettyResult spec res seed)
@@ -89,7 +95,7 @@ prettyTest i t =
     <> align
       ( vcat
           ( map prettyOp t.test
-              ++ indent 2 (prettyFailure t.failure <+> prettyBS t.body)
+              ++ indent 2 (prettyFailure t.failure <+> pretty t.body)
               : if t.shrinks > 0
                 then
                   [ "("

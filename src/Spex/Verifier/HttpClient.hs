@@ -27,7 +27,7 @@ data HttpClient = HttpClient
 newHttpClient :: Deployment -> App HttpClient
 newHttpClient (Deployment (HostPort host port) _health _reset) = do
   mgr <- liftIO (Http.newManager Http.defaultManagerSettings)
-  let url = BS8.unpack host ++ ":" ++ show port
+  let url = Text.unpack host ++ ":" ++ show port
   req <- pure (Http.parseRequest url) ?> InvalidDeploymentUrl url
 
   return $
@@ -109,7 +109,8 @@ toHeader (Header name mVal) = case BS8.split ':' name of
 toHttpPath :: [PathSegment Value] -> ByteString
 toHttpPath = BS8.intercalate "/" . map aux
   where
-    aux (Path p) = p
+    aux :: PathSegment Value -> ByteString
+    aux (Path p) = Text.encodeUtf8 p
     aux (Hole _x (IntV i)) = BS8.pack (show i)
     aux (Hole _x (StringV txt)) = Text.encodeUtf8 txt
     aux (Hole _x ty) = error ("toHttpPath: " <> show ty)

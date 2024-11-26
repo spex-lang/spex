@@ -68,6 +68,7 @@ library
   autogen-modules:    Paths_spex
   other-modules:      Paths_spex
   default-extensions:
+    DerivingStrategies
     DuplicateRecordFields
     LambdaCase
     MultiWayIf

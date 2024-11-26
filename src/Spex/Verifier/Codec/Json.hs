@@ -6,7 +6,6 @@ import Data.Aeson.KeyMap qualified as Json
 import Data.ByteString (ByteString)
 import Data.ByteString.Lazy (LazyByteString)
 import Data.Map qualified as Map
-import Data.Text.Encoding qualified as Text
 import Data.Vector qualified as Vector
 
 import Spex.Syntax.Type
@@ -40,7 +39,7 @@ toJson (ArrayV vs) = Json.Array (fmap toJson vs)
 toJson (RecordV fvs) = Json.Object (Json.fromMap (Map.mapKeys fieldToKey (fmap toJson fvs)))
 
 fieldToKey :: Field -> Json.Key
-fieldToKey (Field bs) = Json.fromText (Text.decodeUtf8Lenient bs)
+fieldToKey (Field txt) = Json.fromText txt
 
 keyToField :: Json.Key -> Field
-keyToField = Field . Text.encodeUtf8 . Json.toText
+keyToField = Field . Json.toText

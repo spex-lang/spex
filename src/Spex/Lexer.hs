@@ -198,6 +198,14 @@ identChar :: Parser Char
 identChar = satisfyAscii (\c -> isLatinLetter c || isDigit c)
 {-# INLINE identChar #-}
 
+-- https://www.rfc-editor.org/rfc/rfc7230
+headerIdentChar :: Parser Char
+headerIdentChar =
+  satisfyAscii
+    ( \c ->
+        isLatinLetter c || isDigit c || c `elem` ("!#$%&'*+-.^_`|~" :: [Char])
+    )
+
 -- | Check whether a `Span` contains exactly a keyword. Does not change parsing state.
 isKeyword :: Span -> Parser ()
 isKeyword span0 = inSpan span0 $ do

@@ -9,7 +9,7 @@ module Spex.CommandLine.Option where
 --   https://github.com/Gabriella439/grace/blob/main/src/Grace.hs
 --   https://github.com/pcapriotti/optparse-applicative?tab=readme-ov-file#commands
 
-import Data.ByteString (ByteString)
+import Data.Text (Text)
 import Data.Version (showVersion)
 import Options.Applicative
 
@@ -37,10 +37,10 @@ data Command
   | Export ExportOptions
 
 data VerifyOptions = VerifyOptions
-  { host :: ByteString
+  { host :: Text
   , port :: Int
-  , health :: ByteString
-  , reset :: ByteString
+  , health :: Text
+  , reset :: Text
   , numTests :: Word
   , seed :: Maybe Int
   , noShrinking :: Bool

@@ -1,7 +1,9 @@
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Spex.Verifier.Coverage where
 
+import Data.Aeson (ToJSON)
 import Data.Function (on)
 import Data.List (groupBy, sortBy)
 import Data.Map.Strict (Map)
@@ -9,6 +11,7 @@ import Data.Map.Strict qualified as Map
 import Data.Monoid
 import Data.Set (Set)
 import Data.Set qualified as Set
+import GHC.Generics (Generic)
 import Prettyprinter
 import Prettyprinter.Render.String
 
@@ -21,7 +24,9 @@ type HttpStatusCode = Int
 
 newtype Coverage = Coverage
   {unCoverage :: Map HttpStatusCode (Map OpId Word)}
-  deriving (Show, Semigroup, Monoid)
+  deriving (Show, Semigroup, Monoid, Generic)
+
+instance ToJSON Coverage
 
 emptyCoverage :: Coverage
 emptyCoverage = Coverage Map.empty
@@ -84,7 +89,7 @@ prettyCoverage spec cov =
                 ++ ( if not (null notCoveredOps)
                       then
                         [ "Not covered (no non-404 responses):"
-                        , indent 2 (vcat (map prettyBS notCoveredOps))
+                        , indent 2 (vcat (map prettyId notCoveredOps))
                         ]
                       else []
                    )
@@ -103,7 +108,7 @@ prettyCoverage spec cov =
       pretty
         (round ((fromIntegral n / fromIntegral total :: Double) * 100) :: Int)
         <> "%"
-        <+> prettyBS oid
+        <+> prettyId oid
         <+> "("
         <> pretty n
         <> " ops)"

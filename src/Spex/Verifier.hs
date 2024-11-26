@@ -131,7 +131,7 @@ verifyLoop opts spec deployment client = go
         ( FailingTest
             (NonEmpty.last ops')
             failure
-            body
+            (Text.decodeUtf8Lenient body)
             (NonEmpty.length ops' - 1)
         )
 

@@ -5,12 +5,13 @@
 module Spex.Parser where
 
 import Data.ByteString (ByteString)
-import Data.ByteString qualified as BS
 import Data.ByteString.Char8 qualified as BS8
 import Data.Char (ord)
 import Data.Coerce
 import Data.Either (partitionEithers)
 import Data.Map qualified as Map
+import Data.Text (Text)
+import Data.Text.Encoding qualified as Text
 import FlatParse.Basic hiding (Parser, char, cut, runParser, string)
 
 import Spex.Lexer
@@ -18,18 +19,21 @@ import Spex.Syntax
 
 ------------------------------------------------------------------------
 
-type Name = BS.ByteString
+type Name = Text
 
 {- | Parse an identifier. This parser uses `isKeyword` to check that an
    identifier is not a keyword.
 -}
 ident :: Parser Name
 ident =
-  token $
-    byteStringOf $
-      withSpan
-        (identStartLowerChar *> skipMany identChar)
-        (\_ span0 -> fails (isKeyword span0))
+  -- NOTE: decodeUtf8 can fail, so we must make sure to never parse bytes that
+  -- are not UTF8.
+  fmap Text.decodeUtf8 $
+    token $
+      byteStringOf $
+        withSpan
+          (identStartLowerChar *> skipMany identChar)
+          (\_ span0 -> fails (isKeyword span0))
 
 -- | Parse an identifier, throw a precise error on failure.
 ident' :: Parser Name
@@ -37,11 +41,14 @@ ident' = ident `cut'` Msg "identifier"
 
 bident :: Parser Name
 bident =
-  token $
-    byteStringOf $
-      withSpan
-        (identStartUpperChar *> skipMany identChar)
-        (\_ span0 -> fails (isKeyword span0))
+  -- NOTE: decodeUtf8 can fail, so we must make sure to never parse bytes that
+  -- are not UTF8.
+  fmap Text.decodeUtf8 $
+    token $
+      byteStringOf $
+        withSpan
+          (identStartUpperChar *> skipMany identChar)
+          (\_ span0 -> fails (isKeyword span0))
 
 bident' :: Parser Name
 bident' = bident `cut'` Msg "Identifier"
@@ -104,14 +111,26 @@ opDeclP = do
   return (Op x hs m p b respTy)
 
 headersP :: Parser [HeaderDecl]
-headersP = insideBrackets $
-  headerP `sepEndBy` $(symbol ",") 
+headersP =
+  insideBrackets $
+    headerP `sepEndBy` $(symbol ",")
+
+headerIdent :: Parser ByteString
+headerIdent =
+  token $
+    byteStringOf $
+      withSpan
+        (headerIdentChar *> skipMany headerIdentChar)
+        (\_ span0 -> fails (isKeyword span0))
+
+headerIdent' :: Parser ByteString
+headerIdent' = headerIdent `cut` [Lit "header"]
 
 headerP :: Parser HeaderDecl
 headerP = do
-  name <- bident'
+  name <- headerIdent'
   $(symbol' ":")
-  val <- bident <|> ident'
+  val <- headerIdent'
   mty <- optional modalTypeP
   return (Header (name <> ": " <> val) mty)
 
@@ -209,6 +228,7 @@ methodP' = methodP `cut` ["method"]
 
 ------------------------------------------------------------------------
 
+{-
 deploymentP :: Parser Deployment
 deploymentP = do
   $(keyword "deployment")
@@ -228,6 +248,7 @@ deploymentP = do
   resetPath <- ResetPath <$> urlP
   $(symbol' "}")
   return (Deployment (HostPort host 80) healthPath resetPath)
+  -}
 
 hostP :: Parser ByteString
 hostP = urlP

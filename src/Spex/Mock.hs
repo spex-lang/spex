@@ -5,7 +5,6 @@ module Spex.Mock (module Spex.Mock) where
 import Data.ByteString (ByteString)
 import Data.IORef
 import Data.Text (Text)
-import Data.Text.Encoding qualified as Text
 import Data.Text.Read (decimal)
 import Network.HTTP.Types.Method (
   methodDelete,
@@ -90,7 +89,7 @@ pathMatch :: [PathSegment Type] -> [Text] -> Bool
 pathMatch = go
   where
     go [] [] = True
-    go (Path bs : ps) (t : ts) = bs == Text.encodeUtf8 t && go ps ts
+    go (Path p : ps) (t : ts) = p == t && go ps ts
     go (Hole _var ty : ps) (t : ts) = case ty of
       StringT -> go ps ts
       IntT -> case parseInt t of

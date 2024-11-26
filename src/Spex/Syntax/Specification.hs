@@ -2,8 +2,8 @@
 
 module Spex.Syntax.Specification where
 
-import Data.ByteString.Char8 as BS8
 import Data.String (IsString)
+import Data.Text (Text)
 
 import Spex.Syntax.Operation
 import Spex.Syntax.Position
@@ -23,7 +23,7 @@ data Component = Component
   }
   deriving (Show)
 
-newtype ComponentId = ComponentId ByteString
+newtype ComponentId = ComponentId Text
   deriving (Show, IsString)
 
 data TypeDecl = TypeDecl {typeId :: TypeId, rhs :: Type}
@@ -40,11 +40,11 @@ data Deployment = Deployment
   }
   deriving (Show)
 
-data HostPort = HostPort {host :: ByteString, port :: Int}
+data HostPort = HostPort {host :: Text, port :: Int}
   deriving (Show)
 
-data HealthCheck = HealthCheckPath ByteString | HealthCheckScript FilePath
+data HealthCheck = HealthCheckPath Text | HealthCheckScript FilePath
   deriving (Show)
 
-data Reset = ResetPath ByteString | ResetScript FilePath
+data Reset = ResetPath Text | ResetScript FilePath
   deriving (Show)

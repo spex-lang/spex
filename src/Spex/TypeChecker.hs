@@ -1,12 +1,17 @@
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DeriveGeneric #-}
+
 module Spex.TypeChecker where
 
 import Control.Exception (throw)
+import Data.Aeson (ToJSON)
 import Data.Foldable (toList)
 import Data.List (find)
 import Data.Map qualified as Map
 import Data.Set (Set)
 import Data.Set qualified as Set
 import Data.Vector qualified as Vector
+import GHC.Generics (Generic)
 
 import Spex.Monad
 import Spex.Syntax
@@ -45,7 +50,7 @@ scopeCheck spec
     userDefined = foldMap (Set.singleton . typeId) spec.component.typeDecls
 
 data TypeError = ValueDoesntHaveType Value Type
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic, ToJSON)
 
 typeCheck' :: [TypeDecl] -> Value -> Type -> Maybe TypeError
 typeCheck' ctx val ty
