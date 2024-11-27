@@ -90,7 +90,7 @@ verifyLoop opts spec deployment client = go
             -- If we've seen a failure already, then don't add it to the test
             -- cases.
             if failure0 `elem` map failure res.failingTests
-              then return (res {coverage = cov'})
+              then return (res {coverage = cov'} :: Result)
               else do
                 test <-
                   counterExample

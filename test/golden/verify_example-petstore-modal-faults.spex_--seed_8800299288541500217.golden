@@ -1,4 +1,4 @@
-i   
+
 i Verifying the deployment:    http://localhost:8080
   against the specification:   example/petstore-modal-faults.spex
 
@@ -11,7 +11,7 @@ i Waiting for health check to pass...
 i Starting to run tests...
 
 ✓ Done testing!
-i     
+  
   Found 2 intereresting test cases:
 
     1. getBadPet : GET /pet/badJson/{petId = 0} -> Pet

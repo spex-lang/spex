@@ -87,6 +87,7 @@ library
     , prettyprinter
     , random
     , template-haskell
+    , time
     , utf8-string
     , vector
     , wai

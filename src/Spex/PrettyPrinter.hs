@@ -10,6 +10,8 @@ import Data.Map qualified as Map
 import Data.String
 import Data.Text (Text)
 import Data.Text qualified as Text
+import Data.Vector (Vector)
+import Data.Vector qualified as Vector
 import Prettyprinter
 import Prettyprinter.Render.Text
 import System.IO
@@ -116,6 +118,9 @@ prettyRecord p =
 prettyFields :: (a -> Doc x) -> Map Field a -> [Doc x]
 prettyFields p = map (\(Field f, x) -> pretty f <+> p x) . Map.toList
 
+prettyArray :: (a -> Doc x) -> Vector a -> Doc x
+prettyArray p = list . map p . Vector.toList
+
 prettyBS :: (Coercible a ByteString) => a -> Doc x
 prettyBS = fromString . BS8.unpack . coerce
 
@@ -129,7 +134,7 @@ prettyValue UnitV = "()"
 prettyValue (BoolV b) = viaShow b
 prettyValue (IntV i) = viaShow i
 prettyValue (StringV t) = pretty t
-prettyValue (ArrayV vs) = undefined
+prettyValue (ArrayV vs) = prettyArray prettyValue vs
 prettyValue (RecordV fvs) = prettyRecord (\val -> "=" <+> prettyValue val) fvs
 
 displayValue :: Value -> Text

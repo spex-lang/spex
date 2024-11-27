@@ -17,6 +17,14 @@ import Spex.Verifier.Coverage
 
 ------------------------------------------------------------------------
 
+data ResultJson = ResultJson
+  { failingTests :: [FailingTest]
+  , coverage :: Coverage
+  , seed :: Int
+  }
+  deriving stock (Generic)
+  deriving anyclass (ToJSON)
+
 data Result = Result
   { failingTests :: [FailingTest] -- XXX: Set?
   , coverage :: Coverage

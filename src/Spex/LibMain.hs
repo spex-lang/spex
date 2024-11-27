@@ -3,6 +3,7 @@
 module Spex.LibMain where
 
 import Control.Exception
+import Data.Aeson qualified as Json
 import Data.ByteString qualified as BS
 import Data.ByteString.Lazy qualified as LBS
 import Data.Text qualified as Text
@@ -48,6 +49,7 @@ mainWith opts testing = do
           -- During testing, redirect the printing of the result to the logs,
           -- so it's easier to test the complete output using one golden test.
           | testing -> (verifyAppLog vopts, vopts.specFilePath)
+          | vopts.jsonResult -> (verifyAppJson vopts, vopts.specFilePath)
           | otherwise -> (verifyAppStdout vopts, vopts.specFilePath)
         Format fopts -> (formatApp fopts, fopts.specFilePath)
         Mock mopts -> (mockApp mopts, mopts.specFilePath)
@@ -76,6 +78,16 @@ verifyAppLog opts =
   verifyApp
     opts
     (\spec result seed -> info_ (displayResult spec result seed))
+
+verifyAppJson :: VerifyOptions -> App ()
+verifyAppJson opts =
+  verifyApp
+    opts
+    ( \_spec result seed ->
+        liftIO $
+          LBS.putStr
+            (Json.encode (ResultJson result.failingTests result.coverage seed))
+    )
 
 verifyApp ::
   VerifyOptions -> (Spec -> Result -> Int -> App ()) -> App ()

@@ -23,6 +23,7 @@ data Options = Options
   , logging :: Logging
   , logFile :: Maybe FilePath
   , nonInteractive :: Bool
+  , jsonLogging :: Bool
   }
 
 data Logging = Quiet Bool | Verbose Bool | Trace Bool
@@ -44,6 +45,7 @@ data VerifyOptions = VerifyOptions
   , numTests :: Word
   , seed :: Maybe Int
   , noShrinking :: Bool
+  , jsonResult :: Bool
   , specFilePath :: FilePath
   }
 
@@ -168,6 +170,10 @@ parser =
       ( long "non-interactive"
           <> help "Disable fancy logging"
       )
+    <*> switch
+      ( long "json-logging"
+          <> help "Enable logging in JSON format"
+      )
   where
     verify :: Parser VerifyOptions
     verify =
@@ -216,6 +222,10 @@ parser =
         <*> switch
           ( long "no-shrinking"
               <> help "Disable shrinking"
+          )
+        <*> switch
+          ( long "json-result"
+              <> help "Output the result in JSON format"
           )
         <*> specFile
 

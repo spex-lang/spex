@@ -63,6 +63,7 @@ newAppEnv opts = do
       return (Text.hPutStrLn h, hFlush h, hClose h)
 
   let logger'
+        | opts.jsonLogging = jsonLogger printer flusher closer
         | not hasAnsi || opts.nonInteractive =
             noAnsiLogger printer flusher closer
         | otherwise = ansiLogger printer flusher closer
@@ -82,12 +83,12 @@ newAppEnv opts = do
 info :: Text -> App ()
 info t = do
   l <- asks logger
-  liftIO (l.loggerInfo False t)
+  liftIO (l.loggerInfo NormalInfo t)
 
 info_ :: Text -> App ()
 info_ t = do
   l <- asks logger
-  liftIO (l.loggerInfo False ("\b\b  " <> t))
+  liftIO (l.loggerInfo PlainInfo t)
 
 logError :: Text -> App ()
 logError t = do
@@ -97,12 +98,12 @@ logError t = do
 debug :: Text -> App ()
 debug t = do
   l <- asks logger
-  liftIO (l.loggerDebug t)
+  liftIO (l.loggerDebug NormalDebug t)
 
 debug_ :: Text -> App ()
 debug_ t = do
   l <- asks logger
-  liftIO (l.loggerDebug ("\b\b  " <> t))
+  liftIO (l.loggerDebug PlainDebug t)
 
 trace :: Text -> App ()
 trace t = do
@@ -112,7 +113,7 @@ trace t = do
 done :: Text -> App ()
 done t = do
   l <- asks logger
-  liftIO (l.loggerInfo True t)
+  liftIO (l.loggerInfo DoneInfo t)
 
 flushLogger :: App ()
 flushLogger = do
