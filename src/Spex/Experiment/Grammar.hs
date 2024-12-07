@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Spex.Grammar (module Spex.Grammar) where
+module Spex.Experiment.Grammar (module Spex.Experiment.Grammar) where
 
 import Control.Applicative hiding (many, some)
 import Control.Monad
@@ -8,6 +8,8 @@ import Data.List (intersect)
 import Data.String
 
 import Spex.Verifier.Generator
+import Spex.Generator.Prng
+import Spex.Generator.Combinator
 
 -- https://www.cse.chalmers.se/~coquand/AUTOMATA/w6.html
 -- https://en.wikipedia.org/wiki/Augmented_Backus%E2%80%93Naur_form
@@ -115,13 +117,16 @@ isIn :: (Eq a) => [a] -> Reg a -> Bool
 isIn [] e = hasEpsilon e
 isIn (a : as) e = isIn as (der a e)
 
+isSubSetOf :: Reg a -> Reg a -> Bool
+isSubSetOf e1 e2 = isEmpty (e1 `Inter` (Compl e2))
+
 gen :: (Eq a) => Reg a -> Gen [a]
 gen re | notEmpty re = case re of
   Empty -> error "empty"
   Epsilon -> return []
   Atom x -> return [x]
   Plus e1 e2 -> do
-    b <- genBounded
+    b <- chooseBounded
     if b then gen e1 else gen e2
   Concat e1 e2 ->
     (++) <$> gen e1 <*> gen e2
@@ -131,8 +136,9 @@ gen re | notEmpty re = case re of
   Compl e -> undefined
   Inter e1 e2 -> intersect <$> gen e1 <*> gen e2
 
-prop_gen :: (Monoid a, Eq a) => Int -> Reg a -> Bool
-prop_gen seed re = runGen (gen re) (mkPrng seed) `isIn` re
+prop_gen :: (Monoid a, Eq a) => Int -> Size -> Reg a -> Bool
+prop_gen seed size re = 
+  snd (runGen (gen re) (mkPrng seed) size) `isIn` re
 
 testRe :: Reg Char
 testRe = "ab" <|> "c" <|> many "*" <|> some "+"
@@ -173,14 +179,15 @@ wildcard = range 'a' 'z' -- minBound .. maxBound?
 testRe2 :: Reg Char
 testRe2 = Atom 'a' <> wildcard <> Atom 'c'
 
-test :: Prng -> String
-test prng = runGen (gen testReColour) prng
+test :: Prng -> Size -> String
+test prng size = snd (runGen (gen testReColour) prng size)
 
 t :: IO ()
 t = do
   replicateM_ 10 $ do
     (prng, _seed) <- newPrng Nothing
-    putStrLn (test prng)
+    let size = 10
+    putStrLn (test prng size)
 
 ------------------------------------------------------------------------
 

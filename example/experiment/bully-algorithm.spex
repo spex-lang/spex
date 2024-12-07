@@ -1,0 +1,29 @@
+node N_{1,2,3} where
+
+-- If we ping the leader and we get a timeout we need to elect a new leader.
+follower, leader = i & N_i!Ping, N_i?Pong & follower | Timeout & candidate
+
+-- Broadcast election.
+candidate & Ns!Election & election
+
+follower & N_i?Election N_i!Ok & candidate
+
+election & Ns?Ok & follower
+             | 
+	     ?Timeout & won
+
+won & Ns!Coordinator & leader
+
+follower & N_i?Coordinator & follower, leader=i
+
+-- or, we can combine the last two rules as such:
+
+election & ?Ok+ & follower
+           | 
+	   ?Timeout !Cordinator & leader
+
+-- candidate is a useful initial state, so that's why I didn't inline that
+-- into the ping operation.
+
+property leaderGetsElected = 
+  always (N_i.state' == candidate ==> eventually (N_i.state' == follower))

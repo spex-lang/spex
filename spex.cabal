@@ -37,6 +37,9 @@ library
     Spex.CommandLine.GitHash
     Spex.CommandLine.Option
     Spex.CommandLine.Spinner
+    Spex.Experiment.Grammar
+    Spex.Experiment.LinearTemporalLogic
+    Spex.Experiment.Protocol
     Spex.Generator.Arbitrary
     Spex.Generator.Combinator
     Spex.Generator.Prng

@@ -1,0 +1,21 @@
+-- Transaction manager
+node TM where
+
+init & Client?Write, RMs!prepare & working
+
+working & RM_i?aborted, RMs!abort & aborted
+working & RMs?prepared, RMs!commit & committed
+
+-- Resource manager
+node RM_{1,2} where
+
+working & TM?prepare, TM!prepared & prepared
+                    | TM!aborted & aborted
+
+prepared & TM?commit & committed
+
+prepared || aborted & TM?abort & aborted
+
+property 
+  always eventually RM_1.state == RM_2.state && 
+    RM_1.state == committed || RM_1.state == aborted

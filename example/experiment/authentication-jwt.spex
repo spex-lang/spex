@@ -1,0 +1,6 @@
+
+login : POST 
+
+query : [Authorization: Bearer @JWT]
+
+type JTW = String

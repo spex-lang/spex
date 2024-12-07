@@ -42,6 +42,7 @@
     some relations between them?
   + complex systems approach? (actants, constructors)
   + c4 model?
+  + https://www.eventcatalog.dev/
 
 * REPL which generates data on tab-complete
 
@@ -49,6 +50,7 @@
   are valid, and use this to do "run-time session type" checking.
   - https://www.youtube.com/watch?v=ed7A7r6DBsM
   - https://www.youtube.com/watch?v=FqlewYgUcZU
+  - https://erlang.org/workshop/2002/Armstrong.pdf
 
   - "We need languages to describe encodings and protocols not machine
     instructions" (https://www.youtube.com/watch?v=ieEaaofM7uU)

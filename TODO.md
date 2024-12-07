@@ -12,6 +12,11 @@ Here's what I'm currently working on:
 
 - website on mobile?
 
+### Second release
+
+- add auth test
+  + --gen-env UserName=... --gen-env Password=...?
+
 ### Documentation
 
 #### Website
@@ -40,6 +45,7 @@ Here's what I'm currently working on:
 - ARCHITECTURE.md?
 - contributing.md
   + https://x.com/mitchellh/status/1852039089547309552
+- [A systematic approach to technical documentation authoring](https://diataxis.fr/)
 
 ### Features
 
@@ -138,7 +144,6 @@ Here's what I'm currently working on:
 
 ### Refactor
 
-- structured logs, returns json object with one error or one test result?
 
 ### CI
 

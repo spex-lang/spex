@@ -26,6 +26,7 @@ data Type
   | UserT (Ann TypeId)
   | AbstractT Type
   | UniqueT Type
+  | ProdT Type Type
   deriving (Eq, Ord, Show, Generic, ToJSON)
 
 newtype TypeId = TypeId Text
