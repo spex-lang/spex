@@ -17,7 +17,7 @@ working & TM?prepare, TM!prepared & prepared
 
 prepared & TM?commit & committed
 
-prepared || aborted & TM?abort & aborted
+prepared | aborted & TM?abort & aborted
 
 property 
   always eventually RM_1.state == RM_2.state && 
