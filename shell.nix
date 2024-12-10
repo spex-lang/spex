@@ -1,12 +1,13 @@
 let
-  # The last commit of the PR which adds GHC 9.6.6
-  nixpkgs = fetchTarball "https://github.com/NixOS/nixpkgs/tarball/269d73766f777ea37104a1b3b41c1c9575da037d";
+  # The commit that adds GHC 9.8.4:
+  # https://github.com/NixOS/nixpkgs/pull/361586
+  nixpkgs = fetchTarball "https://github.com/NixOS/nixpkgs/tarball/87f98369e0d0e9b25bf7e13387c8d0b935b22217";
   pkgs = import nixpkgs { config = {}; overlays = []; };
 in
 
 pkgs.mkShell rec {
   buildInputs = with pkgs; [
-    haskell.compiler.ghc966
+    haskell.compiler.ghc984
     cabal-install
     haskellPackages.cabal-fmt
     haskellPackages.fourmolu

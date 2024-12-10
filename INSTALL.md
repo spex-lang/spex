@@ -62,7 +62,7 @@ then issue:
 git clone https://github.com/spex-lang/spex.git
 cd spex
 ghcup install cabal 3.12.1.0 --set
-ghcup install ghc 9.6.6 --set
+ghcup install ghc 9.8.4 --set
 cabal build all
 cabal install spex spex-demo-petstore
 ```

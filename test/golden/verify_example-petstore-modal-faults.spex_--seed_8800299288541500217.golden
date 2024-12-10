@@ -15,7 +15,7 @@ i Starting to run tests...
   Found 2 intereresting test cases:
 
     1. getBadPet : GET /pet/badJson/{petId = 0} -> Pet
-         ↳ JSON decode failure: Error in $: endOfInput "petId":0,"petName":"foo"}
+         ↳ JSON decode failure: Trailing garbage "petId":0,"petName":"foo"}
        (2 shrinks)
 
     2. getPet : GET /pet/{petId = 0} -> Pet

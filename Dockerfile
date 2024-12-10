@@ -1,4 +1,4 @@
-ARG GHC_VERSION=9.6.6
+ARG GHC_VERSION=9.8.4
 ARG CABAL_VERSION=3.12.1.0
 
 FROM docker.io/library/alpine:3.20 AS build
@@ -69,7 +69,7 @@ RUN  rm -r /root/.ghcup/cache \
   && rm -r /root/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/lib/latex \
   && rm -r /root/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/lib/llvm-* \
   && rm -r /root/.ghcup/ghc/$GHC_VERSION/share \
-  && rm -r /root/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/lib/x86_64-linux-ghc-$GHC_VERSION/ghc-$GHC_VERSION \
+  && rm -r /root/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/lib/x86_64-linux-ghc-$GHC_VERSION/ghc-$GHC_VERSION-04ad \
   && rm -r /root/.ghcup/ghc/$GHC_VERSION/lib/ghc-$GHC_VERSION/lib/x86_64-linux-ghc-$GHC_VERSION/Cabal-* \
   && find /root/.ghcup/ -name '*.p_hi' -delete \
   && find /root/.ghcup/ -name '*_p.a' -delete \

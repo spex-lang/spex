@@ -17,7 +17,7 @@ extra-doc-files:
   example/*.spex
   README.md
 
-tested-with:     GHC ==9.6.6
+tested-with:     GHC ==9.8.4
 
 common warnings
   ghc-options:
@@ -98,9 +98,9 @@ library
 
   -- GHC boot library dependencies:
   -- (https://gitlab.haskell.org/ghc/ghc/-/blob/master/packages)
-  -- base-4.18.2.0 comes with GHC 9.6.6.
+  -- base-4.19.2.0 comes with GHC 9.8.4.
   build-depends:
-    , base          ^>=4.18.2.0
+    , base          ^>=4.19.2.0
     , bytestring
     , containers
     , process

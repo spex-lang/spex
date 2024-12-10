@@ -265,8 +265,9 @@ GITHUB_EVENT_BEFORE ?= origin/main
 GITHUB_EVENT_AFTER  ?= HEAD
 
 DOCKERFILE_CHANGED := $(shell \
-	git diff --name-only "$(GITHUB_EVENT_BEFORE)" "$(GITHUB_EVENT_AFTER)" \
-	| grep --quiet "^Dockerfile$$" && echo true || echo false)
+	(git diff --name-only "$(GITHUB_EVENT_BEFORE)" "$(GITHUB_EVENT_AFTER)" \
+	| grep --quiet "^Dockerfile$$" || \
+        ! git diff --quiet Dockerfile) && echo true || echo false)
 
 .PHONY: pull-image build-image push-image
 
@@ -278,7 +279,7 @@ pull-image:
 build-image: 
 	echo "GITHUB_EVENT_AFTER=$(GITHUB_EVENT_AFTER)" 
 	echo "GITHUB_EVENT_BEFORE=$(GITHUB_EVENT_BEFORE)"
-	echo "git diff=$(shell git diff --name-only $(GITHUB_EVENT_AFTER) $(GITHUB_EVENT_BEFORE))"
+	echo "git diff=$(shell git diff --name-only $(GITHUB_EVENT_BEFORE) $(GITHUB_EVENT_AFTER))"
 	echo "DOCKERFILE_CHANGED=$(DOCKERFILE_CHANGED)"
   ifeq ($(DOCKERFILE_CHANGED),true)
 	docker build --tag ghcr.io/spex-lang/spex-build:latest .
