@@ -1,6 +1,10 @@
 
-login : POST 
+component Server (accounts : List Credentials) where
 
-query : [Authorization: Bearer @JWT]
-
+type Credentials = { username : String, password : String }
 type JTW = String
+
+login : POST /login (credentials : Credentials) ->
+  if credentails in accounts then JWT else Error, 403
+
+query : [Authorization: Bearer @JWT] GET /protected -> String

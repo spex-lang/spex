@@ -26,4 +26,5 @@ election & ?Ok+ & follower
 -- into the ping operation.
 
 property leaderGetsElected = 
-  always (N_i.state' == candidate ==> eventually (N_i.state' == follower))
+  always (N_i.state' == candidate ==> eventually (N_i.state' == follower || 
+                                                  N_i.state' == leader))

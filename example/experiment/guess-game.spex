@@ -1,0 +1,36 @@
+-- A guessing game where the client needs to guess the right digit.
+
+-- The first version allows for infinite amount of guesses. The idea is that
+-- secretDigit is a run-time parameter, which allows us to vary it between test
+-- runs or mocking sessions (without changing the specification).
+node GuessGame (secretDigit : Int) where
+
+playing & Client?Guess(i : Int),
+  if i == secretDigit 
+  then Client!Won & won
+  else Client!WrongGuess & playing
+
+-- The second version allows for two guesses.
+node TwoGuessesGame (secretDigit : Int) where
+
+playing2 & Client?Guess(i : Int),
+  if i == secretDigit 
+  then Client!Won & won
+  else Client!WrongGuess & playing1
+
+playing1 & Client?Guess(i : Int),
+  if i == secretDigit 
+  then Client!Won & won
+  else Client!Lost & lost
+
+-- If we wanted to allow, say, 3 guesses then we'd need to add a new state to
+-- the above. This quickly gets repetetive, so it would be nice to be able to
+-- also parametrise on states.
+node FiniteGuessesGame (secretDigit : Int, guesses : Int) where
+
+guesses & Client?Guess(i : Int),
+  if i == secretDigit 
+  then Client!Won & won
+  else if guesses == 1
+       then Client!Lost & lost
+       else Client!WrongGuess & guesses - 1

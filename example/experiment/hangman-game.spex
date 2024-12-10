@@ -1,0 +1,8 @@
+node Hangman (word : String) where
+
+guesses = 6 & ?Guess(letter : Char), 
+  case elemIndices letter word of
+    [] -> if guesses == 1
+          then !Lost & lost
+	  else !WrongGuess & guesses - 1
+    indices -> !LetterAppearsAt indices & guesses
