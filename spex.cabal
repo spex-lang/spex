@@ -41,6 +41,7 @@ library
     Spex.Experiment.LinearTemporalLogic
     Spex.Experiment.Protocol
     Spex.Experiment.Protocol2
+    Spex.Experiment.Protocol3
     Spex.Generator.Arbitrary
     Spex.Generator.Combinator
     Spex.Generator.Prng
@@ -91,7 +92,6 @@ library
     , prettyprinter
     , random
     , template-haskell
-    , time
     , utf8-string
     , vector
     , wai
@@ -105,7 +105,9 @@ library
     , bytestring
     , containers
     , process
+    , stm
     , text
+    , time
     , transformers
 
   -- pkgconfig-depends:  zlib
