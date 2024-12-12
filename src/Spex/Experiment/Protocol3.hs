@@ -1,6 +1,7 @@
 module Spex.Experiment.Protocol3 (module Spex.Experiment.Protocol3) where
 
 import Control.Concurrent.STM
+import Control.Exception
 import Data.IORef
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
@@ -48,7 +49,7 @@ data ClientState = ClientInit
   deriving (Eq, Show)
 
 data Msg = Write | Prepare | Prepared | Commit | Comitted | Ack
-  deriving (Show)
+  deriving (Eq, Show)
 
 tmProtocol :: Protocol TMState Node Msg
 tmProtocol =
@@ -203,7 +204,7 @@ data Envelope node msg = Envelope
   , content :: msg
   -- , arrivalTime :: UTCTime
   }
-  deriving (Show)
+  deriving (Eq, Show)
 
 newSim ::
   forall node msg.
@@ -255,4 +256,17 @@ test = do
       twoPCDeployment
       [Envelope {from = Client, to = TM, content = Write}]
       123
-  mapM_ print (runSim sim)
+  assert (runSim sim == trace) (return ())
+  where
+    trace =
+      [ Envelope {from = Client, to = TM, content = Write}
+      , Envelope {from = TM, to = RM1, content = Prepare}
+      , Envelope {from = TM, to = RM2, content = Prepare}
+      , Envelope {from = RM1, to = TM, content = Prepared}
+      , Envelope {from = RM2, to = TM, content = Prepared}
+      , Envelope {from = TM, to = RM1, content = Commit}
+      , Envelope {from = TM, to = RM2, content = Commit}
+      , Envelope {from = RM1, to = TM, content = Ack}
+      , Envelope {from = RM2, to = TM, content = Ack}
+      , Envelope {from = TM, to = Client, content = Ack}
+      ]
