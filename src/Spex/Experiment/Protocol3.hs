@@ -129,9 +129,8 @@ clientProtocol =
   Protocol [Transition (== ClientInit) (Recv TM (\Ack -> End ClientInit))]
 
 data Deployment node msg = Deployment
-  { topology :: Topology node
+  { topology :: Topology node -- NOTE: not used yet...
   , protocols :: Map node (SomeProtocol node msg)
-  , server :: node
   }
 
 twoPCDeployment :: Deployment Node Msg
@@ -145,7 +144,6 @@ twoPCDeployment =
           , (RM2, SomeProtocol rmProtocol RMInit)
           , (Client, SomeProtocol clientProtocol ClientInit)
           ]
-    , server = TM
     }
 
 data Mock state node msg = Mock
