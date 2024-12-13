@@ -78,6 +78,7 @@ library
     LambdaCase
     MultiWayIf
     OverloadedRecordDot
+    RoleAnnotations
     StrictData
     ViewPatterns
 
