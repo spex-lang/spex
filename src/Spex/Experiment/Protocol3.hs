@@ -371,7 +371,7 @@ test seed = do
     ( always
         ( Prop (\e -> e.from == Client && e.content == Write)
             ==> eventually
-              ( Prop (\e -> e.to == Client && (e.content == Ack) || e.content == Abort)
+              ( Prop (\e -> e.to == Client && (e.content == Ack || e.content == Abort))
               )
         )
     )
@@ -383,6 +383,7 @@ test seed = do
       return False
 
 t :: Int -> IO ()
+t 0 = return ()
 t numberOfTests = do
   seed <- randomIO
   passed <- test seed
