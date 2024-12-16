@@ -116,7 +116,7 @@ tmProtocol =
         ( recvMany
             [RM1, RM2]
             Ack
-            ( \Ack -> recvMany [RM1, RM2] Ack (\Ack -> Send [Client] Ack (End TMInit))
+            ( \Ack -> Send [Client] Ack (End TMInit)
             )
         )
     , Transition
@@ -233,18 +233,25 @@ runSession mock (Just envelope) (Recv nodes k) stdGen sentMsgs alternatives
               <> case mock.state of
                 Right state -> show state
                 Left session -> "Left session"
-        (session : sessions)
-          | null (nodes \\ [envelope.from]) ->
-              runSession mock Nothing session stdGen sentMsgs sessions
-          | otherwise ->
-              runSession
-                mock
-                Nothing
-                (Recv (nodes \\ [envelope.from]) k)
-                stdGen
-                sentMsgs
-                sessions
-      Just session -> runSession mock Nothing session stdGen sentMsgs alternatives
+        (session : sessions) ->
+          runSession
+            mock
+            (Just envelope)
+            session
+            stdGen
+            sentMsgs
+            (sessions ++ alternatives)
+      Just session
+        | null (nodes \\ [envelope.from]) ->
+            runSession mock Nothing session stdGen sentMsgs alternatives
+        | otherwise ->
+            runSession
+              mock
+              Nothing
+              (Recv (nodes \\ [envelope.from]) k)
+              stdGen
+              sentMsgs
+              alternatives
 runSession mock mEnvelope (Send nodes msg session') stdGen sentMsgs alternatives =
   runSession
     mock
@@ -378,12 +385,12 @@ test seed = do
     trace
     then return True
     else do
-      putStrLn $ "False, seed: " ++ show seed
+      putStrLn $ "Failure, seed: " ++ show seed
       mapM_ (putStrLn . prettyEnvelope) (runSim sim)
       return False
 
 t :: Int -> IO ()
-t 0 = return ()
+t 0 = putStrLn "Success!"
 t numberOfTests = do
   seed <- randomIO
   passed <- test seed
