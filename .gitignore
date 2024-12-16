@@ -1,3 +1,7 @@
+# Haskell
 dist-newstyle/
 cabal.project.local*
 dist
+
+# Python
+__pycache__/
