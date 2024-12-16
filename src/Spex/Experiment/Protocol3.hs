@@ -1,8 +1,11 @@
 module Spex.Experiment.Protocol3 (module Spex.Experiment.Protocol3) where
 
+import Spex.Experiment.LinearTemporalLogic hiding (Or)
+
 import Control.Concurrent.STM
 import Control.Exception
 import Data.IORef
+import Data.List ((\\))
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
 import System.Random
@@ -29,12 +32,44 @@ data Transition state node msg
 
 data Session state node msg
   = Send [node] msg (Session state node msg)
-  | Recv [node] (msg -> Session state node msg)
+  | Recv [node] (msg -> Maybe (Session state node msg))
   | Or (Session state node msg) (Session state node msg)
   | End state
 
+only :: (Eq msg) => msg -> (msg -> a) -> (msg -> Maybe a)
+only msg k = \msg' -> if msg == msg' then Just (k msg) else Nothing
+
+recv ::
+  (Eq msg) =>
+  node
+  -> msg
+  -> (msg -> Session state node msg)
+  -> Session state node msg
+recv node msg k = recvMany [node] msg k
+
+recvMany ::
+  (Eq msg) =>
+  [node]
+  -> msg
+  -> (msg -> Session state node msg)
+  -> Session state node msg
+recvMany nodes msg k = Recv nodes (only msg k)
+
+recvAny ::
+  (Eq msg) =>
+  [node]
+  -> msg
+  -> (msg -> Session state node msg)
+  -> Session state node msg
+recvAny [] _msg _k = error "recvAny: empty list"
+recvAny (node : nodes) msg k = go (Recv [node] (only msg k)) nodes
+  where
+    go session [] = session
+    go session (node : nodes) = go (session `Or` Recv [node] (only msg k)) nodes
+
 data SomeProtocol node msg
   = forall state.
+    (Show state) =>
     SomeProtocol (Protocol state node msg) state
 
 data TMState = TMInit | TMWorking | TMCommitted | TMAborted
@@ -62,37 +97,34 @@ tmProtocol =
   Protocol
     [ Transition
         (== TMInit)
-        ( Recv
-            [Client]
+        ( recv
+            Client
+            Write
             (\Write -> Send [RM1, RM2] Prepare (End TMWorking))
         )
     , Transition
         (== TMWorking)
-        ( Recv
+        ( recvMany
             [RM1, RM2]
+            Prepared
             ( \Prepared ->
-                Recv
-                  [RM1, RM2]
-                  (\Prepared -> Send [RM1, RM2] Commit (End TMCommitted))
+                Send [RM1, RM2] Commit (End TMCommitted)
             )
         )
     , Transition
         (== TMCommitted)
-        ( Recv
+        ( recvMany
             [RM1, RM2]
-            (\Ack -> Recv [RM1, RM2] (\Ack -> Send [Client] Ack (End TMInit)))
+            Ack
+            ( \Ack -> recvMany [RM1, RM2] Ack (\Ack -> Send [Client] Ack (End TMInit))
+            )
         )
     , Transition
         (== TMWorking)
-        ( Recv
+        ( recvAny
             [RM1, RM2]
+            Aborted
             (\Aborted -> Send [RM1, RM2, Client] Abort (End TMAborted))
-        )
-    , Transition
-        (== TMCommitted)
-        ( Recv
-            [RM1, RM2]
-            (\Ack -> Recv [RM1, RM2] (\Ack -> Send [Client] Ack (End TMInit)))
         )
     ]
 
@@ -101,8 +133,9 @@ rmProtocol =
   Protocol
     [ Transition
         (== RMInit)
-        ( Recv
-            [TM]
+        ( recv
+            TM
+            Prepare
             ( \Prepare ->
                 Send [TM] Prepared (End RMPrepared)
                   `Or` Send [TM] Aborted (End RMAborted)
@@ -110,9 +143,9 @@ rmProtocol =
         )
     , Transition
         (== RMPrepared)
-        (Recv [TM] (\Commit -> Send [TM] Ack (End RMInit)))
-    , Transition (== RMPrepared) (Recv [TM] (\Abort -> End RMAborted))
-    , Transition (== RMAborted) (Recv [TM] (\Abort -> End RMAborted))
+        (recv TM Commit (\Commit -> Send [TM] Ack (End RMInit)))
+    , Transition (== RMPrepared) (recv TM Abort (\Abort -> End RMAborted))
+    , Transition (== RMAborted) (recv TM Abort (\Abort -> End RMAborted))
     ]
 
 clientProtocol :: Protocol ClientState Node Msg
@@ -120,8 +153,8 @@ clientProtocol =
   Protocol
     [ Transition
         (== ClientInit)
-        ( Recv [TM] (\Ack -> End ClientInit)
-            `Or` Recv [TM] (\Abort -> End ClientInit)
+        ( recv TM Ack (\Ack -> End ClientInit)
+            `Or` recv TM Abort (\Abort -> End ClientInit)
         )
     ]
 
@@ -146,48 +179,101 @@ twoPCDeployment =
 data Mock state node msg = Mock
   { protocol :: Protocol state node msg
   , state :: Either (Session state node msg) state
+  , alternatives :: [Session state node msg]
   }
 
 newMock ::
   Protocol state node msg -> state -> Mock state node msg
-newMock protocol state = Mock protocol (Right state)
+newMock protocol state = Mock protocol (Right state) []
 
 runMock ::
-  forall state node msg.
-  (Eq node, Show node) =>
+  (Eq node, Show state, Show node, Show msg) =>
   Mock state node msg
-  -> Envelope node msg
+  -> Maybe (Envelope node msg)
   -> StdGen
   -> (Mock state node msg, [(node, msg)])
-runMock mock envelope stdGen = case mock.state of
-  Left session -> runSession session stdGen []
+runMock mock mEnvelope stdGen = case mock.state of
+  Left session -> runSession mock mEnvelope session stdGen [] mock.alternatives
   Right state -> case lookupState state mock.protocol of
     [] -> (mock, [])
-    [session] -> runSession session stdGen []
-    sessions ->
-      let (index, stdGen') = randomR (0, length sessions - 1) stdGen
-      in  runSession (sessions !! index) stdGen' []
-  where
-    runSession ::
-      Session state node msg
-      -> StdGen
-      -> [(node, msg)]
-      -> (Mock state node msg, [(node, msg)])
-    runSession (Recv nodes k) stdGen' sentMsgs
-      | envelope.from `notElem` nodes =
+    (session : sessions) -> runSession mock mEnvelope session stdGen [] sessions
+
+runSession ::
+  (Eq node, Show state, Show node, Show msg) =>
+  Mock state node msg
+  -> Maybe (Envelope node msg)
+  -> Session state node msg
+  -> StdGen
+  -> [(node, msg)]
+  -> [Session state node msg]
+  -> (Mock state node msg, [(node, msg)])
+runSession mock Nothing session@(Recv nodes k) stdGen sentMsgs alternatives =
+  ( mock
+      { state = Left session
+      , alternatives = alternatives ++ mock.alternatives
+      }
+  , sentMsgs
+  )
+runSession mock (Just envelope) (Recv nodes k) stdGen sentMsgs alternatives
+  | envelope.from `notElem` nodes = case alternatives of
+      [] -> error $ "runSession: deadlock, envelope = " <> show envelope
+      (session : sessions) -> runSession mock (Just envelope) session stdGen sentMsgs sessions
+  | otherwise = case k envelope.content of
+      Nothing -> case alternatives of
+        [] ->
           error $
-            "runMock: node mismatch, "
-              ++ show envelope.from
-              ++ " `notElem` "
-              ++ show nodes
-      | otherwise = runSession (k envelope.content) stdGen' sentMsgs
-    runSession (Send nodes msg session') stdGen' sentMsgs = runSession session' stdGen' (sentMsgs ++ zip nodes (repeat msg))
-    runSession (Or session session') stdGen' sentMsgs =
-      let (bool, stdGen'') = random stdGen'
-      in  if bool
-            then runSession session stdGen'' sentMsgs
-            else runSession session' stdGen'' sentMsgs
-    runSession (End state') _stdGen' sentMsgs = (mock {state = Right state'}, sentMsgs)
+            "runSession: deadlock, envelope = "
+              <> show envelope
+              <> "\nsentMsgs = "
+              <> show sentMsgs
+              <> "\nsession = "
+              <> "Recv "
+              <> show nodes
+              <> "\nstate = "
+              <> case mock.state of
+                Right state -> show state
+                Left session -> "Left session"
+        (session : sessions)
+          | null (nodes \\ [envelope.from]) ->
+              runSession mock Nothing session stdGen sentMsgs sessions
+          | otherwise ->
+              runSession
+                mock
+                Nothing
+                (Recv (nodes \\ [envelope.from]) k)
+                stdGen
+                sentMsgs
+                sessions
+      Just session -> runSession mock Nothing session stdGen sentMsgs alternatives
+runSession mock mEnvelope (Send nodes msg session') stdGen sentMsgs alternatives =
+  runSession
+    mock
+    mEnvelope
+    session'
+    stdGen
+    (sentMsgs ++ zip nodes (repeat msg))
+    alternatives
+runSession mock mEnvelope (Or session session') stdGen sentMsgs alternatives =
+  let (bool, stdGen') = random stdGen
+  in  if bool
+        then
+          runSession
+            mock
+            mEnvelope
+            session
+            stdGen'
+            sentMsgs
+            (session' : alternatives)
+        else
+          runSession
+            mock
+            mEnvelope
+            session'
+            stdGen'
+            sentMsgs
+            (session : alternatives)
+runSession mock mEnvelope (End state') _stdGen sentMsgs _altenatives =
+  (mock {state = Right state'}, sentMsgs)
 
 lookupState ::
   state
@@ -200,10 +286,9 @@ lookupState state (Protocol transitions) = go transitions
       | precondition state = session : go transitions'
       | otherwise = go transitions'
 
-type role SomeMock representational representational
-data SomeMock node msg = forall state. SomeMock (Mock state node msg)
+data SomeMock node msg
+  = forall state. (Show state) => SomeMock (Mock state node msg)
 
-type role Sim nominal representational
 data Sim node msg = Sim
   { nodes :: Map node (SomeMock node msg)
   , messages :: [Envelope node msg]
@@ -211,7 +296,6 @@ data Sim node msg = Sim
   , trace :: [Envelope node msg]
   }
 
-type role Envelope representational representational
 data Envelope node msg = Envelope
   { from :: node
   , to :: node
@@ -219,6 +303,15 @@ data Envelope node msg = Envelope
   -- , arrivalTime :: UTCTime
   }
   deriving (Eq, Show)
+
+prettyEnvelope ::
+  (Show node, Show msg) => Envelope node msg -> String
+prettyEnvelope envelope =
+  show envelope.from
+    <> " -- "
+    <> show envelope.content
+    <> " --> "
+    <> show envelope.to
 
 newSim ::
   forall node msg.
@@ -243,7 +336,7 @@ newSim deployment initialMessages seed = do
       (node, SomeMock (newMock protocol initialState)) : makeMocks rest
 
 stepSim ::
-  (Ord node, Show node) =>
+  (Ord node, Show node, Show msg) =>
   Sim node msg
   -> Either (Sim node msg) (Sim node msg)
 stepSim sim = case sim.messages of
@@ -251,7 +344,7 @@ stepSim sim = case sim.messages of
   envelope : envelopes -> case sim.nodes Map.! envelope.to of
     SomeMock mock ->
       let (stdGen', stdGen'') = split sim.prng
-          (mock', sentMsgs) = runMock mock envelope stdGen'
+          (mock', sentMsgs) = runMock mock (Just envelope) stdGen'
       in  Left
             Sim
               { nodes = Map.insert envelope.to (SomeMock mock') sim.nodes
@@ -261,42 +354,38 @@ stepSim sim = case sim.messages of
               }
 
 runSim ::
-  (Ord node, Show node) => Sim node msg -> [Envelope node msg]
+  (Ord node, Show node, Show msg) => Sim node msg -> [Envelope node msg]
 runSim sim = case stepSim sim of
   Right sim' -> reverse sim'.trace
   Left sim' -> runSim sim'
 
-test :: IO ()
-test = do
-  let seed = 123
+test :: Int -> IO Bool
+test seed = do
   sim <-
     newSim
       twoPCDeployment
       [Envelope {from = Client, to = TM, content = Write}]
       seed
-  -- mapM_ print (runSim sim)
-  assert (runSim sim == unhappy) (return ())
-  where
-    trace =
-      [ Envelope {from = Client, to = TM, content = Write}
-      , Envelope {from = TM, to = RM1, content = Prepare}
-      , Envelope {from = TM, to = RM2, content = Prepare}
-      , Envelope {from = RM1, to = TM, content = Prepared}
-      , Envelope {from = RM2, to = TM, content = Prepared}
-      , Envelope {from = TM, to = RM1, content = Commit}
-      , Envelope {from = TM, to = RM2, content = Commit}
-      , Envelope {from = RM1, to = TM, content = Ack}
-      , Envelope {from = RM2, to = TM, content = Ack}
-      , Envelope {from = TM, to = Client, content = Ack}
-      ]
+  let trace = runSim sim
+  if sat
+    ( always
+        ( Prop (\e -> e.from == Client && e.content == Write)
+            ==> eventually
+              ( Prop (\e -> e.to == Client && (e.content == Ack) || e.content == Abort)
+              )
+        )
+    )
+    trace
+    then return True
+    else do
+      putStrLn $ "False, seed: " ++ show seed
+      mapM_ (putStrLn . prettyEnvelope) (runSim sim)
+      return False
 
-    unhappy =
-      [ Envelope {from = Client, to = TM, content = Write}
-      , Envelope {from = TM, to = RM1, content = Prepare}
-      , Envelope {from = TM, to = RM2, content = Prepare}
-      , Envelope {from = RM1, to = TM, content = Aborted}
-      , Envelope {from = RM2, to = TM, content = Aborted}
-      , Envelope {from = TM, to = RM1, content = Abort}
-      , Envelope {from = TM, to = RM2, content = Abort}
-      , Envelope {from = TM, to = Client, content = Abort}
-      ]
+t :: Int -> IO ()
+t numberOfTests = do
+  seed <- randomIO
+  passed <- test seed
+  if passed
+    then t (numberOfTests - 1)
+    else return ()

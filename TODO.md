@@ -38,6 +38,7 @@ Here's what I'm currently working on:
       - https://github.com/schemathesis/schemathesis
       - https://github.com/mockoon/mockoon
       - https://github.com/usebruno/bruno
+      - https://fizzbee.io/
 - news/blog
 
 #### Other

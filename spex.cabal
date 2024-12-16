@@ -28,7 +28,7 @@ common warnings
     -Wno-prepositive-qualified-module -Wno-implicit-prelude
     -Wno-missing-export-lists -Wno-missing-safe-haskell-mode
     -Wno-missing-deriving-strategies -Wno-missing-kind-signatures
-    -Wno-implicit-lift
+    -Wno-implicit-lift -Wno-missing-role-annotations
 
 library
   import:             warnings
@@ -78,7 +78,6 @@ library
     LambdaCase
     MultiWayIf
     OverloadedRecordDot
-    RoleAnnotations
     StrictData
     ViewPatterns
 
