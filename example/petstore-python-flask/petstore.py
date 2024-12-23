@@ -7,13 +7,13 @@ app = Flask(__name__)
 # NOTE: Not thread-safe and won't work if clients connect concurrently.
 petstore = {}
 
-@app.route("/pet/<pet_id>", methods=["GET"])
+@app.route("/pet/<int:pet_id>", methods=["GET"])
 def get_pet(pet_id):
     if pet_id in petstore:
         pet_name = petstore[pet_id]
         return jsonify(petId=pet_id, petName=pet_name)
     else:
-        return "Pet not found", 404
+        return jsonify(error="Pet not found"), 404
 
 @app.route("/pet", methods=["POST"])
 def add_pet():

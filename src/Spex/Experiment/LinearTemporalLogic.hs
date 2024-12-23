@@ -1,6 +1,4 @@
-module Spex.Experiment.LinearTemporalLogic 
-  (module Spex.Experiment.LinearTemporalLogic) 
-  where
+module Spex.Experiment.LinearTemporalLogic (module Spex.Experiment.LinearTemporalLogic) where
 
 -- Bug Catching: Automated Program Verification:
 --   https://www.cs.cmu.edu/~15414/
@@ -8,6 +6,7 @@ module Spex.Experiment.LinearTemporalLogic
 --   NuSMV: https://www.cs.cmu.edu/~15414/lectures/21-ltl.pdf
 --   The algorithm used in the 2018 lectures:
 --     https://link.springer.com/content/pdf/10.1007/978-0-387-34892-6_1.pdf
+-- https://en.wikipedia.org/wiki/Property_Specification_Language
 
 import Data.Maybe
 

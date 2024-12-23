@@ -389,11 +389,14 @@ test seed = do
       mapM_ (putStrLn . prettyEnvelope) (runSim sim)
       return False
 
-t :: Int -> IO ()
-t 0 = putStrLn "Success!"
-t numberOfTests = do
+t' :: Int -> IO ()
+t' 0 = putStrLn "Success!"
+t' numberOfTests = do
   seed <- randomIO
   passed <- test seed
   if passed
-    then t (numberOfTests - 1)
+    then t' (numberOfTests - 1)
     else return ()
+
+t :: IO ()
+t = t' 100
