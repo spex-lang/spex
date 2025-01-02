@@ -42,6 +42,7 @@ library
     Spex.Experiment.Protocol
     Spex.Experiment.Protocol2
     Spex.Experiment.Protocol3
+    Spex.Experiment.TimedPropositionalTemporalLogic
     Spex.Generator.Arbitrary
     Spex.Generator.Combinator
     Spex.Generator.Prng

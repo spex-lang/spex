@@ -7,13 +7,14 @@ import Control.Monad
 import Data.List (intersect)
 import Data.String
 
-import Spex.Verifier.Generator
-import Spex.Generator.Prng
 import Spex.Generator.Combinator
+import Spex.Generator.Prng
+import Spex.Verifier.Generator
 
 -- https://www.cse.chalmers.se/~coquand/AUTOMATA/w6.html
 -- https://en.wikipedia.org/wiki/Augmented_Backus%E2%80%93Naur_form
 -- https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form
+-- https://matt.might.net/articles/regular-context-free-grammars/
 
 ------------------------------------------------------------------------
 
@@ -137,7 +138,7 @@ gen re | notEmpty re = case re of
   Inter e1 e2 -> intersect <$> gen e1 <*> gen e2
 
 prop_gen :: (Monoid a, Eq a) => Int -> Size -> Reg a -> Bool
-prop_gen seed size re = 
+prop_gen seed size re =
   snd (runGen (gen re) (mkPrng seed) size) `isIn` re
 
 testRe :: Reg Char
