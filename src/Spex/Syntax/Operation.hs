@@ -15,13 +15,10 @@ import Spex.Syntax.Type
 import Spex.Syntax.Value
 
 ------------------------------------------------------------------------
---
-data OpF a = Op
+
+data OpF parameter a = Op
   { id :: OpId
-  , headers :: [HeaderF a]
-  , method :: Method
-  , path :: [PathSegment a]
-  , body :: Maybe a
+  , parameter :: parameter
   , responseType :: Type
   }
   deriving stock (Show, Functor, Foldable, Traversable, Generic)
@@ -30,6 +27,27 @@ data OpF a = Op
 newtype OpId = OpId Text
   deriving stock (Eq, Ord, Show, Generic)
   deriving newtype (IsString, ToJSON, ToJSONKey)
+
+------------------------------------------------------------------------
+
+type Op = OpF (HttpParameter Value) Value
+
+type OpDecl = OpF (HttpParameter Type) Type
+
+data HttpParameter a = HttpParameter
+  { headers :: [HeaderF a]
+  , method :: Method
+  , path :: [PathSegment a]
+  , body :: Maybe a
+  }
+  deriving stock (Show, Functor, Foldable, Traversable, Generic)
+  deriving anyclass (ToJSON)
+
+type Header = HeaderF Value
+type HeaderDecl = HeaderF Type
+
+noHeaders :: [HeaderF a]
+noHeaders = []
 
 data HeaderF a = Header ByteString (Maybe a)
   deriving (Show, Functor, Foldable, Traversable)
@@ -43,16 +61,6 @@ instance (ToJSON a) => ToJSON (HeaderF a) where
       JSON.String
         (Text.decodeUtf8Lenient header <> value_)
     _otherwise -> error "toJSON, HeaderF: impossible"
-
-type Header = HeaderF Value
-type HeaderDecl = HeaderF Type
-
-noHeaders :: [HeaderF a]
-noHeaders = []
-
-type Op = OpF Value
-
-type OpDecl = OpF Type
 
 data PathSegment a = Path Text | Hole Text a
   deriving (Show, Functor, Foldable, Traversable, Generic, ToJSON)

@@ -49,20 +49,26 @@ displayTypeId (TypeId tid) = tid
 prettyOpId :: OpId -> Doc x
 prettyOpId (OpId oid) = pretty oid
 
-prettyOpF :: (a -> Doc x) -> (a -> Doc x) -> OpF a -> Doc x
-prettyOpF pp pb op =
+prettyOpF :: (parameter -> Doc x) -> OpF parameter a -> Doc x
+prettyOpF pp op =
   hsep $
     [ prettyOpId op.id
     , ":"
-    , prettyMethod op.method
-    , prettyPathF pp op.path
+    , pp op.parameter
+    , prettyResponseType op.responseType
     ]
-      ++ ( case op.body of
+
+prettyHttpParameter ::
+  (a -> Doc x) -> (a -> Doc x) -> HttpParameter a -> Doc x
+prettyHttpParameter pp pb httpParameter =
+  hsep $
+    [ prettyMethod httpParameter.method
+    , prettyPathF pp httpParameter.path
+    ]
+      ++ ( case httpParameter.body of
             Nothing -> []
             Just x -> [pb x]
          )
-      ++ [ prettyResponseType op.responseType
-         ]
 
 displayOp :: Op -> Text
 displayOp = renderStrict . layoutPretty defaultLayoutOptions . prettyOp
@@ -74,10 +80,14 @@ prettyOps :: [Op] -> Doc x
 prettyOps = vcat . map prettyOp
 
 prettyOp :: Op -> Doc x
-prettyOp = prettyOpF (\val -> "=" <+> prettyValue val) prettyValue
+prettyOp =
+  prettyOpF
+    (prettyHttpParameter (\val -> "=" <+> prettyValue val) prettyValue)
 
 prettyOpDecl :: OpDecl -> Doc x
-prettyOpDecl = prettyOpF (\ty -> ":" <+> prettyType ty) prettyType
+prettyOpDecl =
+  prettyOpF
+    (prettyHttpParameter (\ty -> ":" <+> prettyType ty) prettyType)
 
 prettyMethod :: Method -> Doc x
 prettyMethod Get = "GET"

@@ -40,7 +40,9 @@ healthChecker deployment@(Deployment _hostPort health _reset) = do
     http n path client = do
       eResp <-
         tryApp $
-          httpRequest client (Op "health" noHeaders Get [Path path] Nothing UnitT)
+          httpRequest
+            client
+            (Op "health" (HttpParameter noHeaders Get [Path path] Nothing) UnitT)
       case eResp of
         Left _err -> do
           wait n

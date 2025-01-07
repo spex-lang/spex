@@ -49,14 +49,15 @@ httpRequest :: HttpClient -> Op -> App Response
 httpRequest client op = do
   let req =
         client.baseRequest
-          { Http.method = toHttpMethod op.method
+          { Http.method = toHttpMethod op.parameter.method
           , Http.requestHeaders =
-              Http.requestHeaders client.baseRequest ++ map toHeader op.headers
-          , Http.path = toHttpPath op.path
-          , Http.requestBody = toHttpBody op.body
+              Http.requestHeaders client.baseRequest
+                ++ map toHeader op.parameter.headers
+          , Http.path = toHttpPath op.parameter.path
+          , Http.requestBody = toHttpBody op.parameter.body
           }
   trace $ "httpRequest, req: " <> Text.pack (show req)
-  case op.body of
+  case op.parameter.body of
     Nothing -> return ()
     Just body ->
       trace $

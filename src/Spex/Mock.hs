@@ -75,8 +75,9 @@ waiApp spec ref req respond = do
 -- XXX: check body and put its fields into the genEnv?
 matchOp :: [OpDecl] -> Request -> Maybe Type
 matchOp ctx req =
-  let ops' = filter (\op -> op.method `methodsMatch` requestMethod req) ctx
-      ops'' = filter (\op -> op.path `pathMatch` pathInfo req) ops'
+  let ops' =
+        filter (\op -> op.parameter.method `methodsMatch` requestMethod req) ctx
+      ops'' = filter (\op -> op.parameter.path `pathMatch` pathInfo req) ops'
   in  case ops'' of
         [] -> Nothing
         [op] -> Just (op.responseType)

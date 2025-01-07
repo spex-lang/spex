@@ -76,17 +76,20 @@ removeRecordType ty = [ty]
 genOp :: [OpDecl] -> GenM (OpDecl, Op)
 genOp opdecls = do
   opdecl <- lift (elements opdecls)
-  hs <- genHeaders opdecl.headers
-  p <- genPath opdecl.path
-  b <- genBody opdecl.body
+  hs <- genHeaders opdecl.parameter.headers
+  p <- genPath opdecl.parameter.path
+  b <- genBody opdecl.parameter.body
   return
     ( opdecl
     , Op
         { id = opdecl.id
-        , headers = hs
-        , method = opdecl.method
-        , path = p
-        , body = b
+        , parameter =
+            HttpParameter
+              { headers = hs
+              , method = opdecl.parameter.method
+              , path = p
+              , body = b
+              }
         , responseType = opdecl.responseType
         }
     )

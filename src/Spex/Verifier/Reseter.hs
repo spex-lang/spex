@@ -19,7 +19,8 @@ reseter client reset = do
   case reset of
     ResetPath path -> do
       let path' = Text.dropWhile (== '/') path
-      let op = Op "reset" noHeaders Delete [Path path'] Nothing UnitT
+      let op =
+            Op "reset" (HttpParameter noHeaders Delete [Path path'] Nothing) UnitT
       debug (displayOp op)
       eResp <- tryApp $ httpRequest client op
       case eResp of

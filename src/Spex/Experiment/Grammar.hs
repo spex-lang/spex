@@ -15,6 +15,7 @@ import Spex.Verifier.Generator
 -- https://en.wikipedia.org/wiki/Augmented_Backus%E2%80%93Naur_form
 -- https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form
 -- https://matt.might.net/articles/regular-context-free-grammars/
+-- https://news.ycombinator.com/item?id=42613590
 
 ------------------------------------------------------------------------
 

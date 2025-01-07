@@ -108,7 +108,7 @@ opDeclP = do
   ws
   b <- bodyDeclP
   respTy <- responseTypeP
-  return (Op x hs m p b respTy)
+  return (Op x (HttpParameter hs m p b) respTy)
 
 headersP :: Parser [HeaderDecl]
 headersP =
