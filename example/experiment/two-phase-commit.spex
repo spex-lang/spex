@@ -19,6 +19,14 @@ prepared & TM?commit & committed
 
 prepared | aborted & TM?abort & aborted
 
+-- Safety property: no commit after abort, if a participant receives an abort
+-- then it should not commit.
+
+-- Safety property: all participants must agree, if the coordinator
+-- commits/aborts then all participants must commit/abort.
+
+-- Liveness property: eventual commitment or abortion, if a participant
+-- receives a prepare then it must eventually receive a commit or abort.
 property 
   always eventually RM_1.state == RM_2.state && 
     RM_1.state == committed || RM_1.state == aborted
